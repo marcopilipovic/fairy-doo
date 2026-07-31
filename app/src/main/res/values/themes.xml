@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bewusst minimal: Farben und Typografie kommen aus dem Compose-Theme
+         (ui/theme/Theme.kt), nicht aus XML. Dieses Theme setzt nur, was das
+         Android-Fenster vor dem ersten Compose-Frame braucht. -->
+    <style name="Theme.FairyDoo" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+    </style>
+</resources>

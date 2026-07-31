@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Nur für Fenster-Hintergrund und Launcher-Icon. Die Spiel-Palette liegt
+         in ui/theme/Color.kt. -->
+    <color name="window_background">#FF141024</color>
+    <color name="ic_launcher_background">#FF241C3D</color>
+</resources>
