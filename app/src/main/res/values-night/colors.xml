@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="window_background">#FF0D0A18</color>
+    <!-- Entspricht NightBase aus ui/theme/Color.kt. -->
+    <color name="window_background">#FF141024</color>
 </resources>
