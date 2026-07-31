@@ -3,6 +3,7 @@ package com.fairydoo.game.game
 import com.fairydoo.game.game.model.CellMark
 import com.fairydoo.game.game.model.Pos
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -17,80 +18,102 @@ class FairydokuEngineTest {
 
     private val engine = FairydokuEngine(Random(42))
 
-    private fun startedGame(level: Int = 1) = engine.newGame(level)
+    /** Startet eine Partie und überspringt das Willkommens-Overlay. */
+    private fun startedGame(level: Int = 1): GameState =
+        engine.onInput(engine.newGame(level), GameInput.Begin)
+
+    /** Setzt eine Fee auf [pos] — zwei Tipps, weil erst das Merkzeichen kommt. */
+    private fun placeFairy(state: GameState, pos: Pos): GameState =
+        engine.onInput(engine.onInput(state, GameInput.TapCell(pos)), GameInput.TapCell(pos))
 
     /** Setzt alle Feen der hinterlegten Lösung. */
     private fun solve(state: GameState): GameState {
         val puzzle = requireNotNull(state.puzzle)
-        return puzzle.solution.fold(state) { acc, pos ->
-            engine.onInput(acc, GameInput.TapCell(pos))
-        }
-    }
-
-    /** Ein Feld, das garantiert nicht zur Lösung gehört. */
-    private fun wrongCell(state: GameState, avoid: Set<Pos> = emptySet()): Pos {
-        val puzzle = requireNotNull(state.puzzle)
-        return puzzle.allPositions.first { it !in puzzle.solution && it !in avoid }
+        return puzzle.solution.fold(state) { acc, pos -> placeFairy(acc, pos) }
     }
 
     @Test
-    fun `neue Partie startet laufend mit Raetsel und voller Uhr`() {
-        val state = startedGame()
+    fun `eine neue Partie beginnt im Willkommens-Overlay`() {
+        val state = engine.newGame()
 
-        assertEquals(GameStatus.Running, state.status)
+        assertEquals(GameStatus.Intro, state.status)
         assertNotNull(state.puzzle)
         assertEquals(4, state.puzzle?.size)
-        assertEquals(GameState.durationForLevel(1), state.remainingMillis)
+        assertEquals(GameState.MAX_LIVES, state.lives)
         assertEquals(0, state.score)
     }
 
     @Test
-    fun `Tippen schaltet leer zu Fee zu Merkzeichen zu leer`() {
+    fun `der Wald wird erst nach dem Betreten betretbar`() {
+        val intro = engine.newGame()
+        val pos = requireNotNull(intro.puzzle).solution.first()
+
+        // Im Intro laufen weder Uhr noch Eingaben.
+        assertEquals(intro, engine.onInput(intro, GameInput.TapCell(pos)))
+        assertEquals(intro, engine.tick(intro, 1_000L))
+
+        val started = engine.onInput(intro, GameInput.Begin)
+        assertEquals(GameStatus.Running, started.status)
+        assertEquals(GameState.durationForLevel(1), started.remainingMillis)
+    }
+
+    @Test
+    fun `Tippen schaltet leer zu Merkzeichen zu Fee zu leer`() {
         var state = startedGame()
         val pos = requireNotNull(state.puzzle).solution.first()
 
         state = engine.onInput(state, GameInput.TapCell(pos))
-        assertEquals(CellMark.Fairy, state.markAt(pos))
+        assertEquals(CellMark.Warded, state.markAt(pos))
 
         state = engine.onInput(state, GameInput.TapCell(pos))
-        assertEquals(CellMark.Warded, state.markAt(pos))
+        assertEquals(CellMark.Fairy, state.markAt(pos))
 
         state = engine.onInput(state, GameInput.TapCell(pos))
         assertEquals(CellMark.Empty, state.markAt(pos))
     }
 
     @Test
-    fun `eine kollidierende Fee zaehlt als Fehler und wird markiert`() {
+    fun `jedes Tippen meldet die Zone des Feldes`() {
+        val state = startedGame()
+        val pos = Pos(0, 0)
+        val expected = requireNotNull(state.puzzle).regionAt(pos)
+
+        val tapped = engine.onInput(state, GameInput.TapCell(pos))
+
+        assertEquals(StatusMessage.Zone(expected), tapped.statusMessage)
+    }
+
+    @Test
+    fun `eine kollidierende Fee kostet ein Leben und wird markiert`() {
         var state = startedGame()
         val puzzle = requireNotNull(state.puzzle)
         val first = puzzle.solution.first()
 
-        state = engine.onInput(state, GameInput.TapCell(first))
+        state = placeFairy(state, first)
         // Gleiche Zeile wie die erste Fee: garantierter Konflikt.
         val clashing = puzzle.allPositions.first { it.row == first.row && it != first }
-        state = engine.onInput(state, GameInput.TapCell(clashing))
+        state = placeFairy(state, clashing)
 
-        assertEquals(1, state.mistakes)
+        assertEquals(GameState.MAX_LIVES - 1, state.lives)
+        assertEquals(StatusMessage.MistakeMade, state.statusMessage)
         assertTrue(clashing in state.conflicts)
         assertTrue(first in state.conflicts)
     }
 
     @Test
-    fun `Wegnehmen einer Fee kostet keinen Fehler`() {
+    fun `Wegnehmen einer Fee kostet kein Leben`() {
         var state = startedGame()
         val puzzle = requireNotNull(state.puzzle)
         val first = puzzle.solution.first()
         val clashing = puzzle.allPositions.first { it.row == first.row && it != first }
 
-        state = engine.onInput(state, GameInput.TapCell(first))
-        state = engine.onInput(state, GameInput.TapCell(clashing))
-        val afterMistake = state.mistakes
+        state = placeFairy(state, first)
+        state = placeFairy(state, clashing)
+        val livesAfterMistake = state.lives
 
-        // Weiter durch den Zyklus: Fee → Merkzeichen → leer.
-        state = engine.onInput(state, GameInput.TapCell(clashing))
         state = engine.onInput(state, GameInput.TapCell(clashing))
 
-        assertEquals(afterMistake, state.mistakes)
+        assertEquals(livesAfterMistake, state.lives)
         assertTrue(state.conflicts.isEmpty())
     }
 
@@ -102,13 +125,24 @@ class FairydokuEngineTest {
 
         state = engine.onInput(state, GameInput.UsePowerUp(PowerUp.NatureShield))
         assertTrue(state.shieldActive)
+        assertEquals(StatusMessage.ShieldActivated, state.statusMessage)
 
-        state = engine.onInput(state, GameInput.TapCell(first))
+        state = placeFairy(state, first)
         val clashing = puzzle.allPositions.first { it.row == first.row && it != first }
-        state = engine.onInput(state, GameInput.TapCell(clashing))
+        state = placeFairy(state, clashing)
 
-        assertEquals("Der Schild hätte den Fehler abfangen müssen", 0, state.mistakes)
-        assertTrue("Der Schild ist verbraucht", !state.shieldActive)
+        assertEquals("Der Schild hätte den Fehler abfangen müssen", GameState.MAX_LIVES, state.lives)
+        assertFalse("Der Schild ist verbraucht", state.shieldActive)
+        assertEquals(StatusMessage.ShieldSaved, state.statusMessage)
+    }
+
+    @Test
+    fun `ein zweiter Schild wird nicht verschwendet`() {
+        val state = engine.onInput(startedGame(), GameInput.UsePowerUp(PowerUp.NatureShield))
+        val again = engine.onInput(state, GameInput.UsePowerUp(PowerUp.NatureShield))
+
+        assertEquals(state.powerUpCount(PowerUp.NatureShield), again.powerUpCount(PowerUp.NatureShield))
+        assertEquals(StatusMessage.ShieldAlreadyActive, again.statusMessage)
     }
 
     @Test
@@ -116,16 +150,16 @@ class FairydokuEngineTest {
         var state = startedGame()
         val puzzle = requireNotNull(state.puzzle)
         val anchor = puzzle.solution.first()
-        state = engine.onInput(state, GameInput.TapCell(anchor))
+        state = placeFairy(state, anchor)
 
-        // Drei weitere Feen in derselben Zeile — jede kollidiert beim Setzen.
         puzzle.allPositions
             .filter { it.row == anchor.row && it != anchor }
-            .take(GameState.MAX_MISTAKES)
-            .forEach { state = engine.onInput(state, GameInput.TapCell(it)) }
+            .take(GameState.MAX_LIVES)
+            .forEach { state = placeFairy(state, it) }
 
         assertEquals(GameStatus.GameOver, state.status)
-        assertEquals(0, state.mistakesLeft)
+        assertEquals(0, state.lives)
+        assertEquals(GameOverReason.TooManyConflicts, state.overReason)
     }
 
     @Test
@@ -136,31 +170,33 @@ class FairydokuEngineTest {
 
         assertEquals(0L, state.remainingMillis)
         assertEquals(GameStatus.GameOver, state.status)
+        assertEquals(GameOverReason.TimeUp, state.overReason)
     }
 
     @Test
-    fun `die Zeiten-Bluete laesst die Uhr halb so schnell laufen`() {
+    fun `die Zeiten-Bluete haelt die Uhr an`() {
         var state = startedGame()
         val before = state.remainingMillis
 
         state = engine.onInput(state, GameInput.UsePowerUp(PowerUp.TimeBlossom))
-        assertTrue(state.slowMotionActive)
+        assertTrue(state.timeFrozen)
+        assertEquals(StatusMessage.TimeFrozen, state.statusMessage)
 
-        state = engine.tick(state, 1_000L)
+        state = engine.tick(state, 5_000L)
 
-        assertEquals("Nur die halbe Sekunde darf vergehen", before - 500L, state.remainingMillis)
+        assertEquals("Während der Blüte darf keine Zeit vergehen", before, state.remainingMillis)
     }
 
     @Test
-    fun `die Zeiten-Bluete verblueht nach ihrer Dauer`() {
+    fun `nach der Zeiten-Bluete laeuft die Uhr weiter`() {
         var state = engine.onInput(startedGame(), GameInput.UsePowerUp(PowerUp.TimeBlossom))
 
-        state = engine.tick(state, GameState.SLOW_MOTION_DURATION_MILLIS)
-        assertTrue(!state.slowMotionActive)
+        state = engine.tick(state, GameState.FREEZE_DURATION_MILLIS)
+        assertFalse(state.timeFrozen)
 
         val before = state.remainingMillis
         state = engine.tick(state, 1_000L)
-        assertEquals("Danach läuft die Uhr wieder normal", before - 1_000L, state.remainingMillis)
+        assertEquals(before - 1_000L, state.remainingMillis)
     }
 
     @Test
@@ -170,43 +206,54 @@ class FairydokuEngineTest {
 
         state = engine.onInput(state, GameInput.UsePowerUp(PowerUp.FairyDust))
 
-        assertEquals(1, state.revealed.size)
-        assertTrue("Der Hinweis muss zur Lösung gehören", state.revealed.all { it in puzzle.solution })
-        assertEquals(CellMark.Fairy, state.markAt(state.revealed.first()))
-        assertTrue(state.conflicts.isEmpty())
-    }
-
-    @Test
-    fun `aufgedeckte Felder lassen sich nicht wegtippen`() {
-        var state = engine.onInput(startedGame(), GameInput.UsePowerUp(PowerUp.FairyDust))
-        val revealed = state.revealed.first()
-
-        state = engine.onInput(state, GameInput.TapCell(revealed))
-
+        val revealed = requireNotNull(state.hintCell)
+        assertTrue("Der Hinweis muss zur Lösung gehören", revealed in puzzle.solution)
         assertEquals(CellMark.Fairy, state.markAt(revealed))
+        assertTrue(state.conflicts.isEmpty())
+        assertEquals(StatusMessage.FairyDustUsed, state.statusMessage)
     }
 
     @Test
-    fun `eine Faehigkeit ohne Vorrat bewirkt nichts`() {
+    fun `das Nachleuchten des Hinweises verglueht`() {
+        var state = engine.onInput(startedGame(), GameInput.UsePowerUp(PowerUp.FairyDust))
+        assertNotNull(state.hintCell)
+
+        state = engine.tick(state, GameState.HINT_PULSE_MILLIS)
+
+        assertEquals(null, state.hintCell)
+    }
+
+    @Test
+    fun `eine Faehigkeit ohne Vorrat meldet sich, ohne zu wirken`() {
         var state = startedGame()
         repeat(state.powerUpCount(PowerUp.FairyDust)) {
             state = engine.onInput(state, GameInput.UsePowerUp(PowerUp.FairyDust))
         }
-        val exhausted = state
+        val marksBefore = state.marks
 
         state = engine.onInput(state, GameInput.UsePowerUp(PowerUp.FairyDust))
 
-        assertEquals(exhausted, state)
         assertEquals(0, state.powerUpCount(PowerUp.FairyDust))
+        assertEquals(marksBefore, state.marks)
+        assertEquals(StatusMessage.Exhausted(PowerUp.FairyDust), state.statusMessage)
     }
 
     @Test
-    fun `das geloeste Raetsel schliesst das Level ab und gibt Punkte`() {
+    fun `das geloeste Raetsel schliesst das Level ab`() {
         val state = solve(startedGame())
 
         assertEquals(GameStatus.LevelComplete, state.status)
-        assertTrue("Es müssen Punkte anfallen", state.score > 0)
-        assertEquals(0, state.remainingFairies)
+        assertEquals(state.boardSize, state.placedFairies)
+    }
+
+    @Test
+    fun `die Punkte folgen der Formel aus dem Design`() {
+        val state = solve(startedGame())
+
+        // 100 Punkte je Gitterfeld plus 5 je verbleibender Sekunde.
+        val expected = 100 * state.boardSize + state.remainingSeconds * 5
+        assertEquals(expected, state.gained)
+        assertEquals(expected, state.score)
     }
 
     @Test
@@ -220,6 +267,27 @@ class FairydokuEngineTest {
         assertTrue("Das Brett muss leer sein", next.marks.isEmpty())
         assertNotEquals(solved.puzzle, next.puzzle)
         assertEquals(GameState.durationForLevel(2), next.remainingMillis)
+        assertEquals(solved.lives, next.lives)
+    }
+
+    @Test
+    fun `nach jedem Level gibt es Nachschub`() {
+        val solved = solve(startedGame())
+        val next = engine.onInput(solved, GameInput.NextLevel)
+
+        assertEquals(
+            solved.powerUpCount(PowerUp.FairyDust) + 1,
+            next.powerUpCount(PowerUp.FairyDust),
+        )
+        assertEquals(
+            solved.powerUpCount(PowerUp.TimeBlossom) + 1,
+            next.powerUpCount(PowerUp.TimeBlossom),
+        )
+        // Der Schild kommt nur nach jedem zweiten Level dazu; Level 1 ist ungerade.
+        assertEquals(
+            solved.powerUpCount(PowerUp.NatureShield),
+            next.powerUpCount(PowerUp.NatureShield),
+        )
     }
 
     @Test
@@ -227,8 +295,24 @@ class FairydokuEngineTest {
         assertEquals(4, GameState.sizeForLevel(1))
         assertEquals(4, GameState.sizeForLevel(2))
         assertEquals(5, GameState.sizeForLevel(3))
-        assertEquals(9, GameState.sizeForLevel(11))
-        assertEquals("Größer als 9x9 wird es nicht", 9, GameState.sizeForLevel(50))
+        assertEquals(6, GameState.sizeForLevel(5))
+        assertEquals("Größer als 8x8 wird es nicht", 8, GameState.sizeForLevel(50))
+    }
+
+    @Test
+    fun `die Feen-Art wechselt mit jedem Level`() {
+        assertEquals(FairySpecies.Blossom, GameState.speciesForLevel(1))
+        assertEquals(FairySpecies.Water, GameState.speciesForLevel(2))
+        assertEquals(FairySpecies.Fire, GameState.speciesForLevel(3))
+        assertEquals(FairySpecies.Star, GameState.speciesForLevel(4))
+        assertEquals("Nach vier Arten beginnt die Reihe von vorn", FairySpecies.Blossom, GameState.speciesForLevel(5))
+    }
+
+    @Test
+    fun `die Zeit waechst mit der Gittergroesse`() {
+        // 60 Sekunden Grundzeit plus 15 je Gitterfeld.
+        assertEquals((60 + 4 * 15) * 1000L, GameState.durationForLevel(1))
+        assertEquals((60 + 5 * 15) * 1000L, GameState.durationForLevel(3))
     }
 
     @Test
@@ -246,17 +330,5 @@ class FairydokuEngineTest {
         val running = startedGame()
 
         assertEquals(running, engine.onInput(running, GameInput.NextLevel))
-    }
-
-    @Test
-    fun `aufgedeckte Felder bringen keine Punkte`() {
-        val withHint = engine.onInput(startedGame(), GameInput.UsePowerUp(PowerUp.FairyDust))
-        val solvedWithHint = solve(withHint)
-        val solvedAlone = solve(startedGame())
-
-        assertTrue(
-            "Mit Hinweis darf es nicht mehr Punkte geben als ohne",
-            solvedWithHint.score < solvedAlone.score,
-        )
     }
 }

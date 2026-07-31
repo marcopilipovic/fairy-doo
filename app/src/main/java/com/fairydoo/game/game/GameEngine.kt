@@ -7,20 +7,17 @@ import com.fairydoo.game.game.model.PuzzleGenerator
 import kotlin.random.Random
 
 /**
- * Die Spielregeln — die einzige Stelle, die weiß, *was* Fairy Doo ist.
+ * Die Spielregeln — die einzige Stelle, die weiß, *was* Fairydoku ist.
  *
  * Reine Funktionen ohne Android-Abhängigkeiten: mit normalen JVM-Unit-Tests
  * prüfbar, und UI, ViewModel und Persistenz bleiben davon unberührt.
  */
 interface GameEngine {
 
-    /** Frischer Startzustand für eine neue Partie. */
+    /** Frischer Startzustand — beginnt im Willkommens-Overlay. */
     fun newGame(level: Int = 1): GameState
 
-    /**
-     * Zeitschritt. Wird nur aufgerufen, solange der Zustand
-     * [GameStatus.Running] ist.
-     */
+    /** Zeitschritt. Wirkt nur, solange der Zustand [GameStatus.Running] ist. */
     fun tick(state: GameState, deltaMillis: Long): GameState
 
     /** Verarbeitet eine Spielereingabe. */
@@ -29,119 +26,138 @@ interface GameEngine {
 
 /** Spielereingaben. Die UI übersetzt Gesten in diese Ereignisse. */
 sealed interface GameInput {
-    /** Tippen auf ein Feld — schaltet leer → Fee → Merkzeichen → leer. */
+    /** Tippen auf ein Feld — schaltet leer → Merkzeichen → Fee → leer. */
     data class TapCell(val pos: Pos) : GameInput
 
     /** Eine Magie-Fähigkeit einsetzen. */
     data class UsePowerUp(val powerUp: PowerUp) : GameInput
 
-    /** Nach gelöstem Rätsel weiter in den dichteren Wald. */
+    /** „Den Wald betreten" — beendet das Willkommens-Overlay. */
+    data object Begin : GameInput
+
+    /** „Tiefer in den Wald" — nach gelöstem Rätsel. */
     data object NextLevel : GameInput
 }
 
 /**
  * Fairydoku: Feen auf einem Zonen-Gitter platzieren.
  *
- * Endlos-Modus — der Wald wird mit jedem Level dichter (siehe
- * [GameState.sizeForLevel]). Vorbei ist es, wenn die Zeit abläuft oder
- * [GameState.MAX_MISTAKES] Fehler zusammenkommen.
+ * Endlos-Modus — der Wald wird mit jedem zweiten Level dichter, und die Feen-Art
+ * wechselt. Vorbei ist es, wenn die Zeit abläuft oder alle Leben verbraucht sind.
  */
 class FairydokuEngine(
     private val random: Random = Random.Default,
 ) : GameEngine {
 
-    override fun newGame(level: Int): GameState {
-        val duration = GameState.durationForLevel(level)
-        return GameState(
-            status = GameStatus.Running,
-            level = level,
-            puzzle = PuzzleGenerator.generate(GameState.sizeForLevel(level), random),
-            remainingMillis = duration,
-            roundDurationMillis = duration,
-        )
-    }
+    override fun newGame(level: Int): GameState = buildLevel(
+        previous = GameState(),
+        level = level,
+        status = GameStatus.Intro,
+    )
 
     override fun tick(state: GameState, deltaMillis: Long): GameState {
         if (state.status != GameStatus.Running) return state
 
-        // Die Zeiten-Blüte halbiert das Tempo der Uhr, solange sie blüht.
-        val effectiveDelta = if (state.slowMotionActive) deltaMillis / 2 else deltaMillis
-        val remaining = (state.remainingMillis - effectiveDelta).coerceAtLeast(0L)
+        // Das Nachleuchten eines Hinweises läuft unabhängig von der Spieluhr ab.
+        val pulse = (state.hintPulseMillis - deltaMillis).coerceAtLeast(0L)
+        val withPulse = state.copy(
+            hintPulseMillis = pulse,
+            hintCell = if (pulse == 0L) null else state.hintCell,
+        )
 
-        return state.copy(
+        // Die Zeiten-Blüte hält die Uhr an, statt sie nur zu bremsen.
+        if (withPulse.timeFrozen) {
+            return withPulse.copy(
+                freezeMillis = (withPulse.freezeMillis - deltaMillis).coerceAtLeast(0L),
+            )
+        }
+
+        val remaining = (withPulse.remainingMillis - deltaMillis).coerceAtLeast(0L)
+        return withPulse.copy(
             remainingMillis = remaining,
-            slowMotionMillis = (state.slowMotionMillis - deltaMillis).coerceAtLeast(0L),
-            status = if (remaining == 0L) GameStatus.GameOver else state.status,
+            status = if (remaining == 0L) GameStatus.GameOver else withPulse.status,
+            overReason = if (remaining == 0L) GameOverReason.TimeUp else withPulse.overReason,
         )
     }
 
     override fun onInput(state: GameState, input: GameInput): GameState = when (input) {
         is GameInput.TapCell -> onTapCell(state, input.pos)
         is GameInput.UsePowerUp -> onUsePowerUp(state, input.powerUp)
+        GameInput.Begin -> onBegin(state)
         GameInput.NextLevel -> onNextLevel(state)
     }
 
+    private fun onBegin(state: GameState): GameState =
+        if (state.status == GameStatus.Intro) {
+            state.copy(status = GameStatus.Running)
+        } else {
+            state
+        }
+
     /**
-     * Schaltet ein Feld weiter: leer → Fee → Merkzeichen → leer.
+     * Schaltet ein Feld weiter: leer → Merkzeichen → Fee → leer.
      *
-     * Das Merkzeichen ist reine Notizhilfe für den Spieler („hier sitzt sicher
-     * keine“) und wird von den Regeln nicht beachtet.
+     * Das Merkzeichen kommt vor der Fee, weil es der häufigere Zug ist: Beim
+     * Ausschließen von Feldern arbeitet man sich durch viele Merkzeichen, bevor
+     * eine Fee gesetzt wird.
      */
     private fun onTapCell(state: GameState, pos: Pos): GameState {
         val puzzle = state.puzzle ?: return state
         if (state.status != GameStatus.Running) return state
         if (!puzzle.contains(pos)) return state
-        // Aufgedeckte Felder sind gesetzt und lassen sich nicht wegtippen.
-        if (pos in state.revealed) return state
 
         val marks = state.marks.toMutableMap()
         val wasFairy = state.markAt(pos) == CellMark.Fairy
 
         when (state.markAt(pos)) {
-            CellMark.Empty -> marks[pos] = CellMark.Fairy
-            CellMark.Fairy -> marks[pos] = CellMark.Warded
-            CellMark.Warded -> marks.remove(pos)
+            CellMark.Empty -> marks[pos] = CellMark.Warded
+            CellMark.Warded -> marks[pos] = CellMark.Fairy
+            CellMark.Fairy -> marks.remove(pos)
         }
 
         val fairies = marks.filterValues { it == CellMark.Fairy }.keys
         val conflicts = FairydokuRules.conflicts(puzzle, fairies)
 
-        // Ein Fehler entsteht nur beim *Setzen* einer Fee, die sofort mit einer
-        // anderen kollidiert — Wegnehmen und Merkzeichen kosten nie etwas.
-        val causedMistake = !wasFairy && pos in conflicts
-
         var next = state.copy(
             marks = marks,
             conflicts = conflicts,
+            statusMessage = StatusMessage.Zone(puzzle.regionAt(pos)),
         )
 
+        // Ein Fehler entsteht nur beim *Setzen* einer Fee, die sofort mit einer
+        // anderen kollidiert — Wegnehmen und Merkzeichen kosten nie etwas.
+        val causedMistake = !wasFairy && pos in conflicts
         if (causedMistake) {
             next = if (next.shieldActive) {
-                // Der Natur-Schild fängt genau einen Fehler ab und verbraucht sich.
-                next.copy(shieldActive = false)
+                next.copy(shieldActive = false, statusMessage = StatusMessage.ShieldSaved)
             } else {
-                val mistakes = next.mistakes + 1
+                val lives = next.lives - 1
                 next.copy(
-                    mistakes = mistakes,
-                    status = if (mistakes >= GameState.MAX_MISTAKES) {
-                        GameStatus.GameOver
+                    lives = lives.coerceAtLeast(0),
+                    statusMessage = StatusMessage.MistakeMade,
+                    status = if (lives <= 0) GameStatus.GameOver else next.status,
+                    overReason = if (lives <= 0) {
+                        GameOverReason.TooManyConflicts
                     } else {
-                        next.status
+                        next.overReason
                     },
                 )
             }
         }
 
-        if (next.status == GameStatus.Running && FairydokuRules.isSolved(puzzle, fairies)) {
-            next = completeLevel(next)
-        }
-
-        return next
+        return checkWin(next)
     }
 
     private fun onUsePowerUp(state: GameState, powerUp: PowerUp): GameState {
         if (state.status != GameStatus.Running) return state
-        if (state.powerUpCount(powerUp) <= 0) return state
+
+        // Der Schild leuchtet schon — nicht noch einen verbrauchen.
+        if (powerUp == PowerUp.NatureShield && state.shieldActive) {
+            return state.copy(statusMessage = StatusMessage.ShieldAlreadyActive)
+        }
+        if (state.powerUpCount(powerUp) <= 0) {
+            return state.copy(statusMessage = StatusMessage.Exhausted(powerUp))
+        }
 
         val used = state.copy(
             powerUps = state.powerUps + (powerUp to state.powerUpCount(powerUp) - 1),
@@ -149,95 +165,104 @@ class FairydokuEngine(
 
         return when (powerUp) {
             PowerUp.FairyDust -> revealSafeCell(used)
-            PowerUp.NatureShield -> used.copy(shieldActive = true)
+            PowerUp.NatureShield -> used.copy(
+                shieldActive = true,
+                statusMessage = StatusMessage.ShieldActivated,
+            )
             PowerUp.TimeBlossom -> used.copy(
-                slowMotionMillis = GameState.SLOW_MOTION_DURATION_MILLIS,
+                freezeMillis = GameState.FREEZE_DURATION_MILLIS,
+                statusMessage = StatusMessage.TimeFrozen,
             )
         }
     }
 
-    /**
-     * Der Feenstaub setzt eine Fee auf ein Lösungsfeld, das noch frei ist.
-     *
-     * Er räumt dabei falsch gesetzte Feen weg, die dem Hinweis im Weg stehen —
-     * sonst stünde der Spieler nach dem Hinweis vor einem Brett, das die Regeln
-     * verletzt, ohne zu wissen, warum.
-     */
+    /** Der Feenstaub setzt eine Fee auf ein Lösungsfeld, das noch frei ist. */
     private fun revealSafeCell(state: GameState): GameState {
         val puzzle = state.puzzle ?: return state
 
         val target = puzzle.solution
-            .filter { it !in state.fairies }
+            .filter { state.markAt(it) != CellMark.Fairy }
             .minByOrNull { it.row * puzzle.size + it.col }
             ?: return state
 
         val marks = state.marks.toMutableMap()
-        marks.keys
-            .filter { marks[it] == CellMark.Fairy && it !in puzzle.solution }
-            .filter { FairydokuRules.touches(it, target) || it.row == target.row || it.col == target.col }
-            .forEach { marks.remove(it) }
         marks[target] = CellMark.Fairy
 
         val fairies = marks.filterValues { it == CellMark.Fairy }.keys
-        var next = state.copy(
-            marks = marks,
-            revealed = state.revealed + target,
-            conflicts = FairydokuRules.conflicts(puzzle, fairies),
+        return checkWin(
+            state.copy(
+                marks = marks,
+                conflicts = FairydokuRules.conflicts(puzzle, fairies),
+                hintCell = target,
+                hintPulseMillis = GameState.HINT_PULSE_MILLIS,
+                statusMessage = StatusMessage.FairyDustUsed,
+            ),
         )
-
-        if (FairydokuRules.isSolved(puzzle, fairies)) next = completeLevel(next)
-        return next
     }
 
-    /** Rätsel gelöst: Punkte gutschreiben und auf „weiter“ warten. */
-    private fun completeLevel(state: GameState): GameState {
-        val size = state.puzzle?.size ?: 0
-        // Selbst gesetzte Feen zählen; aufgedeckte nicht, sonst würde der
-        // Feenstaub Punkte schenken.
-        val earned = (size - state.revealed.size).coerceAtLeast(0) * POINTS_PER_FAIRY * state.level
-        val timeBonus = state.remainingSeconds * POINTS_PER_SECOND
-        val levelBonus = LEVEL_BONUS * state.level
+    /** Alle Feen gesetzt und keine im Konflikt: Level geschafft. */
+    private fun checkWin(state: GameState): GameState {
+        val puzzle = state.puzzle ?: return state
+        if (state.status != GameStatus.Running) return state
+        if (!FairydokuRules.isSolved(puzzle, state.fairies)) return state
 
+        val gained = POINTS_PER_CELL * puzzle.size + state.remainingSeconds * POINTS_PER_SECOND
         return state.copy(
             status = GameStatus.LevelComplete,
-            score = state.score + earned + timeBonus + levelBonus,
+            gained = gained,
+            score = state.score + gained,
         )
     }
 
     /**
-     * Nächstes Level: frisches Rätsel, frische Uhr. Punktestand, Fehler und
-     * Vorräte wandern mit — der Endlos-Modus ist ein Lauf, keine Serie
+     * Nächstes Level: frisches Rätsel, frische Uhr, neue Feen-Art. Punktestand
+     * und Leben wandern mit — der Endlos-Modus ist ein Lauf, keine Serie
      * unabhängiger Runden.
      */
     private fun onNextLevel(state: GameState): GameState {
         if (state.status != GameStatus.LevelComplete) return state
+        return buildLevel(state, state.level + 1, GameStatus.Running)
+    }
 
-        val level = state.level + 1
+    /** Baut ein Level auf; [previous] liefert Punktestand, Leben und Vorräte. */
+    private fun buildLevel(previous: GameState, level: Int, status: GameStatus): GameState {
         val duration = GameState.durationForLevel(level)
+        val isFirst = level <= 1
 
-        return state.copy(
-            status = GameStatus.Running,
+        return GameState(
+            status = status,
             level = level,
+            score = if (isFirst) 0 else previous.score,
+            gained = 0,
             puzzle = PuzzleGenerator.generate(GameState.sizeForLevel(level), random),
-            marks = emptyMap(),
-            conflicts = emptySet(),
-            revealed = emptySet(),
+            lives = if (isFirst) GameState.MAX_LIVES else previous.lives,
+            powerUps = if (isFirst) {
+                GameState.STARTING_POWER_UPS
+            } else {
+                restock(previous.powerUps, previous.level)
+            },
             remainingMillis = duration,
             roundDurationMillis = duration,
-            slowMotionMillis = 0L,
-            powerUps = restock(state.powerUps, level),
+            statusMessage = StatusMessage.Hint,
         )
     }
 
-    /** Nachschub: pro Level eine Fähigkeit auffüllen, der Reihe nach. */
-    private fun restock(powerUps: Map<PowerUp, Int>, level: Int): Map<PowerUp, Int> {
-        val reward = PowerUp.entries[level % PowerUp.entries.size]
-        return powerUps + (reward to (powerUps[reward] ?: 0) + 1)
+    /**
+     * Nachschub nach jedem Level: Feenstaub und Zeiten-Blüte immer, der
+     * Natur-Schild nur jedes zweite Level — er ist die stärkste Fähigkeit.
+     */
+    private fun restock(powerUps: Map<PowerUp, Int>, completedLevel: Int): Map<PowerUp, Int> {
+        fun countOf(powerUp: PowerUp) = powerUps[powerUp] ?: 0
+        return mapOf(
+            PowerUp.FairyDust to countOf(PowerUp.FairyDust) + 1,
+            PowerUp.TimeBlossom to countOf(PowerUp.TimeBlossom) + 1,
+            PowerUp.NatureShield to countOf(PowerUp.NatureShield) +
+                if (completedLevel % 2 == 0) 1 else 0,
+        )
     }
 
     private companion object {
-        const val POINTS_PER_FAIRY = 50
+        const val POINTS_PER_CELL = 100
         const val POINTS_PER_SECOND = 5
-        const val LEVEL_BONUS = 200
     }
 }

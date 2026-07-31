@@ -35,7 +35,7 @@ class GameViewModel(
     val state: StateFlow<GameState> = _state.asStateFlow()
 
     /** True, solange ein Rätsel erzeugt wird — die UI zeigt so lange einen Ladezustand. */
-    private val _isPreparing = MutableStateFlow(false)
+    private val _isPreparing = MutableStateFlow(true)
     val isPreparing: StateFlow<Boolean> = _isPreparing.asStateFlow()
 
     val profile: StateFlow<PlayerProfile> = preferences.profile.stateIn(
@@ -46,7 +46,8 @@ class GameViewModel(
 
     private var loopJob: Job? = null
 
-    fun startNewGame(level: Int = 1) {
+    /** Erstes Level samt Willkommens-Overlay. */
+    fun startNewGame() {
         loopJob?.cancel()
         loopJob = null
 
@@ -54,7 +55,22 @@ class GameViewModel(
             _isPreparing.value = true
             // Das Erzeugen eines eindeutigen Rätsels kostet spürbar Rechenzeit
             // und gehört deshalb nicht auf den Main-Thread.
-            val fresh = withContext(Dispatchers.Default) { engine.newGame(level) }
+            val fresh = withContext(Dispatchers.Default) { engine.newGame() }
+            _isPreparing.value = false
+            applyState(fresh)
+        }
+    }
+
+    /** „Neuer Versuch" nach dem Spielende — ohne das Willkommens-Overlay. */
+    fun restart() {
+        loopJob?.cancel()
+        loopJob = null
+
+        viewModelScope.launch {
+            _isPreparing.value = true
+            val fresh = withContext(Dispatchers.Default) {
+                engine.onInput(engine.newGame(), GameInput.Begin)
+            }
             _isPreparing.value = false
             applyState(fresh)
             startLoop()
@@ -63,7 +79,7 @@ class GameViewModel(
 
     fun onInput(input: GameInput) {
         when (input) {
-            // Auch der Levelwechsel erzeugt ein neues Rätsel — siehe oben.
+            // Der Levelwechsel erzeugt ein neues Rätsel — siehe oben.
             GameInput.NextLevel -> viewModelScope.launch {
                 _isPreparing.value = true
                 val next = withContext(Dispatchers.Default) {
@@ -72,6 +88,11 @@ class GameViewModel(
                 _isPreparing.value = false
                 applyState(next)
                 if (next.status == GameStatus.Running) startLoop()
+            }
+
+            GameInput.Begin -> {
+                applyState(engine.onInput(_state.value, input))
+                if (_state.value.status == GameStatus.Running) startLoop()
             }
 
             else -> applyState(engine.onInput(_state.value, input))
@@ -91,13 +112,6 @@ class GameViewModel(
         startLoop()
     }
 
-    /** Bricht den Lauf ab und kehrt in den Ausgangszustand zurück. */
-    fun abandon() {
-        loopJob?.cancel()
-        loopJob = null
-        _state.value = GameState()
-    }
-
     private fun startLoop() {
         loopJob?.cancel()
         loopJob = viewModelScope.launch { runLoop() }
@@ -106,7 +120,7 @@ class GameViewModel(
     /**
      * Übernimmt einen neuen Zustand und schreibt das Ergebnis genau einmal
      * fort — beim Übergang in [GameStatus.GameOver]. Zentral hier statt an den
-     * einzelnen Auslösern (Zeit abgelaufen, zu viele Fehler), damit kein Weg
+     * einzelnen Auslösern (Zeit abgelaufen, Leben verbraucht), damit kein Weg
      * das Speichern überspringt oder doppelt auslöst.
      */
     private fun applyState(next: GameState) {

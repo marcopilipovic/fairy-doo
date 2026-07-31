@@ -3,56 +3,70 @@ package com.fairydoo.game.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * ── DESIGN-ANSCHLUSS ──────────────────────────────────────────────────────────
- * Alle Farben des Spiels stehen hier. Wenn das finale Design kommt, werden nur
- * diese Werte ersetzt — kein anderer Code muss angefasst werden.
- * Aktuell: Platzhalter-Palette (dunkel, märchenhaft).
+ * Die Design-Tokens aus dem Handoff „Fairydoku – Feen-Logikpuzzle".
+ *
+ * Alle Farben des Spiels stehen hier; wird eine geändert, zieht die ganze
+ * Oberfläche nach. Die Werte sind bewusst 1:1 aus der Vorlage übernommen.
  */
 
-// Marken-/Akzentfarben
-val FairyPink = Color(0xFFFFB9F2)
-val FairyPinkDark = Color(0xFFC77BB8)
-val FairyCyan = Color(0xFF8FE3FF)
-val FairyCyanDark = Color(0xFF4FA8C9)
-val FairyGold = Color(0xFFFFD98F)
+// Grundflächen — tiefblau-violetter Nachtwald
+val NightBase = Color(0xFF0A0E21)
+val NightTop = Color(0xFF0D1330)
+val NightMiddle = Color(0xFF141A3E)
+val NightBottom = Color(0xFF1B1440)
+val NightHalo = Color(0xFF1C2650)
 
-// Flächen (Dark)
-val NightDeep = Color(0xFF0D0A18)
-val NightBase = Color(0xFF141024)
-val NightSurface = Color(0xFF1E1834)
-val NightSurfaceHigh = Color(0xFF2A2247)
+// Der rosa und blaue Schimmer am unteren Bildrand
+val GlowPink = Color(0x2EFF6BB4)
+val GlowBlue = Color(0x295BC8FF)
 
-// Flächen (Light)
-val DayBase = Color(0xFFFDF7FF)
-val DaySurface = Color(0xFFFFFFFF)
-val DaySurfaceHigh = Color(0xFFF2E9FA)
+// Panels und Karten
+val PanelTop = Color(0xFF2A2F5E)
+val PanelBottom = Color(0xFF1C2148)
+val CardTop = Color(0xFF232A5C)
+val CardBottom = Color(0xFF171C42)
 
 // Text
-val TextOnDark = Color(0xFFF4EEFF)
-val TextOnDarkMuted = Color(0xFFB4A9CC)
-val TextOnLight = Color(0xFF1F1A2E)
-val TextOnLightMuted = Color(0xFF5D5473)
+val TextPrimary = Color(0xFFEAE6FF)
+val TextOnGold = Color(0xFF3A2604)
+val StatusPurple = Color(0xFFC9C2FF)
 
-// Status
-val SuccessGreen = Color(0xFF7BE0A5)
-val WarningAmber = Color(0xFFFFC46B)
-val ErrorRed = Color(0xFFFF8A8A)
+// Gold — das Leitmotiv
+val GoldLight = Color(0xFFFFE9A8)
+val Gold = Color(0xFFFFD76B)
+val GoldDark = Color(0xFFE9A53F)
+val GoldPale = Color(0xFFFFF3C8)
+
+// Weitere Akzente
+val LeafGreen = Color(0xFF7DFF9E)
+val BlossomPink = Color(0xFFFF9ECF)
+val DangerPink = Color(0xFFFF8095)
+val DangerRose = Color(0xFFFF9AAC)
+val ConflictRed = Color(0xCCFF3C5A)
+val FireflyYellow = Color(0xFFFFE9A8)
+
+// Moosige Steinfelder — zwei Varianten im Schachbrettwechsel
+val MossLightA = Color(0xFF4A5D3F)
+val MossDarkA = Color(0xFF35452E)
+val MossLightB = Color(0xFF55684A)
+val MossDarkB = Color(0xFF3B4C33)
 
 /**
- * Farben der Waldzonen — Mondlicht-Lichtung, Pilzkreis, Flussbett und so fort.
+ * Farben der Waldzonen, in der Reihenfolge der Vorlage.
  *
- * Neun Stück, weil das Gitter auf 9×9 wächst und jede Zone unterscheidbar
- * bleiben muss. Bewusst in Farbton *und* Helligkeit gestreut, damit sie sich
- * auch bei Farbsehschwäche auseinanderhalten lassen.
+ * Acht Stück, weil das Gitter auf 8×8 wächst und jede Zone unterscheidbar
+ * bleiben muss.
  */
 val RegionColors: List<Color> = listOf(
-    Color(0xFFE87BA8), // Rosenblüte
-    Color(0xFF6FC5E8), // Flussbett
-    Color(0xFF8BD86F), // Moos
-    Color(0xFFF2C14E), // Mondlicht
-    Color(0xFFB08BE8), // Dämmerung
-    Color(0xFFE89A6F), // Pilzkreis
-    Color(0xFF5FD3B6), // Farnschatten
-    Color(0xFFE8E27B), // Glühwürmchen
-    Color(0xFF9AA8E8), // Nebelhain
+    Color(0xFFFF6B8A),
+    Color(0xFF5BC8FF),
+    Color(0xFF7DFF9E),
+    Color(0xFFFFD76B),
+    Color(0xFFC58BFF),
+    Color(0xFFFF9A5B),
+    Color(0xFF6BFFF2),
+    Color(0xFFFF9ECF),
 )
+
+/** Zellgrenzen innerhalb derselben Zone. */
+val FaintBorder = Color(0x1AFFFFFF)

@@ -1,26 +1,32 @@
 package com.fairydoo.game.ui.screens
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -28,12 +34,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -46,34 +55,57 @@ import com.fairydoo.game.game.GameStatus
 import com.fairydoo.game.game.GameViewModel
 import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.model.Pos
-import com.fairydoo.game.game.model.PuzzleGenerator
+import com.fairydoo.game.ui.GameCopy
 import com.fairydoo.game.ui.components.FairydokuBoard
+import com.fairydoo.game.ui.components.FireflyLayer
+import com.fairydoo.game.ui.components.GameOverOverlay
+import com.fairydoo.game.ui.components.IntroOverlay
+import com.fairydoo.game.ui.components.LevelUpOverlay
 import com.fairydoo.game.ui.components.PowerUpBar
-import com.fairydoo.game.ui.theme.ErrorRed
-import com.fairydoo.game.ui.theme.FairyDooTheme
-import kotlin.random.Random
+import com.fairydoo.game.ui.theme.BlossomPink
+import com.fairydoo.game.ui.theme.DangerPink
+import com.fairydoo.game.ui.theme.GlowBlue
+import com.fairydoo.game.ui.theme.GlowPink
+import com.fairydoo.game.ui.theme.Gold
+import com.fairydoo.game.ui.theme.GoldDark
+import com.fairydoo.game.ui.theme.GoldLight
+import com.fairydoo.game.ui.theme.GoldPale
+import com.fairydoo.game.ui.theme.LeafGreen
+import com.fairydoo.game.ui.theme.NightBottom
+import com.fairydoo.game.ui.theme.NightHalo
+import com.fairydoo.game.ui.theme.NightMiddle
+import com.fairydoo.game.ui.theme.NightTop
+import com.fairydoo.game.ui.theme.PanelBottom
+import com.fairydoo.game.ui.theme.PanelTop
+import com.fairydoo.game.ui.theme.StatusPurple
+import com.fairydoo.game.ui.theme.TextPrimary
+
+/** Breitengrenze des Spielbretts, entspricht den 352 px der Vorlage. */
+private val BOARD_MAX_WIDTH = 352.dp
 
 @Composable
-fun GameScreen(
-    preferences: GamePreferencesRepository,
-    onExit: () -> Unit,
-) {
+fun GameScreen(preferences: GamePreferencesRepository) {
     val viewModel: GameViewModel = viewModel(
         factory = remember(preferences) { GameViewModel.factory(preferences) },
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
     val isPreparing by viewModel.isPreparing.collectAsStateWithLifecycle()
+    val profile by viewModel.profile.collectAsStateWithLifecycle()
 
-    // Partie beim Betreten starten — nur einmal, nicht bei jedem Recompose.
+    // Erstes Rätsel erzeugen — nur einmal, nicht bei jedem Recompose.
     LaunchedEffect(Unit) {
-        if (state.status == GameStatus.Idle) viewModel.startNewGame()
+        if (state.puzzle == null) viewModel.startNewGame()
     }
 
     // Wandert die App in den Hintergrund, wird pausiert statt weitergespielt.
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP) viewModel.pause()
+            when (event) {
+                Lifecycle.Event.ON_STOP -> viewModel.pause()
+                Lifecycle.Event.ON_START -> viewModel.resume()
+                else -> Unit
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -82,16 +114,12 @@ fun GameScreen(
     GameContent(
         state = state,
         isPreparing = isPreparing,
+        bestScore = profile.highScore,
         onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
         onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
+        onBegin = { viewModel.onInput(GameInput.Begin) },
         onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
-        onPause = viewModel::pause,
-        onResume = viewModel::resume,
-        onRestart = { viewModel.startNewGame() },
-        onExit = {
-            viewModel.abandon()
-            onExit()
-        },
+        onRestart = viewModel::restart,
     )
 }
 
@@ -99,80 +127,131 @@ fun GameScreen(
 private fun GameContent(
     state: GameState,
     isPreparing: Boolean,
+    bestScore: Int,
     onTapCell: (Pos) -> Unit,
     onUsePowerUp: (PowerUp) -> Unit,
+    onBegin: () -> Unit,
     onNextLevel: () -> Unit,
-    onPause: () -> Unit,
-    onResume: () -> Unit,
     onRestart: () -> Unit,
-    onExit: () -> Unit,
 ) {
-    val colors = MaterialTheme.colorScheme
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(colors.background, colors.surfaceVariant)))
-            .safeDrawingPadding(),
+            .drawBehind {
+                // Vier Schichten wie in der Vorlage: erst der Grundverlauf von
+                // oben nach unten, darüber der helle Halo am oberen Rand und
+                // die beiden farbigen Schimmer unten links und rechts.
+                drawRect(
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0f to NightTop,
+                            0.45f to NightMiddle,
+                            1f to NightBottom,
+                        ),
+                    ),
+                )
+                drawRect(
+                    Brush.radialGradient(
+                        colors = listOf(NightHalo, Color.Transparent),
+                        center = Offset(size.width * 0.5f, -size.height * 0.1f),
+                        radius = size.height * 0.7f,
+                    ),
+                )
+                drawRect(
+                    Brush.radialGradient(
+                        colors = listOf(GlowPink, Color.Transparent),
+                        center = Offset(size.width * 0.2f, size.height),
+                        radius = size.width * 0.8f,
+                    ),
+                )
+                drawRect(
+                    Brush.radialGradient(
+                        colors = listOf(GlowBlue, Color.Transparent),
+                        center = Offset(size.width * 0.85f, size.height * 0.95f),
+                        radius = size.width * 0.7f,
+                    ),
+                )
+            },
     ) {
+        FireflyLayer()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .safeDrawingPadding()
+                .padding(start = 18.dp, end = 18.dp, top = 20.dp, bottom = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
+            // Wie in der Vorlage ein kompakter Stapel mit 12 dp Abstand — auf
+            // hohen Displays mittig statt am oberen Rand klebend.
+            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         ) {
-            GameHud(state = state, onPause = onPause)
+            TitleRow()
 
-            Spacer(Modifier.height(12.dp))
+            ScoreRow(score = state.score, level = state.level)
 
             LevelProgress(state = state)
 
-            Spacer(Modifier.height(16.dp))
+            StatusRow(state = state)
 
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
                 if (isPreparing || state.puzzle == null) {
-                    CircularProgressIndicator(color = colors.primary)
+                    CircularProgressIndicator(color = Gold)
                 } else {
-                    FairydokuBoard(state = state, onTapCell = onTapCell)
+                    BoxWithConstraints(
+                        // Die Vorlage deckelt das Brett bei 352 px; auf breiteren
+                        // Displays soll es nicht mitwachsen, sonst werden die
+                        // Felder unhandlich groß.
+                        modifier = Modifier.widthIn(max = BOARD_MAX_WIDTH),
+                    ) {
+                        // Zellgröße abgerundet, damit das Gitter exakt aufgeht
+                        // und rechts kein halbes Feld übrig bleibt.
+                        val available = maxWidth - 8.dp
+                        val cell = (available.value / state.boardSize).toInt().dp
+
+                        FairydokuBoard(
+                            state = state,
+                            cellSize = cell,
+                            onTapCell = onTapCell,
+                        )
+                    }
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Text(
+                text = GameCopy.statusText(state.statusMessage),
+                style = MaterialTheme.typography.bodyMedium,
+                color = StatusPurple,
+                fontSize = 13.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 20.dp),
+            )
 
             PowerUpBar(state = state, onUse = onUsePowerUp)
         }
 
         when (state.status) {
-            GameStatus.Paused -> Overlay(
-                title = "Pause",
-                message = "Der Wald wartet.",
-                primaryLabel = "Weiter",
-                onPrimary = onResume,
-                secondaryLabel = "Beenden",
-                onSecondary = onExit,
+            GameStatus.Intro -> IntroOverlay(bestScore = bestScore, onStart = onBegin)
+
+            GameStatus.LevelComplete -> LevelUpOverlay(
+                gained = state.gained,
+                teaser = GameCopy.nextLevelTeaser(
+                    nextSize = GameState.sizeForLevel(state.level + 1),
+                    nextSpecies = GameState.speciesForLevel(state.level + 1).displayName,
+                ),
+                onContinue = onNextLevel,
             )
 
-            GameStatus.LevelComplete -> Overlay(
-                title = "Level ${state.level} geschafft!",
-                message = "${state.score} Punkte — der Wald wird dichter.",
-                primaryLabel = "Weiter",
-                onPrimary = onNextLevel,
-                secondaryLabel = "Zum Menü",
-                onSecondary = onExit,
-            )
-
-            GameStatus.GameOver -> Overlay(
-                title = "Das Licht erlischt",
-                message = "Level ${state.level} · ${state.score} Punkte",
-                primaryLabel = "Neuer Versuch",
-                onPrimary = onRestart,
-                secondaryLabel = "Zum Menü",
-                onSecondary = onExit,
+            GameStatus.GameOver -> GameOverOverlay(
+                reason = GameCopy.gameOverReason(state.overReason),
+                score = state.score,
+                level = state.level,
+                bestScore = bestScore,
+                onRestart = onRestart,
             )
 
             else -> Unit
@@ -180,176 +259,178 @@ private fun GameContent(
     }
 }
 
+/** „Fairydoku" zwischen zwei schwebenden Feen. */
 @Composable
-private fun GameHud(state: GameState, onPause: () -> Unit) {
+private fun TitleRow() {
+    val transition = rememberInfiniteTransition(label = "floaty")
+
+    // Beide Feen schweben im selben Takt, die rechte um 1,2 s versetzt.
+    val leftOffset by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = -7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1700),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "floatLeft",
+    )
+    val rightOffset by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = -7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1700),
+            repeatMode = RepeatMode.Reverse,
+            initialStartOffset = StartOffset(1200),
+        ),
+        label = "floatRight",
+    )
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        HudStat(label = "Punkte", value = state.score.toString())
-        HudStat(label = "Level", value = state.level.toString())
-        HudStat(
-            label = if (state.slowMotionActive) "Zeit ❄" else "Zeit",
-            value = "${state.remainingSeconds}s",
-            // Unter zehn Sekunden wird die Uhr rot — der einzige Hinweis, dass
-            // es gleich vorbei ist.
-            emphasised = state.remainingSeconds <= 10,
+        Text(
+            text = "🧚‍♀️",
+            fontSize = 30.sp,
+            modifier = Modifier.graphicsLayer { translationY = leftOffset },
         )
-        HudStat(
-            label = "Fehler",
-            value = "${state.mistakesLeft}",
-            emphasised = state.mistakesLeft <= 1,
+        Text(
+            text = "Fairydoku",
+            // Gold-Verlauf im Text — in der Vorlage per background-clip,
+            // in Compose als Brush im TextStyle.
+            style = MaterialTheme.typography.displayLarge.copy(
+                brush = Brush.verticalGradient(
+                    colorStops = arrayOf(
+                        0f to GoldPale,
+                        0.55f to Gold,
+                        1f to GoldDark,
+                    ),
+                ),
+            ),
+            maxLines = 1,
         )
+        Text(
+            text = "🧚",
+            fontSize = 30.sp,
+            modifier = Modifier.graphicsLayer { translationY = rightOffset },
+        )
+    }
+}
 
-        TextButton(onClick = onPause, enabled = state.isActive) {
-            Text("Pause", style = MaterialTheme.typography.labelMedium)
-        }
+/** SCORE- und Level-Pille. */
+@Composable
+private fun ScoreRow(score: Int, level: Int) {
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Pill(
+            text = "SCORE: $score",
+            borderColor = Gold.copy(alpha = 0.5f),
+            fontSize = 15.sp,
+            horizontalPadding = 18.dp,
+        )
+        Pill(
+            text = "Level $level",
+            borderColor = LeafGreen.copy(alpha = 0.4f),
+            fontSize = 14.sp,
+            horizontalPadding = 14.dp,
+        )
     }
 }
 
 @Composable
-private fun HudStat(label: String, value: String, emphasised: Boolean = false) {
-    Column(horizontalAlignment = Alignment.Start) {
+private fun Pill(
+    text: String,
+    borderColor: Color,
+    fontSize: androidx.compose.ui.unit.TextUnit,
+    horizontalPadding: androidx.compose.ui.unit.Dp,
+) {
+    Box(
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
+            .border(1.dp, borderColor, CircleShape)
+            .padding(horizontal = horizontalPadding, vertical = 6.dp),
+    ) {
         Text(
-            text = label.uppercase(),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = value,
+            text = text,
             style = MaterialTheme.typography.titleLarge,
-            color = if (emphasised) ErrorRed else MaterialTheme.colorScheme.onBackground,
+            fontSize = fontSize,
+            color = TextPrimary,
         )
     }
 }
 
-/** Der „Level up“-Balken: wie viele Feen bereits richtig sitzen. */
+/** Goldbalken mit „3 / 5 Wasserfeen platziert". */
 @Composable
 private fun LevelProgress(state: GameState) {
     val progress by animateFloatAsState(
         targetValue = state.levelProgress,
+        animationSpec = tween(300),
         label = "levelProgress",
     )
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.width(250.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(
-            text = when (state.remainingFairies) {
-                0 -> "Alle Feen sitzen"
-                1 -> "Noch 1 Fee zu platzieren"
-                else -> "Noch ${state.remainingFairies} Feen zu platzieren"
-            },
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(6.dp))
-        LinearProgressIndicator(
-            progress = { progress },
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(6.dp),
-            color = MaterialTheme.colorScheme.tertiary,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        )
-    }
-}
-
-/** Modales Overlay für Pause, Levelabschluss und Spielende. */
-@Composable
-private fun Overlay(
-    title: String,
-    message: String?,
-    primaryLabel: String,
-    onPrimary: () -> Unit,
-    secondaryLabel: String,
-    onSecondary: () -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.72f))
-            // Fängt Taps ab, damit das Spielfeld darunter nicht reagiert.
-            .pointerInput(Unit) { detectTapGestures { } },
-        contentAlignment = Alignment.Center,
-    ) {
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.padding(32.dp),
+                .height(10.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(alpha = 0.4f))
+                .border(1.dp, Color.White.copy(alpha = 0.12f), CircleShape),
         ) {
-            Column(
-                modifier = Modifier.padding(28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center,
-                )
-
-                if (message != null) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-
-                Spacer(Modifier.height(24.dp))
-
-                Button(onClick = onPrimary, modifier = Modifier.fillMaxWidth()) {
-                    Text(primaryLabel, style = MaterialTheme.typography.labelLarge)
-                }
-
-                TextButton(onClick = onSecondary, modifier = Modifier.fillMaxWidth()) {
-                    Text(secondaryLabel, style = MaterialTheme.typography.labelLarge)
-                }
-            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(progress)
+                    .height(10.dp)
+                    .clip(CircleShape)
+                    .background(Brush.horizontalGradient(listOf(Gold, GoldLight))),
+            )
         }
-    }
-}
 
-/** Fester Seed, damit die Vorschau immer dasselbe Brett zeigt. */
-private fun previewState(status: GameStatus = GameStatus.Running): GameState {
-    val puzzle = PuzzleGenerator.generate(size = 5, random = Random(7))
-    return GameState(
-        status = status,
-        level = 3,
-        score = 4500,
-        puzzle = puzzle,
-        remainingMillis = 42_000,
-        roundDurationMillis = 85_000,
-    )
-}
-
-@Preview(showBackground = true, heightDp = 900)
-@Composable
-private fun GameRunningPreview() {
-    FairyDooTheme {
-        GameContent(
-            state = previewState(),
-            isPreparing = false,
-            onTapCell = {}, onUsePowerUp = {}, onNextLevel = {},
-            onPause = {}, onResume = {}, onRestart = {}, onExit = {},
+        Text(
+            text = "${state.placedFairies} / ${state.boardSize} " +
+                "${state.species.displayName} platziert",
+            style = MaterialTheme.typography.labelSmall,
+            color = TextPrimary.copy(alpha = 0.75f),
         )
     }
 }
 
-@Preview(showBackground = true, heightDp = 900)
+/** Leben, Uhr und Schild-Hinweis. */
 @Composable
-private fun GameOverPreview() {
-    FairyDooTheme {
-        GameContent(
-            state = previewState(GameStatus.GameOver),
-            isPreparing = false,
-            onTapCell = {}, onUsePowerUp = {}, onNextLevel = {},
-            onPause = {}, onResume = {}, onRestart = {}, onExit = {},
+private fun StatusRow(state: GameState) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "🍃".repeat(state.lives) +
+                "🥀".repeat((GameState.MAX_LIVES - state.lives).coerceAtLeast(0)),
+            fontSize = 15.sp,
         )
+
+        Text(
+            text = (if (state.timeFrozen) "🌸 " else "⏳ ") +
+                GameCopy.formatTime(state.remainingSeconds),
+            style = MaterialTheme.typography.titleLarge,
+            fontSize = 15.sp,
+            color = when {
+                state.timeFrozen -> BlossomPink
+                state.remainingSeconds < 20 -> DangerPink
+                else -> TextPrimary
+            },
+        )
+
+        if (state.shieldActive) {
+            Text(
+                text = "🍃 Schild aktiv",
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 13.sp,
+                color = LeafGreen,
+            )
+        }
     }
 }
