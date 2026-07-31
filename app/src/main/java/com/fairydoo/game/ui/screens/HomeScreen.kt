@@ -68,7 +68,7 @@ private fun HomeContent(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = "Fairy Doo",
+                text = "Fairydoku",
                 style = MaterialTheme.typography.displayLarge,
                 color = colors.primary,
                 textAlign = TextAlign.Center,
@@ -77,13 +77,15 @@ private fun HomeContent(
             Spacer(Modifier.height(12.dp))
 
             Text(
-                text = "Platzhalter-Startbildschirm — wird durch das finale Design ersetzt.",
+                text = "Setze in jede Zeile, jede Spalte und jede Waldzone genau " +
+                    "eine Fee — ohne dass zwei sich berühren, sonst stören sich " +
+                    "ihre Zauberkräfte.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
 
-            Spacer(Modifier.height(48.dp))
+            Spacer(Modifier.height(40.dp))
 
             StatRow(label = "Bestleistung", value = profile.highScore.toString())
             Spacer(Modifier.height(8.dp))

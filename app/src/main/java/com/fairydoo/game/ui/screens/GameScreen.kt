@@ -1,5 +1,6 @@
 package com.fairydoo.game.ui.screens
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,7 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
@@ -41,8 +44,14 @@ import com.fairydoo.game.game.GameInput
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GameStatus
 import com.fairydoo.game.game.GameViewModel
-import com.fairydoo.game.ui.components.GameBoard
+import com.fairydoo.game.game.PowerUp
+import com.fairydoo.game.game.model.Pos
+import com.fairydoo.game.game.model.PuzzleGenerator
+import com.fairydoo.game.ui.components.FairydokuBoard
+import com.fairydoo.game.ui.components.PowerUpBar
+import com.fairydoo.game.ui.theme.ErrorRed
 import com.fairydoo.game.ui.theme.FairyDooTheme
+import kotlin.random.Random
 
 @Composable
 fun GameScreen(
@@ -53,6 +62,7 @@ fun GameScreen(
         factory = remember(preferences) { GameViewModel.factory(preferences) },
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val isPreparing by viewModel.isPreparing.collectAsStateWithLifecycle()
 
     // Partie beim Betreten starten — nur einmal, nicht bei jedem Recompose.
     LaunchedEffect(Unit) {
@@ -71,7 +81,10 @@ fun GameScreen(
 
     GameContent(
         state = state,
-        onTap = { x, y -> viewModel.onInput(GameInput.Tap(x, y)) },
+        isPreparing = isPreparing,
+        onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
+        onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
+        onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
         onPause = viewModel::pause,
         onResume = viewModel::resume,
         onRestart = { viewModel.startNewGame() },
@@ -85,7 +98,10 @@ fun GameScreen(
 @Composable
 private fun GameContent(
     state: GameState,
-    onTap: (Float, Float) -> Unit,
+    isPreparing: Boolean,
+    onTapCell: (Pos) -> Unit,
+    onUsePowerUp: (PowerUp) -> Unit,
+    onNextLevel: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onRestart: () -> Unit,
@@ -96,49 +112,64 @@ private fun GameContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
+            .background(Brush.verticalGradient(listOf(colors.background, colors.surfaceVariant)))
             .safeDrawingPadding(),
     ) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             GameHud(state = state, onPause = onPause)
+
+            Spacer(Modifier.height(12.dp))
+
+            LevelProgress(state = state)
 
             Spacer(Modifier.height(16.dp))
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(colors.surface)
-                    .pointerInput(state.isActive) {
-                        if (!state.isActive) return@pointerInput
-                        detectTapGestures { offset ->
-                            onTap(
-                                offset.x / size.width.toFloat(),
-                                offset.y / size.height.toFloat(),
-                            )
-                        }
-                    },
+                    .weight(1f),
+                contentAlignment = Alignment.Center,
             ) {
-                GameBoard(state = state, modifier = Modifier.fillMaxSize())
+                if (isPreparing || state.puzzle == null) {
+                    CircularProgressIndicator(color = colors.primary)
+                } else {
+                    FairydokuBoard(state = state, onTapCell = onTapCell)
+                }
             }
+
+            Spacer(Modifier.height(16.dp))
+
+            PowerUpBar(state = state, onUse = onUsePowerUp)
         }
 
         when (state.status) {
             GameStatus.Paused -> Overlay(
                 title = "Pause",
-                message = null,
+                message = "Der Wald wartet.",
                 primaryLabel = "Weiter",
                 onPrimary = onResume,
                 secondaryLabel = "Beenden",
                 onSecondary = onExit,
             )
 
-            GameStatus.Finished -> Overlay(
-                title = "Runde vorbei",
-                message = "${state.score} Punkte in ${state.moves} Zügen",
-                primaryLabel = "Nochmal",
+            GameStatus.LevelComplete -> Overlay(
+                title = "Level ${state.level} geschafft!",
+                message = "${state.score} Punkte — der Wald wird dichter.",
+                primaryLabel = "Weiter",
+                onPrimary = onNextLevel,
+                secondaryLabel = "Zum Menü",
+                onSecondary = onExit,
+            )
+
+            GameStatus.GameOver -> Overlay(
+                title = "Das Licht erlischt",
+                message = "Level ${state.level} · ${state.score} Punkte",
+                primaryLabel = "Neuer Versuch",
                 onPrimary = onRestart,
                 secondaryLabel = "Zum Menü",
                 onSecondary = onExit,
@@ -157,8 +188,19 @@ private fun GameHud(state: GameState, onPause: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         HudStat(label = "Punkte", value = state.score.toString())
-        HudStat(label = "Zeit", value = "${state.remainingSeconds}s")
         HudStat(label = "Level", value = state.level.toString())
+        HudStat(
+            label = if (state.slowMotionActive) "Zeit ❄" else "Zeit",
+            value = "${state.remainingSeconds}s",
+            // Unter zehn Sekunden wird die Uhr rot — der einzige Hinweis, dass
+            // es gleich vorbei ist.
+            emphasised = state.remainingSeconds <= 10,
+        )
+        HudStat(
+            label = "Fehler",
+            value = "${state.mistakesLeft}",
+            emphasised = state.mistakesLeft <= 1,
+        )
 
         TextButton(onClick = onPause, enabled = state.isActive) {
             Text("Pause", style = MaterialTheme.typography.labelMedium)
@@ -167,7 +209,7 @@ private fun GameHud(state: GameState, onPause: () -> Unit) {
 }
 
 @Composable
-private fun HudStat(label: String, value: String) {
+private fun HudStat(label: String, value: String, emphasised: Boolean = false) {
     Column(horizontalAlignment = Alignment.Start) {
         Text(
             text = label.uppercase(),
@@ -177,12 +219,45 @@ private fun HudStat(label: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = if (emphasised) ErrorRed else MaterialTheme.colorScheme.onBackground,
         )
     }
 }
 
-/** Modales Overlay für Pause und Rundenende. */
+/** Der „Level up“-Balken: wie viele Feen bereits richtig sitzen. */
+@Composable
+private fun LevelProgress(state: GameState) {
+    val progress by animateFloatAsState(
+        targetValue = state.levelProgress,
+        label = "levelProgress",
+    )
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = when (state.remainingFairies) {
+                0 -> "Alle Feen sitzen"
+                1 -> "Noch 1 Fee zu platzieren"
+                else -> "Noch ${state.remainingFairies} Feen zu platzieren"
+            },
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(6.dp))
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp),
+            color = MaterialTheme.colorScheme.tertiary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
+    }
+}
+
+/** Modales Overlay für Pause, Levelabschluss und Spielende. */
 @Composable
 private fun Overlay(
     title: String,
@@ -240,24 +315,41 @@ private fun Overlay(
     }
 }
 
-@Preview(showBackground = true)
+/** Fester Seed, damit die Vorschau immer dasselbe Brett zeigt. */
+private fun previewState(status: GameStatus = GameStatus.Running): GameState {
+    val puzzle = PuzzleGenerator.generate(size = 5, random = Random(7))
+    return GameState(
+        status = status,
+        level = 3,
+        score = 4500,
+        puzzle = puzzle,
+        remainingMillis = 42_000,
+        roundDurationMillis = 85_000,
+    )
+}
+
+@Preview(showBackground = true, heightDp = 900)
 @Composable
 private fun GameRunningPreview() {
     FairyDooTheme {
         GameContent(
-            state = GameState(status = GameStatus.Running, score = 320, moves = 32, remainingMillis = 24_000),
-            onTap = { _, _ -> }, onPause = {}, onResume = {}, onRestart = {}, onExit = {},
+            state = previewState(),
+            isPreparing = false,
+            onTapCell = {}, onUsePowerUp = {}, onNextLevel = {},
+            onPause = {}, onResume = {}, onRestart = {}, onExit = {},
         )
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, heightDp = 900)
 @Composable
-private fun GameFinishedPreview() {
+private fun GameOverPreview() {
     FairyDooTheme {
         GameContent(
-            state = GameState(status = GameStatus.Finished, score = 780, moves = 78, remainingMillis = 0),
-            onTap = { _, _ -> }, onPause = {}, onResume = {}, onRestart = {}, onExit = {},
+            state = previewState(GameStatus.GameOver),
+            isPreparing = false,
+            onTapCell = {}, onUsePowerUp = {}, onNextLevel = {},
+            onPause = {}, onResume = {}, onRestart = {}, onExit = {},
         )
     }
 }

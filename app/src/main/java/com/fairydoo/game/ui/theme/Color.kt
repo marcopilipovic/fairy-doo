@@ -37,3 +37,22 @@ val TextOnLightMuted = Color(0xFF5D5473)
 val SuccessGreen = Color(0xFF7BE0A5)
 val WarningAmber = Color(0xFFFFC46B)
 val ErrorRed = Color(0xFFFF8A8A)
+
+/**
+ * Farben der Waldzonen — Mondlicht-Lichtung, Pilzkreis, Flussbett und so fort.
+ *
+ * Neun Stück, weil das Gitter auf 9×9 wächst und jede Zone unterscheidbar
+ * bleiben muss. Bewusst in Farbton *und* Helligkeit gestreut, damit sie sich
+ * auch bei Farbsehschwäche auseinanderhalten lassen.
+ */
+val RegionColors: List<Color> = listOf(
+    Color(0xFFE87BA8), // Rosenblüte
+    Color(0xFF6FC5E8), // Flussbett
+    Color(0xFF8BD86F), // Moos
+    Color(0xFFF2C14E), // Mondlicht
+    Color(0xFFB08BE8), // Dämmerung
+    Color(0xFFE89A6F), // Pilzkreis
+    Color(0xFF5FD3B6), // Farnschatten
+    Color(0xFFE8E27B), // Glühwürmchen
+    Color(0xFF9AA8E8), // Nebelhain
+)

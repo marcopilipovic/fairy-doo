@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.fairydoo.game.data.GamePreferencesRepository
 import com.fairydoo.game.data.PlayerProfile
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Hält den Spielzustand und treibt die Spieluhr.
@@ -25,12 +27,16 @@ import kotlinx.coroutines.launch
  * Partie nicht abbricht.
  */
 class GameViewModel(
-    private val engine: GameEngine = PlaceholderEngine(),
+    private val engine: GameEngine = FairydokuEngine(),
     private val preferences: GamePreferencesRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GameState())
     val state: StateFlow<GameState> = _state.asStateFlow()
+
+    /** True, solange ein Rätsel erzeugt wird — die UI zeigt so lange einen Ladezustand. */
+    private val _isPreparing = MutableStateFlow(false)
+    val isPreparing: StateFlow<Boolean> = _isPreparing.asStateFlow()
 
     val profile: StateFlow<PlayerProfile> = preferences.profile.stateIn(
         scope = viewModelScope,
@@ -42,32 +48,74 @@ class GameViewModel(
 
     fun startNewGame(level: Int = 1) {
         loopJob?.cancel()
-        _state.value = engine.newGame(level)
-        loopJob = viewModelScope.launch { runLoop() }
+        loopJob = null
+
+        viewModelScope.launch {
+            _isPreparing.value = true
+            // Das Erzeugen eines eindeutigen Rätsels kostet spürbar Rechenzeit
+            // und gehört deshalb nicht auf den Main-Thread.
+            val fresh = withContext(Dispatchers.Default) { engine.newGame(level) }
+            _isPreparing.value = false
+            applyState(fresh)
+            startLoop()
+        }
     }
 
     fun onInput(input: GameInput) {
-        _state.value = engine.onInput(_state.value, input)
+        when (input) {
+            // Auch der Levelwechsel erzeugt ein neues Rätsel — siehe oben.
+            GameInput.NextLevel -> viewModelScope.launch {
+                _isPreparing.value = true
+                val next = withContext(Dispatchers.Default) {
+                    engine.onInput(_state.value, input)
+                }
+                _isPreparing.value = false
+                applyState(next)
+                if (next.status == GameStatus.Running) startLoop()
+            }
+
+            else -> applyState(engine.onInput(_state.value, input))
+        }
     }
 
     fun pause() {
         if (_state.value.status != GameStatus.Running) return
         loopJob?.cancel()
         loopJob = null
-        _state.value = _state.value.copy(status = GameStatus.Paused)
+        applyState(_state.value.copy(status = GameStatus.Paused))
     }
 
     fun resume() {
         if (_state.value.status != GameStatus.Paused) return
-        _state.value = _state.value.copy(status = GameStatus.Running)
-        loopJob = viewModelScope.launch { runLoop() }
+        applyState(_state.value.copy(status = GameStatus.Running))
+        startLoop()
     }
 
-    /** Bricht die laufende Partie ab, ohne sie als gespielt zu werten. */
+    /** Bricht den Lauf ab und kehrt in den Ausgangszustand zurück. */
     fun abandon() {
         loopJob?.cancel()
         loopJob = null
         _state.value = GameState()
+    }
+
+    private fun startLoop() {
+        loopJob?.cancel()
+        loopJob = viewModelScope.launch { runLoop() }
+    }
+
+    /**
+     * Übernimmt einen neuen Zustand und schreibt das Ergebnis genau einmal
+     * fort — beim Übergang in [GameStatus.GameOver]. Zentral hier statt an den
+     * einzelnen Auslösern (Zeit abgelaufen, zu viele Fehler), damit kein Weg
+     * das Speichern überspringt oder doppelt auslöst.
+     */
+    private fun applyState(next: GameState) {
+        val previous = _state.value
+        _state.value = next
+
+        if (previous.status != GameStatus.GameOver && next.status == GameStatus.GameOver) {
+            viewModelScope.launch { preferences.recordFinishedGame(next.score) }
+        }
     }
 
     /**
@@ -92,11 +140,7 @@ class GameViewModel(
 
             while (accumulator >= TICK_MILLIS && _state.value.status == GameStatus.Running) {
                 accumulator -= TICK_MILLIS
-                _state.value = engine.tick(_state.value, TICK_MILLIS)
-            }
-
-            if (_state.value.status == GameStatus.Finished) {
-                preferences.recordFinishedGame(_state.value.score)
+                applyState(engine.tick(_state.value, TICK_MILLIS))
             }
         }
         loopJob = null
