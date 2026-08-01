@@ -136,7 +136,7 @@ Für das ✕ gilt dasselbe Prinzip: Es hat einen dunklen Umriss, damit es auf
 allen zehn Flächen gleich schwer wiegt.
 
 **Statt gezeichneter Motive kann ein Gebiet eine gemalte Kachel tragen.** Eine
-nahtlose Kachel deckt drei Felder je Kante ab; jedes Feld zeichnet daraus seinen
+nahtlose Kachel deckt vier Felder je Kante ab; jedes Feld zeichnet daraus seinen
 Ausschnitt, sodass ein durchgehendes Bild entsteht statt eines Rasters
 (`ZoneImageCache`, `drawZoneTile`). Beides steht nebeneinander: Ein Gebiet ohne
 Bild behält sein Motiv. So lassen sich die Kacheln nach und nach einbauen, und

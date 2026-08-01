@@ -2,6 +2,7 @@ package com.fairydoo.game.ui.theme
 
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
+import com.fairydoo.game.R
 
 /**
  * Das Motiv, das über der Fläche einer Zone liegt.
@@ -99,6 +100,7 @@ val ZoneStyles: List<ZoneStyle> = listOf(
         ink = Color(0x66D9B46A),
         texture = ZoneTexture.StarsAndFerns,
         name = "Goldene Lichtung",
+        image = R.drawable.zone_goldene_lichtung,
     ),
     ZoneStyle(
         fill = Color(0xFFF6C445),

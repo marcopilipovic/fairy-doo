@@ -26,11 +26,18 @@ object ZoneImageCache {
      * Wie viele Felder eine Kachel je Kante abdeckt.
      *
      * Läge in jedem Feld dieselbe Kachel, entstünde ein sichtbares Raster —
-     * genau der Kacheleffekt, den die Fläche vermeiden soll. Über drei Felder
+     * genau der Kacheleffekt, den die Fläche vermeiden soll. Über vier Felder
      * gestreckt wiederholt sich das Bild selten genug, dass es niemandem
      * auffällt, und bleibt scharf genug, dass die Beschaffenheit erkennbar ist.
+     *
+     * **Der Wert muss die geladene Kachelbreite glatt teilen.** Bei 1024 Bildpunkten
+     * und [SAMPLE_SIZE] von zwei sind das 512, und 512 geteilt durch vier ergibt
+     * genau 128. Ginge die Teilung nicht auf, fehlten am Ende jeder Kachel ein
+     * paar Bildpunkte, und an jeder vierten Feldgrenze liefe eine feine Kante
+     * durchs Bild — der einzige Ort, an dem eine nahtlose Kachel doch eine Naht
+     * bekäme.
      */
-    const val TILE_CELLS = 3
+    const val TILE_CELLS = 4
 
     private const val SAMPLE_SIZE = 2
 

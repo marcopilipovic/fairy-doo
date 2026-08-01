@@ -34,11 +34,11 @@ STRICT REQUIREMENTS:
   nothing centred. Every part of the image should look equally interesting.
 - Medium contrast. Game pieces are drawn on top of this texture and must stay
   readable.
-- Square, 1024 x 1024 pixels.
+- Square, exactly 1024 x 1024 pixels.
 - No text, no letters, no numbers, no frame, no border, no watermark.
 ```
 
-**Warum das so streng ist:** Eine Kachel deckt drei Spielfelder je Kante ab und
+**Warum das so streng ist:** Eine Kachel deckt vier Spielfelder je Kante ab und
 wiederholt sich danach. Ein heller Fleck in der Bildmitte wird dadurch zu einem
 regelmäßigen Punktraster über das ganze Gebiet — auch wenn er im Einzelbild
 hübsch aussah. Dasselbe gilt für jeden Schatten, der aus einer Richtung fällt.
@@ -201,6 +201,13 @@ umgekehrt keine Datei verwaist.
 `drawable-nodpi` heißt: Android skaliert das Bild nicht je nach Gerätedichte
 vor. Genau das ist hier nötig — sonst würde aus einer nahtlosen Kachel eine mit
 weichen Rändern.
+
+**Die 1024 Bildpunkte sind keine Empfehlung, sondern eine Bedingung.** Die App
+lädt die Kachel halbiert auf 512 und teilt sie auf vier Felder je Kante auf —
+das geht nur glatt auf, wenn die Kantenlänge durch acht teilbar ist. Bei einer
+krummen Größe fehlten am Kachelende ein paar Bildpunkte, und an jeder vierten
+Feldgrenze liefe eine feine Kante durchs Bild: der einzige Ort, an dem eine
+nahtlose Kachel doch eine Naht bekäme. 1024, 2048 oder 512 sind sicher.
 
 ---
 
