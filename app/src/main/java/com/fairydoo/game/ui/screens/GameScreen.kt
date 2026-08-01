@@ -34,7 +34,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,7 +47,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -54,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fairydoo.game.audio.FairyAudio
 import com.fairydoo.game.data.GamePreferencesRepository
+import com.fairydoo.game.data.PlayerProfile
 import com.fairydoo.game.game.GameInput
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GameStatus
@@ -61,13 +68,14 @@ import com.fairydoo.game.game.GameViewModel
 import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.model.Pos
 import com.fairydoo.game.ui.GameCopy
-import com.fairydoo.game.ui.components.AudioToggles
 import com.fairydoo.game.ui.components.FairydokuBoard
 import com.fairydoo.game.ui.components.FireflyLayer
 import com.fairydoo.game.ui.components.GameOverOverlay
 import com.fairydoo.game.ui.components.IntroOverlay
 import com.fairydoo.game.ui.components.LevelUpOverlay
 import com.fairydoo.game.ui.components.PowerUpBar
+import com.fairydoo.game.ui.components.SoundMenuButton
+import com.fairydoo.game.ui.components.SoundSettingsOverlay
 import com.fairydoo.game.ui.theme.BlossomPink
 import com.fairydoo.game.ui.theme.DangerPink
 import com.fairydoo.game.ui.theme.GlowBlue
@@ -160,11 +168,11 @@ fun GameScreen(preferences: GamePreferencesRepository) {
         onDispose { audio.release() }
     }
 
-    // Einstellungen durchreichen, sobald sie sich ändern.
-    LaunchedEffect(profile.musicEnabled, profile.soundEnabled, profile.voiceEnabled) {
-        audio.setMusicEnabled(profile.musicEnabled)
-        audio.setSoundEnabled(profile.soundEnabled)
-        audio.setVoiceEnabled(profile.voiceEnabled)
+    // Lautstärken durchreichen, sobald sie sich ändern.
+    LaunchedEffect(profile.musicVolume, profile.soundVolume, profile.voiceVolume) {
+        audio.setMusicVolume(profile.musicVolume)
+        audio.setSoundVolume(profile.soundVolume)
+        audio.setVoiceVolume(profile.voiceVolume)
     }
 
     // Spielgeschehen hörbar machen. Level und Punktestand gehen mit, damit die
@@ -197,6 +205,10 @@ fun GameScreen(preferences: GamePreferencesRepository) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    // Beim Öffnen der Klang-Einstellungen pausiert die Uhr: Wer die Lautstärke
+    // sucht, soll dafür keine Zeit verlieren.
+    var showSoundSettings by rememberSaveable { mutableStateOf(false) }
+
     if (showLevelSelect) {
         LevelSelectScreen(
             highestLevelUnlocked = profile.highestLevelUnlocked,
@@ -212,17 +224,24 @@ fun GameScreen(preferences: GamePreferencesRepository) {
             state = state,
             isPreparing = isPreparing,
             bestScore = profile.highScore,
-            musicEnabled = profile.musicEnabled,
-            soundEnabled = profile.soundEnabled,
-            voiceEnabled = profile.voiceEnabled,
+            profile = profile,
+            showSoundSettings = showSoundSettings,
             onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
             onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
             onBegin = { viewModel.onInput(GameInput.Begin) },
             onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
             onOpenLevelSelect = viewModel::openLevelSelect,
-            onMusicChange = viewModel::setMusicEnabled,
-            onSoundChange = viewModel::setSoundEnabled,
-            onVoiceChange = viewModel::setVoiceEnabled,
+            onOpenSoundSettings = {
+                viewModel.pause()
+                showSoundSettings = true
+            },
+            onCloseSoundSettings = {
+                showSoundSettings = false
+                viewModel.resume()
+            },
+            onMusicChange = viewModel::setMusicVolume,
+            onSoundChange = viewModel::setSoundVolume,
+            onVoiceChange = viewModel::setVoiceVolume,
         )
     }
 }
@@ -232,17 +251,18 @@ private fun GameContent(
     state: GameState,
     isPreparing: Boolean,
     bestScore: Int,
-    musicEnabled: Boolean,
-    soundEnabled: Boolean,
-    voiceEnabled: Boolean,
+    profile: PlayerProfile,
+    showSoundSettings: Boolean,
     onTapCell: (Pos) -> Unit,
     onUsePowerUp: (PowerUp) -> Unit,
     onBegin: () -> Unit,
     onNextLevel: () -> Unit,
     onOpenLevelSelect: () -> Unit,
-    onMusicChange: (Boolean) -> Unit,
-    onSoundChange: (Boolean) -> Unit,
-    onVoiceChange: (Boolean) -> Unit,
+    onOpenSoundSettings: () -> Unit,
+    onCloseSoundSettings: () -> Unit,
+    onMusicChange: (Float) -> Unit,
+    onSoundChange: (Float) -> Unit,
+    onVoiceChange: (Float) -> Unit,
 ) {
     NightBackdrop {
         Column(
@@ -290,27 +310,14 @@ private fun GameContent(
                 }
             }
 
-            Text(
-                text = GameCopy.statusText(state.statusMessage),
-                style = MaterialTheme.typography.bodyMedium,
-                color = StatusPurple,
-                fontSize = 13.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 20.dp),
-            )
+            StatusMessageLine(text = GameCopy.statusText(state.statusMessage))
 
             PowerUpBar(state = state, onUse = onUsePowerUp)
         }
 
-        AudioToggles(
-            musicEnabled = musicEnabled,
-            soundEnabled = soundEnabled,
-            voiceEnabled = voiceEnabled,
-            onMusicChange = onMusicChange,
-            onSoundChange = onSoundChange,
-            onVoiceChange = onVoiceChange,
+        SoundMenuButton(
+            anythingAudible = profile.musicEnabled || profile.soundEnabled || profile.voiceEnabled,
+            onClick = onOpenSoundSettings,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .safeDrawingPadding()
@@ -351,6 +358,60 @@ private fun GameContent(
 
             else -> Unit
         }
+
+        // Zuletzt und damit zuoberst: Die Einstellungen sollen auch über einem
+        // Pausen- oder Ergebnis-Overlay erreichbar bleiben.
+        if (showSoundSettings) {
+            SoundSettingsOverlay(
+                musicVolume = profile.musicVolume,
+                soundVolume = profile.soundVolume,
+                voiceVolume = profile.voiceVolume,
+                onMusicChange = onMusicChange,
+                onSoundChange = onSoundChange,
+                onVoiceChange = onVoiceChange,
+                onClose = onCloseSoundSettings,
+            )
+        }
+    }
+}
+
+/**
+ * Die Rückmeldung unter dem Brett.
+ *
+ * Der Platz ist fest für zwei Zeilen reserviert, auch wenn nur eine gebraucht
+ * wird. Die Meldungen sind unterschiedlich lang — der Zonenname mit ihrer
+ * Bewohnerin braucht zwei Zeilen, ein kurzer Hinweis eine —, und ohne feste
+ * Höhe verschöbe jeder Wechsel das ganze Spielfeld nach oben oder unten.
+ * Beim Tippen auf ein Feld wäre das fatal: Man zielt auf ein Feld und trifft
+ * ein anderes, weil das Brett zwischen Fingerbewegung und Berührung gesprungen
+ * ist.
+ *
+ * Die Höhe leitet sich aus der Zeilenhöhe der Schrift ab statt aus einem festen
+ * dp-Wert, damit sie bei vergrößerter Systemschrift mitwächst.
+ */
+@Composable
+private fun StatusMessageLine(text: String) {
+    val style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
+    val lineHeight = if (style.lineHeight.isSpecified) style.lineHeight else style.fontSize * 1.4f
+    // Der Zuschlag ist nicht Kosmetik: Ohne ihn ist die Fläche um Haaresbreite
+    // zu klein für die zweite Zeile, und der Text wird stattdessen mitten im
+    // Satz abgeschnitten — sichtbar erst bei vergrößerter Systemschrift.
+    val height = with(LocalDensity.current) { (lineHeight * 2).toDp() + 6.dp }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = style,
+            color = StatusPurple,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -18,18 +19,32 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 data class PlayerProfile(
     val highScore: Int = 0,
     val gamesPlayed: Int = 0,
-    /** Kichern, Aufschrei, Jubel und die übrigen Klänge. */
-    val soundEnabled: Boolean = true,
-    /** Der Ambient-Teppich im Hintergrund. */
-    val musicEnabled: Boolean = true,
-    /** Die lobende Feenstimme nach einem gelösten Rätsel. */
-    val voiceEnabled: Boolean = true,
+    /** Der Ambient-Teppich im Hintergrund, 0f..1f. */
+    val musicVolume: Float = DEFAULT_MUSIC_VOLUME,
+    /** Kichern, Aufschrei, Jubel und die übrigen Klänge, 0f..1f. */
+    val soundVolume: Float = DEFAULT_SOUND_VOLUME,
+    /** Die lobende Feenstimme nach einem gelösten Rätsel, 0f..1f. */
+    val voiceVolume: Float = DEFAULT_VOICE_VOLUME,
     /** Höchstes je erreichtes Level + 1 — der Fortschritt im Levelraster. */
     val highestLevelUnlocked: Int = 1,
     /** Roher Stand des App-weiten Lebenspools, siehe [GlobalLives]. */
     val globalLives: Int = GlobalLives.MAX,
     val nextGlobalLifeAtMillis: Long = 0L,
-)
+) {
+    val musicEnabled: Boolean get() = musicVolume > 0f
+    val soundEnabled: Boolean get() = soundVolume > 0f
+    val voiceEnabled: Boolean get() = voiceVolume > 0f
+
+    companion object {
+        /**
+         * Die Musik liegt bewusst unter den Klängen: Sie läuft ununterbrochen,
+         * die Effekte sollen sich darüber behaupten.
+         */
+        const val DEFAULT_MUSIC_VOLUME = 0.7f
+        const val DEFAULT_SOUND_VOLUME = 0.9f
+        const val DEFAULT_VOICE_VOLUME = 1.0f
+    }
+}
 
 /**
  * Einziger Zugriffspunkt auf gespeicherte Daten. DataStore statt SharedPreferences,
@@ -43,13 +58,35 @@ class GamePreferencesRepository(context: Context) {
         PlayerProfile(
             highScore = prefs[KeyHighScore] ?: 0,
             gamesPlayed = prefs[KeyGamesPlayed] ?: 0,
-            soundEnabled = prefs[KeySound] ?: true,
-            musicEnabled = prefs[KeyMusic] ?: true,
-            voiceEnabled = prefs[KeyVoice] ?: true,
+            musicVolume = prefs.volume(
+                KeyMusicVolume, KeyMusicOn, PlayerProfile.DEFAULT_MUSIC_VOLUME,
+            ),
+            soundVolume = prefs.volume(
+                KeySoundVolume, KeySoundOn, PlayerProfile.DEFAULT_SOUND_VOLUME,
+            ),
+            voiceVolume = prefs.volume(
+                KeyVoiceVolume, KeyVoiceOn, PlayerProfile.DEFAULT_VOICE_VOLUME,
+            ),
             highestLevelUnlocked = prefs[KeyHighestLevel] ?: 1,
             globalLives = prefs[KeyGlobalLives] ?: GlobalLives.MAX,
             nextGlobalLifeAtMillis = prefs[KeyNextGlobalLifeAt] ?: 0L,
         )
+    }
+
+    /**
+     * Liest eine Lautstärke und übernimmt dabei die frühere Ein/Aus-Einstellung.
+     *
+     * Vor den Reglern gab es nur Schalter. Wer den Ton damals abgeschaltet
+     * hatte, soll ihn nach dem Update nicht plötzlich wieder hören — ein „aus"
+     * wird deshalb zu Lautstärke null.
+     */
+    private fun Preferences.volume(
+        volumeKey: Preferences.Key<Float>,
+        legacySwitchKey: Preferences.Key<Boolean>,
+        default: Float,
+    ): Float {
+        this[volumeKey]?.let { return it.coerceIn(0f, 1f) }
+        return if (this[legacySwitchKey] == false) 0f else default
     }
 
     /** Speichert das Ergebnis einer Partie. Der Highscore wird nur erhöht, nie gesenkt. */
@@ -84,16 +121,16 @@ class GamePreferencesRepository(context: Context) {
         }
     }
 
-    suspend fun setSoundEnabled(enabled: Boolean) {
-        store.edit { it[KeySound] = enabled }
+    suspend fun setMusicVolume(volume: Float) {
+        store.edit { it[KeyMusicVolume] = volume.coerceIn(0f, 1f) }
     }
 
-    suspend fun setMusicEnabled(enabled: Boolean) {
-        store.edit { it[KeyMusic] = enabled }
+    suspend fun setSoundVolume(volume: Float) {
+        store.edit { it[KeySoundVolume] = volume.coerceIn(0f, 1f) }
     }
 
-    suspend fun setVoiceEnabled(enabled: Boolean) {
-        store.edit { it[KeyVoice] = enabled }
+    suspend fun setVoiceVolume(volume: Float) {
+        store.edit { it[KeyVoiceVolume] = volume.coerceIn(0f, 1f) }
     }
 
     /** Setzt Fortschritt und Einstellungen zurück. */
@@ -104,9 +141,15 @@ class GamePreferencesRepository(context: Context) {
     private companion object {
         val KeyHighScore = intPreferencesKey("high_score")
         val KeyGamesPlayed = intPreferencesKey("games_played")
-        val KeySound = booleanPreferencesKey("sound_enabled")
-        val KeyMusic = booleanPreferencesKey("music_enabled")
-        val KeyVoice = booleanPreferencesKey("voice_enabled")
+        val KeyMusicVolume = floatPreferencesKey("music_volume")
+        val KeySoundVolume = floatPreferencesKey("sound_volume")
+        val KeyVoiceVolume = floatPreferencesKey("voice_volume")
+
+        // Die Schalter von früher — nur noch zum Übernehmen der alten Wahl.
+        val KeyMusicOn = booleanPreferencesKey("music_enabled")
+        val KeySoundOn = booleanPreferencesKey("sound_enabled")
+        val KeyVoiceOn = booleanPreferencesKey("voice_enabled")
+
         val KeyHighestLevel = intPreferencesKey("highest_level_unlocked")
         val KeyGlobalLives = intPreferencesKey("global_lives")
         val KeyNextGlobalLifeAt = longPreferencesKey("next_global_life_at")

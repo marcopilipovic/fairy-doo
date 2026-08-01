@@ -30,8 +30,10 @@ object GameCopy {
 
     fun statusText(message: StatusMessage): String = when (message) {
         StatusMessage.Hint -> "Tippe ein Feld: leer → ✕ → 🧚"
+        // Knapp gehalten: Das ist die mit Abstand längste Meldung, und je
+        // kürzer sie ist, desto seltener bricht sie auf zwei Zeilen um.
         is StatusMessage.Zone ->
-            "Zone: ${zoneName(message.regionIndex)} · hier lebt ${fairyIntroduction(message.species)}"
+            "${zoneName(message.regionIndex)} · ${fairyIntroduction(message.species)}"
         StatusMessage.MistakeMade -> "⚡ Die Zauberkräfte stören sich! (−1 Leben)"
         StatusMessage.ShieldSaved -> "🍃 Der Natur-Schild hat dich beschützt!"
         StatusMessage.ShieldActivated -> "🍃 Natur-Schild aktiviert!"

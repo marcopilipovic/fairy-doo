@@ -144,16 +144,16 @@ class GameViewModel(
         }
     }
 
-    fun setSoundEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferences.setSoundEnabled(enabled) }
+    fun setMusicVolume(volume: Float) {
+        viewModelScope.launch { preferences.setMusicVolume(volume) }
     }
 
-    fun setMusicEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferences.setMusicEnabled(enabled) }
+    fun setSoundVolume(volume: Float) {
+        viewModelScope.launch { preferences.setSoundVolume(volume) }
     }
 
-    fun setVoiceEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferences.setVoiceEnabled(enabled) }
+    fun setVoiceVolume(volume: Float) {
+        viewModelScope.launch { preferences.setVoiceVolume(volume) }
     }
 
     fun pause() {

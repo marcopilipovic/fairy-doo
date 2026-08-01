@@ -1,6 +1,7 @@
 package com.fairydoo.game.audio
 
 import android.content.Context
+import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.OnInitListener
 import android.util.Log
@@ -45,11 +46,19 @@ class FairyVoice(context: Context) {
     }
 
     /** Lobt zum abgeschlossenen Level. */
-    fun praise(level: Int, score: Int, random: Random = Random.Default) {
+    fun praise(
+        level: Int,
+        score: Int,
+        volume: Float = 1f,
+        random: Random = Random.Default,
+    ) {
         if (!ready) return
 
         val phrase = praisePhrases(level, score).let { it[random.nextInt(it.size)] }
-        engine?.speak(phrase, TextToSpeech.QUEUE_FLUSH, null, "praise-$level")
+        val params = Bundle().apply {
+            putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume.coerceIn(0f, 1f))
+        }
+        engine?.speak(phrase, TextToSpeech.QUEUE_FLUSH, params, "praise-$level")
     }
 
     fun stop() {

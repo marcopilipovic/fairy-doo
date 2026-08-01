@@ -34,7 +34,6 @@ class SoundRenderTest {
             put("merkzeichen", FairySounds.tick())
             put("ruecknahme", FairySounds.undo())
             put("spielende", FairySounds.gameOver())
-            put("musik-schleife", FairySounds.ambientLoop())
         }
 
         for ((name, samples) in sounds) {
@@ -52,16 +51,22 @@ class SoundRenderTest {
     }
 
     @Test
-    fun `die Musikschleife schliesst ohne Sprung`() {
-        val loop = FairySounds.ambientLoop(seconds = 12f)
+    fun `das Ueberblenden schliesst die Schleifennaht`() {
+        // Ein Sägezahn mit hartem Sprung am Ende: Ohne Überblenden stünde dort
+        // ein Knacks, mit Überblenden geht der Schluss in den Anfang über.
+        val period = Synth.SAMPLE_RATE / 220
+        val raw = ShortArray(Synth.SAMPLE_RATE * 2) { index ->
+            ((index % period).toFloat() / period * 20_000 - 10_000).toInt().toShort()
+        }
 
-        // An der Nahtstelle darf kein Pegelsprung stehen, sonst klickt es bei
-        // jedem Durchlauf hörbar.
-        val start = loop.take(64).maxOf { abs(it) }
-        val end = loop.takeLast(64).maxOf { abs(it) }
+        val looped = Synth.crossfadeLoop(raw, seconds = 0.2f)
 
-        assertTrue("Der Schleifenanfang ist zu laut ($start)", start < 0.02f)
-        assertTrue("Das Schleifenende ist zu laut ($end)", end < 0.02f)
+        assertTrue("Die Schleife wurde nicht gekürzt", looped.size < raw.size)
+
+        // Der Sprung vom letzten zum ersten Abtastwert muss kleiner sein als
+        // der eines vollen Sägezahn-Zyklus.
+        val naht = kotlin.math.abs(looped.first().toInt() - looped.last().toInt())
+        assertTrue("Die Naht springt zu weit ($naht)", naht < 12_000)
     }
 
     @Test

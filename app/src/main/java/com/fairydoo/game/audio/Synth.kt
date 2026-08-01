@@ -171,6 +171,31 @@ object Synth {
         return FloatArray(samples.size) { samples[it] * factor }
     }
 
+    /**
+     * Blendet das Ende über den Anfang, damit eine Schleife ohne Naht schließt.
+     *
+     * Anders als ein Ausblenden an beiden Rändern — das erzeugt bei einer
+     * Wiederholung ein hörbares Loch. Hier wandert der Schluss über den Beginn,
+     * und das überlappende Stück wird abgeschnitten: Der letzte Abtastwert geht
+     * dadurch nahtlos in den ersten über.
+     */
+    fun crossfadeLoop(samples: ShortArray, seconds: Float): ShortArray {
+        val fade = secondsToSamples(seconds).coerceAtMost(samples.size / 4)
+        if (fade <= 0) return samples
+
+        val length = samples.size - fade
+        val result = ShortArray(length)
+        samples.copyInto(result, 0, 0, length)
+
+        for (index in 0 until fade) {
+            val weight = index.toFloat() / fade
+            val tail = samples[length + index].toInt()
+            val head = result[index].toInt()
+            result[index] = (head * weight + tail * (1f - weight)).toInt().toShort()
+        }
+        return result
+    }
+
     /** Blendet Anfang und Ende aus, damit ein Loop nahtlos schließt. */
     fun fadeEdges(samples: FloatArray, seconds: Float): FloatArray {
         val fadeLength = secondsToSamples(seconds).coerceAtMost(samples.size / 2)
