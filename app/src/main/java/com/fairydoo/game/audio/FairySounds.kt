@@ -184,6 +184,10 @@ object FairySounds {
 
         val mixed = Synth.mix(*layers.toTypedArray())
         val trimmed = mixed.copyOf(Synth.secondsToSamples(seconds))
-        return Synth.fadeEdges(Synth.normalize(trimmed, target = 0.45f), seconds = 1.2f)
+        // Kräftiger ausgesteuert als zuvor: Zusammen mit der gedrosselten
+        // Wiedergabelautstärke kam die Musik früher auf gut ein Fünftel der
+        // möglichen Aussteuerung — auf einem Telefon ohne Kopfhörer war davon
+        // kaum etwas zu hören.
+        return Synth.fadeEdges(Synth.normalize(trimmed, target = 0.75f), seconds = 1.2f)
     }
 }

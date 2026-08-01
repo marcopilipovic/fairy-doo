@@ -365,8 +365,8 @@ class FairyAudio(context: Context) {
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"
 
-        const val MUSIC_VOLUME = 0.5f
-        const val EFFECT_VOLUME = 0.9f
+        const val MUSIC_VOLUME = 0.8f
+        const val EFFECT_VOLUME = 1.0f
         const val CLIP_VOLUME = 1.0f
 
         /**
@@ -383,6 +383,6 @@ class FairyAudio(context: Context) {
          * Hochzählen, wenn sich die Synthese ändert — sonst spielt die App
          * weiter die alten Klänge aus dem Zwischenspeicher.
          */
-        const val SOUND_CACHE_VERSION = 2
+        const val SOUND_CACHE_VERSION = 3
     }
 }
