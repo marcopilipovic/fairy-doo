@@ -44,7 +44,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -282,16 +285,7 @@ private fun GameContent(
                 }
             }
 
-            Text(
-                text = GameCopy.statusText(state.statusMessage),
-                style = MaterialTheme.typography.bodyMedium,
-                color = StatusPurple,
-                fontSize = 13.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 20.dp),
-            )
+            StatusMessageLine(text = GameCopy.statusText(state.statusMessage))
 
             PowerUpBar(state = state, onUse = onUsePowerUp)
         }
@@ -344,6 +338,46 @@ private fun GameContent(
                 onClose = onCloseSoundSettings,
             )
         }
+    }
+}
+
+/**
+ * Die Rückmeldung unter dem Brett.
+ *
+ * Der Platz ist fest für zwei Zeilen reserviert, auch wenn nur eine gebraucht
+ * wird. Die Meldungen sind unterschiedlich lang — der Zonenname mit ihrer
+ * Bewohnerin braucht zwei Zeilen, ein kurzer Hinweis eine —, und ohne feste
+ * Höhe verschöbe jeder Wechsel das ganze Spielfeld nach oben oder unten.
+ * Beim Tippen auf ein Feld wäre das fatal: Man zielt auf ein Feld und trifft
+ * ein anderes, weil das Brett zwischen Fingerbewegung und Berührung gesprungen
+ * ist.
+ *
+ * Die Höhe leitet sich aus der Zeilenhöhe der Schrift ab statt aus einem festen
+ * dp-Wert, damit sie bei vergrößerter Systemschrift mitwächst.
+ */
+@Composable
+private fun StatusMessageLine(text: String) {
+    val style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
+    val lineHeight = if (style.lineHeight.isSpecified) style.lineHeight else style.fontSize * 1.4f
+    // Der Zuschlag ist nicht Kosmetik: Ohne ihn ist die Fläche um Haaresbreite
+    // zu klein für die zweite Zeile, und der Text wird stattdessen mitten im
+    // Satz abgeschnitten — sichtbar erst bei vergrößerter Systemschrift.
+    val height = with(LocalDensity.current) { (lineHeight * 2).toDp() + 6.dp }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = style,
+            color = StatusPurple,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
