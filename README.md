@@ -16,13 +16,16 @@ Die Oberfläche folgt dem Design-Handoff „Fairydoku – Feen-Logikpuzzle"
 - genau **eine Fee je Waldzone** (die farbig umrandeten Bereiche),
 - **keine zwei Feen berühren sich** — auch nicht diagonal.
 
-**Einmal tippen** setzt ✕ (Merkzeichen „hier keine Fee") und nimmt es wieder weg.
-**Zweimal kurz hintereinander tippen** setzt die Fee — aus dem leeren Feld wie aus
-dem Merkzeichen. Auf einer Fee räumen beide Gesten das Feld.
+**Kurz tippen** setzt ✕ (Merkzeichen „hier keine Fee") und nimmt es wieder weg.
+**Gedrückt halten** setzt die Fee — aus dem leeren Feld wie aus dem Merkzeichen;
+ein kurzes Rütteln meldet, dass sie sitzt. Auf einer Fee räumen beide Gesten das
+Feld.
 
-Das Merkzeichen liegt auf der einfachen Geste, weil es der weitaus häufigere Zug
-ist: Beim Ausschließen arbeitet man sich durch viele Felder, bevor überhaupt eine
-Fee gesetzt wird.
+Das Merkzeichen liegt auf der schnellsten Geste, weil es der weitaus häufigere
+Zug ist: Beim Ausschließen arbeitet man sich durch viele Felder, bevor überhaupt
+eine Fee gesetzt wird. Und weil das Brett keinen Doppeltipp kennt, erscheint das
+✕ ohne jede Wartezeit — bei einem Doppeltipp müsste jeder einzelne Tipp erst
+abwarten, ob noch einer folgt.
 
 Eine Fee, die beim Setzen kollidiert, kostet ein Leben. Drei Leben, dann ist der
 Lauf vorbei — ebenso, wenn die Zeit abläuft.

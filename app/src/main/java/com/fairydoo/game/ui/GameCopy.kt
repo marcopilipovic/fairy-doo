@@ -29,7 +29,7 @@ object GameCopy {
     fun zoneName(index: Int): String = zoneNames[index % zoneNames.size]
 
     fun statusText(message: StatusMessage): String = when (message) {
-        StatusMessage.Hint -> "Einmal tippen: ✕ · zweimal tippen: 🧚"
+        StatusMessage.Hint -> "Tippen: ✕ · gedrückt halten: 🧚"
         // Knapp gehalten: Das ist die mit Abstand längste Meldung, und je
         // kürzer sie ist, desto seltener bricht sie auf zwei Zeilen um.
         is StatusMessage.Zone ->

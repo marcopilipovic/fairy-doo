@@ -22,9 +22,9 @@ class FairydokuEngineTest {
     private fun startedGame(level: Int = 1): GameState =
         engine.onInput(engine.newGame(level), GameInput.Begin)
 
-    /** Setzt eine Fee auf [pos] — der Doppeltipp ist ihre Geste. */
+    /** Setzt eine Fee auf [pos] — das Halten ist ihre Geste. */
     private fun placeFairy(state: GameState, pos: Pos): GameState =
-        engine.onInput(state, GameInput.DoubleTapCell(pos))
+        engine.onInput(state, GameInput.HoldCell(pos))
 
     /** Setzt alle Feen der hinterlegten Lösung. */
     private fun solve(state: GameState): GameState {
@@ -70,19 +70,19 @@ class FairydokuEngineTest {
     }
 
     @Test
-    fun `doppelt Tippen setzt die Fee - aus dem Leeren wie aus dem Merkzeichen`() {
+    fun `Halten setzt die Fee - aus dem Leeren wie aus dem Merkzeichen`() {
         var state = startedGame()
         val puzzle = requireNotNull(state.puzzle)
         val fromEmpty = puzzle.solution.first()
         // Zweites Feld derselben Lösung: kollidiert nicht mit dem ersten.
         val fromWarded = puzzle.solution.last()
 
-        state = engine.onInput(state, GameInput.DoubleTapCell(fromEmpty))
+        state = engine.onInput(state, GameInput.HoldCell(fromEmpty))
         assertEquals(CellMark.Fairy, state.markAt(fromEmpty))
 
         state = engine.onInput(state, GameInput.TapCell(fromWarded))
         assertEquals(CellMark.Warded, state.markAt(fromWarded))
-        state = engine.onInput(state, GameInput.DoubleTapCell(fromWarded))
+        state = engine.onInput(state, GameInput.HoldCell(fromWarded))
         assertEquals(CellMark.Fairy, state.markAt(fromWarded))
     }
 
@@ -90,7 +90,7 @@ class FairydokuEngineTest {
     fun `auf einer Fee raeumen beide Gesten das Feld`() {
         val started = startedGame()
         val pos = requireNotNull(started.puzzle).solution.first()
-        val withFairy = engine.onInput(started, GameInput.DoubleTapCell(pos))
+        val withFairy = engine.onInput(started, GameInput.HoldCell(pos))
 
         assertEquals(
             CellMark.Empty,
@@ -98,7 +98,7 @@ class FairydokuEngineTest {
         )
         assertEquals(
             CellMark.Empty,
-            engine.onInput(withFairy, GameInput.DoubleTapCell(pos)).markAt(pos),
+            engine.onInput(withFairy, GameInput.HoldCell(pos)).markAt(pos),
         )
     }
 

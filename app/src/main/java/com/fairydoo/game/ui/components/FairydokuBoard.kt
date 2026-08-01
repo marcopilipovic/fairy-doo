@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,11 +36,16 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -83,40 +89,52 @@ fun FairydokuBoard(
     state: GameState,
     cellSize: Dp,
     onTapCell: (Pos) -> Unit,
-    onDoubleTapCell: (Pos) -> Unit,
+    onHoldCell: (Pos) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val puzzle = state.puzzle ?: return
 
-    Box(
-        modifier = modifier
-            // Der bläuliche Schein, der das Brett in der Vorlage vom
-            // Hintergrund abhebt (`0 0 40px rgba(120,140,255,.12)`).
-            .drawBehind {
-                drawRect(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color(0x1F788CFF), Color.Transparent),
-                        center = Offset(size.width / 2f, size.height / 2f),
-                        radius = size.maxDimension * 0.75f,
-                    ),
-                )
-            }
-            .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xB3070A18))
-            .padding(4.dp),
-    ) {
-        Column {
-            for (row in 0 until puzzle.size) {
-                Row {
-                    for (col in 0 until puzzle.size) {
-                        val pos = Pos(row, col)
-                        BoardCell(
-                            state = state,
-                            pos = pos,
-                            cellSize = cellSize,
-                            onTap = { onTapCell(pos) },
-                            onDoubleTap = { onDoubleTapCell(pos) },
-                        )
+    // Der Systemwert für langes Drücken liegt bei einer halben Sekunde — als
+    // Schutz vor versehentlichem Auslösen sinnvoll, hier aber zäh: Das Halten
+    // ist eine gewollte Spielgeste, keine versehentliche. Nur fürs Brett.
+    val system = LocalViewConfiguration.current
+    val boardTiming = remember(system) {
+        object : ViewConfiguration by system {
+            override val longPressTimeoutMillis: Long = HOLD_MILLIS
+        }
+    }
+
+    CompositionLocalProvider(LocalViewConfiguration provides boardTiming) {
+        Box(
+            modifier = modifier
+                // Der bläuliche Schein, der das Brett in der Vorlage vom
+                // Hintergrund abhebt (`0 0 40px rgba(120,140,255,.12)`).
+                .drawBehind {
+                    drawRect(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0x1F788CFF), Color.Transparent),
+                            center = Offset(size.width / 2f, size.height / 2f),
+                            radius = size.maxDimension * 0.75f,
+                        ),
+                    )
+                }
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color(0xB3070A18))
+                .padding(4.dp),
+        ) {
+            Column {
+                for (row in 0 until puzzle.size) {
+                    Row {
+                        for (col in 0 until puzzle.size) {
+                            val pos = Pos(row, col)
+                            BoardCell(
+                                state = state,
+                                pos = pos,
+                                cellSize = cellSize,
+                                onTap = { onTapCell(pos) },
+                                onHold = { onHoldCell(pos) },
+                            )
+                        }
                     }
                 }
             }
@@ -124,15 +142,26 @@ fun FairydokuBoard(
     }
 }
 
+/**
+ * Wie lange der Finger liegen muss, bis die Fee erscheint.
+ *
+ * Kürzer als die 500 ms des Systems, weil das Halten hier eine der beiden
+ * Hauptgesten ist und nicht wie sonst ein seltener Sonderweg. Viel kürzer darf
+ * es nicht sein: Unter etwa einer Viertelsekunde geriete ein bloß etwas
+ * behäbiger Tipp zur Fee.
+ */
+private const val HOLD_MILLIS = 350L
+
 @Composable
 private fun BoardCell(
     state: GameState,
     pos: Pos,
     cellSize: Dp,
     onTap: () -> Unit,
-    onDoubleTap: () -> Unit,
+    onHold: () -> Unit,
 ) {
     val puzzle = state.puzzle ?: return
+    val haptics = LocalHapticFeedback.current
     val region = puzzle.regionAt(pos)
     val regionColor = RegionColors[region % RegionColors.size]
     val mark = state.markAt(pos)
@@ -186,21 +215,32 @@ private fun BoardCell(
                     )
                 }
             }
-            // Nicht `clickable`: Das kennt keinen Doppeltipp. Der einfache Tipp
-            // meldet sich deshalb erst, wenn feststeht, dass kein zweiter folgt
-            // — anders ließen sich die beiden Gesten nicht auseinanderhalten.
+            // Ohne `onDoubleTap` meldet sich der Tipp sofort beim Loslassen.
+            // Genau darum hängt die Fee am Halten und nicht am Doppeltipp: Ein
+            // Doppeltipp zwänge jeden einzelnen Tipp zu warten, ob noch einer
+            // folgt — und das Merkzeichen ist der Zug, den man am häufigsten
+            // macht.
             .pointerInput(pos) {
                 detectTapGestures(
                     onTap = { onTap() },
-                    onDoubleTap = { onDoubleTap() },
+                    onLongPress = {
+                        // Die Fee erscheint, während der Finger noch liegt; ohne
+                        // ein Rütteln bliebe unklar, ob die Geste schon zählt.
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onHold()
+                    },
                 )
             }
             // Die Gestenerkennung ersetzt `clickable` und damit auch dessen
-            // Barrierefreiheit; für die Sprachausgabe bleibt der einfache Tipp.
+            // Barrierefreiheit; für die Sprachausgabe bleiben beide Gesten.
             .semantics {
                 role = Role.Button
                 onClick {
                     onTap()
+                    true
+                }
+                onLongClick {
+                    onHold()
                     true
                 }
             },

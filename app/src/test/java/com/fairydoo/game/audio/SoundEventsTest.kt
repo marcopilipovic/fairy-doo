@@ -22,9 +22,9 @@ class SoundEventsTest {
 
     private fun tap(state: GameState, pos: Pos) = engine.onInput(state, GameInput.TapCell(pos))
 
-    /** Der Doppeltipp setzt die Fee — aus dem Leeren wie aus dem Merkzeichen. */
+    /** Das Halten setzt die Fee — aus dem Leeren wie aus dem Merkzeichen. */
     private fun place(state: GameState, pos: Pos) =
-        engine.onInput(state, GameInput.DoubleTapCell(pos))
+        engine.onInput(state, GameInput.HoldCell(pos))
 
     @Test
     fun `ein Merkzeichen macht Tick`() {

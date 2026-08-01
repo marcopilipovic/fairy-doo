@@ -26,11 +26,11 @@ interface GameEngine {
 
 /** Spielereingaben. Die UI übersetzt Gesten in diese Ereignisse. */
 sealed interface GameInput {
-    /** Einmal tippen — setzt oder entfernt das Merkzeichen, nimmt eine Fee weg. */
+    /** Kurz tippen — setzt oder entfernt das Merkzeichen, nimmt eine Fee weg. */
     data class TapCell(val pos: Pos) : GameInput
 
-    /** Zweimal kurz hintereinander tippen — setzt die Fee, oder nimmt sie weg. */
-    data class DoubleTapCell(val pos: Pos) : GameInput
+    /** Gedrückt halten — setzt die Fee, oder nimmt sie weg. */
+    data class HoldCell(val pos: Pos) : GameInput
 
     /** Eine Magie-Fähigkeit einsetzen. */
     data class UsePowerUp(val powerUp: PowerUp) : GameInput
@@ -86,7 +86,7 @@ class FairydokuEngine(
 
     override fun onInput(state: GameState, input: GameInput): GameState = when (input) {
         is GameInput.TapCell -> onTapCell(state, input.pos)
-        is GameInput.DoubleTapCell -> onDoubleTapCell(state, input.pos)
+        is GameInput.HoldCell -> onHoldCell(state, input.pos)
         is GameInput.UsePowerUp -> onUsePowerUp(state, input.powerUp)
         GameInput.Begin -> onBegin(state)
         GameInput.NextLevel -> onNextLevel(state)
@@ -100,15 +100,15 @@ class FairydokuEngine(
         }
 
     /**
-     * Einmal tippen: Merkzeichen setzen oder wieder wegnehmen.
+     * Kurz tippen: Merkzeichen setzen oder wieder wegnehmen.
      *
-     * Das Merkzeichen liegt auf der einfachen Geste, weil es der weitaus
+     * Das Merkzeichen liegt auf der schnellsten Geste, weil es der weitaus
      * häufigere Zug ist — beim Ausschließen arbeitet man sich durch viele
      * Felder, bevor überhaupt eine Fee gesetzt wird.
      *
-     * Auf einer Fee räumt der einfache Tipp ebenfalls ab. Sie kehrt damit nicht
-     * zum Merkzeichen zurück, sondern zum leeren Feld: Wer eine Fee wegnimmt,
-     * hat sich in aller Regel geirrt und will das Feld neu beurteilen.
+     * Auf einer Fee räumt der Tipp ebenfalls ab. Sie kehrt damit nicht zum
+     * Merkzeichen zurück, sondern zum leeren Feld: Wer eine Fee wegnimmt, hat
+     * sich in aller Regel geirrt und will das Feld neu beurteilen.
      */
     private fun onTapCell(state: GameState, pos: Pos): GameState =
         setMark(state, pos) { current ->
@@ -119,13 +119,13 @@ class FairydokuEngine(
         }
 
     /**
-     * Doppelt tippen: die Fee setzen — oder wieder wegnehmen, wenn sie da ist.
+     * Gedrückt halten: die Fee setzen — oder wieder wegnehmen, wenn sie da ist.
      *
-     * Auf einer Fee tut der Doppeltipp damit dasselbe wie der einfache. Das ist
-     * Absicht: Wer zweimal auf eine Fee tippt, will sie loswerden, und ein
+     * Auf einer Fee tut das Halten damit dasselbe wie der Tipp. Das ist
+     * Absicht: Wer auf einer Fee verweilt, will sie loswerden, und ein
      * Wiedersetzen an derselben Stelle wäre nur verwirrend.
      */
-    private fun onDoubleTapCell(state: GameState, pos: Pos): GameState =
+    private fun onHoldCell(state: GameState, pos: Pos): GameState =
         setMark(state, pos) { current ->
             if (current == CellMark.Fairy) CellMark.Empty else CellMark.Fairy
         }
