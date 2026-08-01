@@ -62,14 +62,12 @@ import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.model.CellMark
 import com.fairydoo.game.game.model.Pos
 import com.fairydoo.game.ui.sprites.FairySpriteCache
+import com.fairydoo.game.ui.theme.CellSeam
 import com.fairydoo.game.ui.theme.ConflictRed
-import com.fairydoo.game.ui.theme.FaintBorder
 import com.fairydoo.game.ui.theme.Gold
-import com.fairydoo.game.ui.theme.MossDarkA
-import com.fairydoo.game.ui.theme.MossDarkB
-import com.fairydoo.game.ui.theme.MossLightA
-import com.fairydoo.game.ui.theme.MossLightB
-import com.fairydoo.game.ui.theme.RegionColors
+import com.fairydoo.game.ui.theme.ZoneBorder
+import com.fairydoo.game.ui.theme.ZoneBorderShade
+import com.fairydoo.game.ui.theme.ZoneStyles
 
 /** Der Eigenton, den eine Fee um sich verbreitet. */
 fun FairySpecies.glowColor(): Color = Color(glowArgb)
@@ -163,16 +161,9 @@ private fun BoardCell(
     val puzzle = state.puzzle ?: return
     val haptics = LocalHapticFeedback.current
     val region = puzzle.regionAt(pos)
-    val regionColor = RegionColors[region % RegionColors.size]
+    val zone = ZoneStyles[region % ZoneStyles.size]
     val mark = state.markAt(pos)
     val isConflicting = pos in state.conflicts
-
-    // Schachbrettvariation der Moosfelder, damit das Brett nicht flach wirkt.
-    val evenCell = (pos.row + pos.col) % 2 == 0
-
-    // Zusätzlich bekommt jeder Stein eine eigene, feste Tönung. Ohne diese
-    // Streuung sieht ein 8×8-Brett aus wie gekachelte Tapete statt wie Steine.
-    val tint = ((pos.row * 7 + pos.col * 13) % 5 - 2) * 0.018f
 
     // Eine Kante gehört zur Zonengrenze, wenn dahinter eine andere Zone liegt.
     fun isZoneEdge(other: Pos): Boolean =
@@ -187,11 +178,13 @@ private fun BoardCell(
         modifier = Modifier
             .size(cellSize)
             .drawBehind {
-                drawMossStone(evenCell = evenCell, tint = tint)
-                drawZoneGlow(regionColor, topEdge, bottomEdge, leftEdge, rightEdge)
-                drawStoneRelief()
+                // Die Zone liegt als volle Fläche im Feld, nicht als Schein an
+                // seinen Kanten: So trägt jedes Feld seine Zugehörigkeit in
+                // sich, statt sie erst aus der Nachbarschaft ableiten zu lassen.
+                drawRect(zone.fill)
+                drawZoneTexture(texture = zone.texture, color = zone.ink, pos = pos)
+                drawZoneShading()
                 drawZoneBorders(
-                    color = regionColor,
                     top = topEdge,
                     bottom = bottomEdge,
                     left = leftEdge,
@@ -250,7 +243,7 @@ private fun BoardCell(
             // Welche Fee erscheint, entscheidet die Zone des Feldes.
             CellMark.Fairy -> FairyGlyph(
                 species = GameState.speciesForZone(state.level, region),
-                zoneColor = regionColor,
+                zoneColor = zone.fill,
                 cellSize = cellSize,
                 pulsing = state.hintCell == pos,
                 phaseOffset = (pos.row * 3 + pos.col) * 260,
@@ -263,176 +256,79 @@ private fun BoardCell(
     }
 }
 
-/** Der Moosstein selbst: Grundfarbe, Lichtfleck und Randabdunklung. */
-private fun DrawScope.drawMossStone(evenCell: Boolean, tint: Float) {
-    fun Color.shift(amount: Float) = Color(
-        red = (red + amount).coerceIn(0f, 1f),
-        green = (green + amount * 1.1f).coerceIn(0f, 1f),
-        blue = (blue + amount * 0.6f).coerceIn(0f, 1f),
-        alpha = alpha,
-    )
-
-    // Leicht angehoben gegenüber den Token-Werten: Vignette und Schattensaum
-    // nehmen anschließend so viel Helligkeit weg, dass das Moos sonst grau
-    // statt grün wirkt.
-    val light = (if (evenCell) MossLightA else MossLightB).shift(tint + 0.05f)
-    val dark = (if (evenCell) MossDarkA else MossDarkB).shift(tint + 0.04f)
-    val lightCenter = if (evenCell) Offset(0.35f, 0.30f) else Offset(0.60f, 0.65f)
-
-    drawRect(
-        brush = Brush.radialGradient(
-            colors = listOf(light, dark),
-            center = Offset(size.width * lightCenter.x, size.height * lightCenter.y),
-            radius = size.maxDimension * 0.75f,
-        ),
-    )
-
-    // Vignette: nach außen dunkler, damit die Felder als einzelne Steine lesbar
-    // werden und nicht als durchgehende Fläche.
+/**
+ * Eine sehr leichte Wölbung über der Zonenfläche.
+ *
+ * Der Vorgänger war ein Stein-Relief mit heller Ober- und dunkler Unterkante.
+ * Auf den durchscheinenden Moosfeldern hat es die einzelnen Steine
+ * herausgehoben; auf einer deckenden Zonenfläche zerschneidet es das Gebiet
+ * in Kacheln — genau die Wirkung, die die Fläche vermeiden soll.
+ *
+ * Geblieben ist ein Hauch davon: gerade genug, dass die Felder nicht wie
+ * aufgemalt wirken, zu wenig, um die Zone zu zerteilen.
+ */
+private fun DrawScope.drawZoneShading() {
     drawRect(
         brush = Brush.radialGradient(
             colorStops = arrayOf(
-                0.0f to Color.Transparent,
-                0.62f to Color.Transparent,
-                1.0f to Color(0x38000000),
+                0.0f to Color(0x0EFFFFFF),
+                0.7f to Color.Transparent,
+                1.0f to Color(0x14000000),
             ),
-            center = Offset(size.width / 2f, size.height / 2f),
-            radius = size.maxDimension * 0.72f,
+            center = Offset(size.width * 0.4f, size.height * 0.35f),
+            radius = size.maxDimension * 0.8f,
         ),
     )
 }
 
 /**
- * Das Stein-Relief aus der Vorlage
- * (`inset 0 2px 6px rgba(255,255,255,.10), inset 0 -3px 8px rgba(0,0,0,.35)`):
- * oben eine Lichtkante, unten ein Schattensaum. Das lässt die Felder aus der
- * Fläche heraustreten.
- */
-private fun DrawScope.drawStoneRelief() {
-    val topHeight = size.height * 0.22f
-    drawRect(
-        brush = Brush.verticalGradient(
-            colors = listOf(Color(0x21FFFFFF), Color.Transparent),
-            startY = 0f,
-            endY = topHeight,
-        ),
-        size = Size(size.width, topHeight),
-    )
-
-    val bottomHeight = size.height * 0.30f
-    drawRect(
-        brush = Brush.verticalGradient(
-            colors = listOf(Color.Transparent, Color(0x47000000)),
-            startY = size.height - bottomHeight,
-            endY = size.height,
-        ),
-        topLeft = Offset(0f, size.height - bottomHeight),
-        size = Size(size.width, bottomHeight),
-    )
-}
-
-/**
- * Der Schein, den eine Zonengrenze ins Feld wirft.
- *
- * Erst dadurch wirken die Zonen wie leuchtende Bänder statt wie aufgemalte
- * Striche — und man erkennt beim Überfliegen, welche Felder zusammengehören.
- */
-private fun DrawScope.drawZoneGlow(
-    color: Color,
-    top: Boolean,
-    bottom: Boolean,
-    left: Boolean,
-    right: Boolean,
-) {
-    val depth = size.minDimension * 0.30f
-    val glow = color.copy(alpha = 0.22f)
-
-    if (top) {
-        drawRect(
-            brush = Brush.verticalGradient(listOf(glow, Color.Transparent), 0f, depth),
-            size = Size(size.width, depth),
-        )
-    }
-    if (bottom) {
-        drawRect(
-            brush = Brush.verticalGradient(
-                listOf(Color.Transparent, glow),
-                size.height - depth,
-                size.height,
-            ),
-            topLeft = Offset(0f, size.height - depth),
-            size = Size(size.width, depth),
-        )
-    }
-    if (left) {
-        drawRect(
-            brush = Brush.horizontalGradient(listOf(glow, Color.Transparent), 0f, depth),
-            size = Size(depth, size.height),
-        )
-    }
-    if (right) {
-        drawRect(
-            brush = Brush.horizontalGradient(
-                listOf(Color.Transparent, glow),
-                size.width - depth,
-                size.width,
-            ),
-            topLeft = Offset(size.width - depth, 0f),
-            size = Size(depth, size.height),
-        )
-    }
-}
-
-/**
- * Die Kantenlinien: kräftig an Zonengrenzen, als feine Rille zwischen Feldern
+ * Die Kantenlinien: cremeweiß an Zonengrenzen, als feine Fuge zwischen Feldern
  * derselben Zone.
  *
- * Die Rille (dunkle Fuge mit heller Oberkante) statt einer einfachen blassen
- * Linie ist nötig, seit die Steine Relief haben: Sonst verschwimmen benachbarte
- * Felder einer Zone zu einer Fläche, und man muss die Felder abzählen, statt sie
- * zu sehen.
+ * Beide Linien tragen für jede Zone dieselbe Farbe. Welche Zone hinter einer
+ * Grenze liegt, beantwortet die Fläche — die Linie sagt nur, *dass* dort eine
+ * Grenze verläuft. Das entlastet das Auge, das sonst zehn leuchtende Farbtöne
+ * gleichzeitig an Kanten auseinanderhalten müsste.
+ *
+ * Die Fuge innerhalb der Zone bleibt dagegen dunkel und schmal: Sie soll die
+ * Felder abzählbar machen, ohne die Zone optisch zu zerschneiden.
  */
 private fun DrawScope.drawZoneBorders(
-    color: Color,
     top: Boolean,
     bottom: Boolean,
     left: Boolean,
     right: Boolean,
 ) {
-    val stroke = 2.5.dp.toPx()
-    val groove = Color(0x66000000)
-    val grooveEdge = Color(0x2EFFFFFF)
+    val zoneStroke = 3.dp.toPx()
+    val seamStroke = 1.dp.toPx()
 
-    fun edge(isZoneEdge: Boolean, topLeft: Offset, edgeSize: Size, horizontal: Boolean) {
-        if (isZoneEdge) {
-            drawRect(color, topLeft = topLeft, size = edgeSize)
-            return
+    /** Legt einen Streifen der Breite [width] an die gewählte Kante. */
+    fun stripe(color: Color, width: Float, inset: Float, atStart: Boolean, horizontal: Boolean) {
+        val topLeft = when {
+            horizontal && atStart -> Offset(0f, inset)
+            horizontal -> Offset(0f, size.height - inset - width)
+            atStart -> Offset(inset, 0f)
+            else -> Offset(size.width - inset - width, 0f)
         }
-        drawRect(groove, topLeft = topLeft, size = edgeSize)
-        // Schmale Lichtkante an der Innenseite der Fuge.
-        val highlight = if (horizontal) {
-            Size(edgeSize.width, edgeSize.height * 0.4f)
-        } else {
-            Size(edgeSize.width * 0.4f, edgeSize.height)
-        }
-        drawRect(grooveEdge, topLeft = topLeft, size = highlight)
-        drawRect(FaintBorder, topLeft = topLeft, size = edgeSize)
+        val edgeSize = if (horizontal) Size(size.width, width) else Size(width, size.height)
+        drawRect(color, topLeft = topLeft, size = edgeSize)
     }
 
-    edge(top, Offset.Zero, Size(size.width, stroke), horizontal = true)
-    edge(
-        bottom,
-        Offset(0f, size.height - stroke),
-        Size(size.width, stroke),
-        horizontal = true,
-    )
-    edge(left, Offset.Zero, Size(stroke, size.height), horizontal = false)
-    edge(
-        right,
-        Offset(size.width - stroke, 0f),
-        Size(stroke, size.height),
-        horizontal = false,
-    )
+    fun edge(isZoneEdge: Boolean, atStart: Boolean, horizontal: Boolean) {
+        if (!isZoneEdge) {
+            stripe(CellSeam, seamStroke, 0f, atStart, horizontal)
+            return
+        }
+        stripe(ZoneBorder, zoneStroke, 0f, atStart, horizontal)
+        // Der Saum liegt innen an, damit die helle Linie nach außen sauber
+        // gegen die Nachbarzone abschließt.
+        stripe(ZoneBorderShade, seamStroke, zoneStroke, atStart, horizontal)
+    }
+
+    edge(top, atStart = true, horizontal = true)
+    edge(bottom, atStart = false, horizontal = true)
+    edge(left, atStart = true, horizontal = false)
+    edge(right, atStart = false, horizontal = false)
 }
 
 /**
@@ -639,10 +535,15 @@ private fun WardMark(cellSize: Dp, pos: Pos) {
                     )
                 }
 
-                // Eingeritzte Tiefe: erst der dunkle Grund, dann die Lichtkante.
-                cross(Offset(0f, depth), Color(0x8C000000), stroke)
-                cross(Offset(0f, -depth * 0.4f), Color(0x26FFFFFF), stroke * 0.8f)
-                cross(Offset.Zero, Color(0xB3E8E4FF), stroke * 0.85f)
+                // Dunkler Umriss rundum, dann die eingeritzte Tiefe, dann das
+                // helle Zeichen. Der Umriss ist nicht Zierrat: Ohne ihn steht
+                // ein helles Kreuz auf der cremefarbenen Hellen Wiese praktisch
+                // unsichtbar da — auf der dunklen Kristallhöhle daneben aber
+                // klar. Das Zeichen muss auf allen zehn Gebieten dasselbe
+                // Gewicht haben.
+                cross(Offset.Zero, Color(0xB3121008), stroke * 1.7f)
+                cross(Offset(0f, depth), Color(0x59000000), stroke)
+                cross(Offset.Zero, Color(0xF2F4F1FF), stroke * 0.85f)
             },
     )
 }

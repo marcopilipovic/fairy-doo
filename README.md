@@ -96,11 +96,52 @@ prüfen auch, dass kein Klang stumm ist, keiner übersteuert und die Musikschlei
 ohne hörbaren Sprung schließt. Die aufgenommenen Feenstimmen sind davon nicht
 betroffen — die liegen als MP3 vor und lassen sich direkt anhören.
 
+## Die zehn Gebiete
+
+Jedes Gebiet trägt **zwei** voneinander unabhängige Merkmale: eine deckende
+Farbe und ein gezeichnetes Motiv.
+
+| Gebiet | Farbe | Motiv |
+| --- | --- | --- |
+| Helle Wiese | Creme | Funkelnde Sterne |
+| Waldbeeren | Violett | Beeren an Ranken |
+| Goldlaub | Rostbraun | Herbstlaub |
+| Flussquelle | Aqua | Wellen |
+| Dornenranken | Grün | Dornige Bögen |
+| Kristallhöhle | Karmesin | Kristallzellen |
+| Abendrot | Gold | Sonnenblumen |
+| Tannenhain | Dunkelgrün | Nadelzweige |
+| Silbermoos | Hellgrau | Gesprenkeltes Moos |
+| Himmelstor | Blauviolett | Sternbilder |
+
+Das ist der Doppel-Kodierungs-Grundsatz: Wer Farben schlecht oder gar nicht
+unterscheidet, liest das Gebiet am Motiv ab; wer sie gut unterscheidet, nimmt
+das Motiv kaum wahr. Keines der beiden ist auf das andere angewiesen.
+
+Zehn, weil zehn Feen im Wald leben — so bekommt jede ein eigenes Zuhause, und
+auf dem größten Brett muss sich keine Zone eine Farbe teilen.
+
+**Die Grenzlinien** tragen für alle Gebiete dieselbe cremeweiße Farbe. Vorher
+trug jede Grenze die Farbe ihrer Zone; das doppelte die Information, die
+ohnehin in der Fläche steckt, und zwang das Auge, zehn Farbtöne gleichzeitig an
+Kanten auseinanderzuhalten. Unter der hellen Linie liegt ein dunkler Saum —
+ohne ihn verschwände sie auf der Hellen Wiese, die selbst fast cremefarben ist
+(gemessen ein Kontrast von 1,04 zu 1). Dasselbe gilt für das ✕: Es hat einen
+dunklen Umriss, damit es auf allen zehn Flächen gleich schwer wiegt.
+
+**Der Graustufen-Test** ist als Unit-Test hinterlegt (`ZoneStylesTest`). Er
+nimmt jedem Gebiet die Farbe und prüft, was übrig bleibt: dass keine zwei
+Gebiete zugleich im Farbton *und* in der Helligkeit nah beieinanderliegen, dass
+jedes Motiv sich von seiner eigenen Fläche abhebt und dass jede Grenzlinie
+sichtbar bleibt. Zehn Farben können in Graustufen nicht alle zehn verschiedene
+Helligkeiten haben — dafür ist der Bereich zu schmal; genau deshalb tragen die
+Motive die zweite Hälfte der Unterscheidung.
+
 ## Die Feen
 
 In jeder Waldzone lebt eine eigene Fee — auf einem Brett sind also bis zu acht
 verschiedene gleichzeitig zu sehen, und die Zonen sind auf einen Blick
-auseinanderzuhalten.
+auseinanderzuhalten (siehe [Die zehn Gebiete](#die-zehn-gebiete)).
 
 | | | | | |
 | --- | --- | --- | --- | --- |
@@ -167,14 +208,15 @@ app/src/main/java/com/fairydoo/game/
 ├── data/
 │   └── GamePreferences.kt           DataStore: Highscore, Partien, Tonschalter
 └── ui/
-    ├── GameCopy.kt                  Alle Texte und Zonennamen
+    ├── GameCopy.kt                  Alle Texte der Oberfläche
     ├── theme/                       Design-Tokens, Schriften, Farbschema
     ├── sprites/
     │   ├── FairyArt.kt              Zuordnung Fee → Bildressource
     │   └── FairySpriteCache.kt      Bilder einmal laden und behalten
     ├── components/
     │   ├── SoundSettingsOverlay.kt  Regler für Musik, Klänge und Stimme
-    │   ├── FairydokuBoard.kt        Brett: Moosfelder, Zonenränder, Feen
+    │   ├── FairydokuBoard.kt        Brett: Zonenflächen, Ränder, Feen
+    │   ├── ZoneTextures.kt          Die zehn Motive der Gebiete
     │   ├── PowerUpBar.kt            Die drei Fähigkeiten
     │   ├── Overlays.kt              Willkommen, Level up, Spielende
     │   └── Fireflies.kt             Glühwürmchen-Schleier
