@@ -5,14 +5,19 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.fairydoo.game.audio.SoundEvent
+import com.fairydoo.game.audio.SoundEvents
 import com.fairydoo.game.data.GamePreferencesRepository
 import com.fairydoo.game.data.PlayerProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
@@ -43,6 +48,16 @@ class GameViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = PlayerProfile(),
     )
+
+    /**
+     * Klangereignisse zum Spielgeschehen.
+     *
+     * `extraBufferCapacity`, damit schnelle Tipp-Folgen nicht verschluckt
+     * werden: Ohne Puffer würde ein Ereignis verworfen, wenn der Sammler gerade
+     * beschäftigt ist.
+     */
+    private val _soundEvents = MutableSharedFlow<SoundEvent>(extraBufferCapacity = 16)
+    val soundEvents: SharedFlow<SoundEvent> = _soundEvents.asSharedFlow()
 
     private var loopJob: Job? = null
 
@@ -99,6 +114,18 @@ class GameViewModel(
         }
     }
 
+    fun setSoundEnabled(enabled: Boolean) {
+        viewModelScope.launch { preferences.setSoundEnabled(enabled) }
+    }
+
+    fun setMusicEnabled(enabled: Boolean) {
+        viewModelScope.launch { preferences.setMusicEnabled(enabled) }
+    }
+
+    fun setVoiceEnabled(enabled: Boolean) {
+        viewModelScope.launch { preferences.setVoiceEnabled(enabled) }
+    }
+
     fun pause() {
         if (_state.value.status != GameStatus.Running) return
         loopJob?.cancel()
@@ -126,6 +153,8 @@ class GameViewModel(
     private fun applyState(next: GameState) {
         val previous = _state.value
         _state.value = next
+
+        SoundEvents.diff(previous, next).forEach(_soundEvents::tryEmit)
 
         if (previous.status != GameStatus.GameOver && next.status == GameStatus.GameOver) {
             viewModelScope.launch { preferences.recordFinishedGame(next.score) }

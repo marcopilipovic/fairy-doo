@@ -16,8 +16,12 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 data class PlayerProfile(
     val highScore: Int = 0,
     val gamesPlayed: Int = 0,
+    /** Kichern, Aufschrei, Jubel und die übrigen Klänge. */
     val soundEnabled: Boolean = true,
-    val hapticsEnabled: Boolean = true,
+    /** Der Ambient-Teppich im Hintergrund. */
+    val musicEnabled: Boolean = true,
+    /** Die lobende Feenstimme nach einem gelösten Rätsel. */
+    val voiceEnabled: Boolean = true,
 )
 
 /**
@@ -33,7 +37,8 @@ class GamePreferencesRepository(context: Context) {
             highScore = prefs[KeyHighScore] ?: 0,
             gamesPlayed = prefs[KeyGamesPlayed] ?: 0,
             soundEnabled = prefs[KeySound] ?: true,
-            hapticsEnabled = prefs[KeyHaptics] ?: true,
+            musicEnabled = prefs[KeyMusic] ?: true,
+            voiceEnabled = prefs[KeyVoice] ?: true,
         )
     }
 
@@ -50,8 +55,12 @@ class GamePreferencesRepository(context: Context) {
         store.edit { it[KeySound] = enabled }
     }
 
-    suspend fun setHapticsEnabled(enabled: Boolean) {
-        store.edit { it[KeyHaptics] = enabled }
+    suspend fun setMusicEnabled(enabled: Boolean) {
+        store.edit { it[KeyMusic] = enabled }
+    }
+
+    suspend fun setVoiceEnabled(enabled: Boolean) {
+        store.edit { it[KeyVoice] = enabled }
     }
 
     /** Setzt Fortschritt und Einstellungen zurück. */
@@ -63,6 +72,7 @@ class GamePreferencesRepository(context: Context) {
         val KeyHighScore = intPreferencesKey("high_score")
         val KeyGamesPlayed = intPreferencesKey("games_played")
         val KeySound = booleanPreferencesKey("sound_enabled")
-        val KeyHaptics = booleanPreferencesKey("haptics_enabled")
+        val KeyMusic = booleanPreferencesKey("music_enabled")
+        val KeyVoice = booleanPreferencesKey("voice_enabled")
     }
 }

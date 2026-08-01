@@ -40,6 +40,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +49,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.fairydoo.game.audio.FairyAudio
 import com.fairydoo.game.data.GamePreferencesRepository
 import com.fairydoo.game.game.GameInput
 import com.fairydoo.game.game.GameState
@@ -56,6 +58,7 @@ import com.fairydoo.game.game.GameViewModel
 import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.model.Pos
 import com.fairydoo.game.ui.GameCopy
+import com.fairydoo.game.ui.components.AudioToggles
 import com.fairydoo.game.ui.components.FairydokuBoard
 import com.fairydoo.game.ui.components.FireflyLayer
 import com.fairydoo.game.ui.components.GameOverOverlay
@@ -97,13 +100,43 @@ fun GameScreen(preferences: GamePreferencesRepository) {
         if (state.puzzle == null) viewModel.startNewGame()
     }
 
+    // Die Klangwelt lebt so lange wie der Bildschirm; beim Verlassen wird sie
+    // freigegeben, sonst liefen Musikspur und Sprachausgabe weiter.
+    val context = LocalContext.current
+    val audio = remember(context) { FairyAudio(context) }
+    DisposableEffect(audio) {
+        onDispose { audio.release() }
+    }
+
+    // Einstellungen durchreichen, sobald sie sich ändern.
+    LaunchedEffect(profile.musicEnabled, profile.soundEnabled, profile.voiceEnabled) {
+        audio.setMusicEnabled(profile.musicEnabled)
+        audio.setSoundEnabled(profile.soundEnabled)
+        audio.setVoiceEnabled(profile.voiceEnabled)
+    }
+
+    // Spielgeschehen hörbar machen. Level und Punktestand gehen mit, damit die
+    // Feenstimme sie im Lob nennen kann.
+    LaunchedEffect(audio) {
+        viewModel.soundEvents.collect { event ->
+            val current = viewModel.state.value
+            audio.play(event, level = current.level, score = current.score)
+        }
+    }
+
     // Wandert die App in den Hintergrund, wird pausiert statt weitergespielt.
     val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
+    DisposableEffect(lifecycleOwner, audio) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_STOP -> viewModel.pause()
-                Lifecycle.Event.ON_START -> viewModel.resume()
+                Lifecycle.Event.ON_STOP -> {
+                    viewModel.pause()
+                    audio.pause()
+                }
+                Lifecycle.Event.ON_START -> {
+                    viewModel.resume()
+                    audio.resume()
+                }
                 else -> Unit
             }
         }
@@ -115,11 +148,17 @@ fun GameScreen(preferences: GamePreferencesRepository) {
         state = state,
         isPreparing = isPreparing,
         bestScore = profile.highScore,
+        musicEnabled = profile.musicEnabled,
+        soundEnabled = profile.soundEnabled,
+        voiceEnabled = profile.voiceEnabled,
         onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
         onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
         onBegin = { viewModel.onInput(GameInput.Begin) },
         onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
         onRestart = viewModel::restart,
+        onMusicChange = viewModel::setMusicEnabled,
+        onSoundChange = viewModel::setSoundEnabled,
+        onVoiceChange = viewModel::setVoiceEnabled,
     )
 }
 
@@ -128,11 +167,17 @@ private fun GameContent(
     state: GameState,
     isPreparing: Boolean,
     bestScore: Int,
+    musicEnabled: Boolean,
+    soundEnabled: Boolean,
+    voiceEnabled: Boolean,
     onTapCell: (Pos) -> Unit,
     onUsePowerUp: (PowerUp) -> Unit,
     onBegin: () -> Unit,
     onNextLevel: () -> Unit,
     onRestart: () -> Unit,
+    onMusicChange: (Boolean) -> Unit,
+    onSoundChange: (Boolean) -> Unit,
+    onVoiceChange: (Boolean) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -233,6 +278,19 @@ private fun GameContent(
 
             PowerUpBar(state = state, onUse = onUsePowerUp)
         }
+
+        AudioToggles(
+            musicEnabled = musicEnabled,
+            soundEnabled = soundEnabled,
+            voiceEnabled = voiceEnabled,
+            onMusicChange = onMusicChange,
+            onSoundChange = onSoundChange,
+            onVoiceChange = onVoiceChange,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .safeDrawingPadding()
+                .padding(end = 6.dp, top = 2.dp),
+        )
 
         when (state.status) {
             GameStatus.Intro -> IntroOverlay(bestScore = bestScore, onStart = onBegin)

@@ -33,6 +33,43 @@ Lauf vorbei — ebenso, wenn die Zeit abläuft.
 Nach jedem Level kommen Feenstaub und Zeiten-Blüte dazu, der Natur-Schild nur
 jedes zweite Level.
 
+## Klang
+
+Der Wald klingt — und bringt dafür **keine einzige Audiodatei** mit. Alle Töne
+werden beim Start berechnet (`audio/Synth.kt`, `audio/FairySounds.kt`):
+
+| Ereignis | Klang |
+| --- | --- |
+| Fee richtig gesetzt | Kichern in sechs Varianten |
+| Fee falsch gesetzt | erschrockener Aufschrei |
+| Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern |
+| Fähigkeit eingesetzt | Funkenkaskade, Schild-Zweiklang, schwebender Ton |
+| Rätsel gelöst | Glockenjubel und eine lobende Feenstimme |
+| Spielende | absteigende Molltonfolge |
+| Hintergrund | Ambient-Schleife aus vier Akkorden mit Glockentönen |
+
+Das hält die App klein (Release-APK ~1 MB), macht jede Stimmlage über eine Zahl
+statt über eine neue Aufnahme änderbar und erspart die Lizenzklärung für fremde
+Samples.
+
+Die **Lobstimme** nutzt die Sprachausgabe des Geräts, nicht aufgenommene Sprache:
+Nur so kann das Lob den Spielstand nennen („Level 4 geschafft"). Fehlt eine
+deutsche Stimme, bleibt sie still — das Spiel funktioniert auch ohne.
+
+Musik, Klänge und Stimme lassen sich einzeln über die drei Schalter oben rechts
+abstellen; die Einstellung wird gespeichert.
+
+### Klänge anhören, ohne die App zu starten
+
+```powershell
+.\gradlew.bat testDebugUnitTest --tests "*SoundRenderTest*"
+```
+
+Schreibt alle Klänge als WAV nach `app/build/sounds/`. Der schnellste Weg, eine
+Änderung an der Synthese zu beurteilen. Dieselben Tests prüfen auch, dass kein
+Klang stumm ist, keiner übersteuert und die Musikschleife ohne hörbaren Sprung
+schließt.
+
 ## Bauen und starten
 
 ```powershell
@@ -55,8 +92,14 @@ app/src/main/java/com/fairydoo/game/
 │   ├── GameState.kt                 Unveränderlicher Partie-Zustand
 │   ├── GameEngine.kt                FairydokuEngine: Züge, Fähigkeiten, Punkte
 │   └── GameViewModel.kt             Spieluhr, Zustandsverwaltung, Persistenz
+├── audio/
+│   ├── Synth.kt                     Tonerzeugung (reines Kotlin, testbar)
+│   ├── FairySounds.kt               Die Klänge des Waldes
+│   ├── SoundEvent.kt                Welcher Spielzug wie klingt
+│   ├── FairyVoice.kt                Lobstimme über die Sprachausgabe
+│   └── FairyAudio.kt                Wiedergabe, Musikschleife, Schalter
 ├── data/
-│   └── GamePreferences.kt           DataStore: Highscore, Partien
+│   └── GamePreferences.kt           DataStore: Highscore, Partien, Tonschalter
 └── ui/
     ├── GameCopy.kt                  Alle Texte und Zonennamen
     ├── theme/                       Design-Tokens, Schriften, Farbschema
@@ -114,7 +157,12 @@ Bretts hängt an den Zonenfarben.
   artspezifischem Glow (rosa/blau/orange/gold).
 - **Schriftbild des Titels.** Cinzel Decorative enthält nur Versalien, „Fairydoku"
   erscheint daher als „FAIRYDOKU".
-- Hintergrund-Illustration und Sound fehlen noch.
+- Hintergrund-Illustration fehlt noch.
+- **Der Klang ist synthetisch.** Kichern und Aufschrei sind aus Tönen gebaut,
+  keine Stimmaufnahmen — sie treffen das Muster (steigende Silbenfolge,
+  abstürzende Tonhöhe), nicht die Klangfarbe einer echten Stimme. Wer den
+  Feenwald hörbar warm haben will, ersetzt später `FairySounds` durch echte
+  Samples; die Schnittstelle dafür ist [SoundEvent] und bleibt gleich.
 
 ## Balance an einem Ort
 
