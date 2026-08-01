@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.zip.CRC32
 
 /**
  * Spielt die Klangwelt ab.
@@ -122,7 +123,8 @@ class FairyAudio(context: Context) {
      * Klängen sitzen bleibt.
      */
     private suspend fun prepare() = withContext(Dispatchers.Default) {
-        val cacheDir = File(appContext.cacheDir, "sounds-v$SOUND_CACHE_VERSION").apply { mkdirs() }
+        val cacheDir = soundCacheDir()
+        pruneOldCaches(cacheDir)
 
         // Effekte zuerst: Sie sind billiger als die Musikschleife, und ein
         // stummer Tastendruck fällt eher auf als fehlende Hintergrundmusik.
@@ -161,7 +163,14 @@ class FairyAudio(context: Context) {
      * Überspringen.
      */
     private fun loadOrDecodeMusic(cacheDir: File): ShortArray {
-        val file = File(cacheDir, "ambient.pcm")
+        val file = File(cacheDir, "ambient-${musicFingerprint()}.pcm")
+        // Was eine frühere Musik hinterlassen hat, wird jetzt nicht mehr
+        // gefunden — aber es läge sonst für immer da und belegte Platz.
+        runCatching {
+            cacheDir.listFiles()
+                ?.filter { it.name.startsWith("ambient") && it.name != file.name }
+                ?.forEach { it.delete() }
+        }
 
         if (file.exists() && file.length() > 0) {
             runCatching {
@@ -193,6 +202,55 @@ class FairyAudio(context: Context) {
             Log.w(TAG, "Musik konnte nicht zwischengespeichert werden", error)
         }
         return samples
+    }
+
+    /**
+     * Erkennungsmerkmal der Musikaufnahme.
+     *
+     * Der Zwischenspeicher hing zuvor allein an [SOUND_CACHE_VERSION]. Als die
+     * berechnete Schleife durch die komponierte Aufnahme ersetzt wurde, blieb
+     * diese Zahl unverändert — und jedes Gerät, auf dem das Spiel vorher
+     * gelaufen war, spielte danach weiter die alte Schleife. Der Fehler war von
+     * außen nicht zu erkennen: Der Ton war ja da, nur der falsche.
+     *
+     * Am Dateinamen hängt deshalb jetzt die Prüfsumme der Aufnahme selbst. Wird
+     * die Musik ausgetauscht, ändert sich der Name von allein; niemand muss
+     * mehr daran denken, eine Nummer hochzusetzen.
+     *
+     * Das Lesen der Datei kostet bei jedem Start ein paar Millisekunden — der
+     * Preis dafür, dass ein Vergessen keine Folgen mehr hat.
+     */
+    private fun musicFingerprint(): Long = runCatching {
+        val checksum = CRC32()
+        appContext.resources.openRawResource(R.raw.ambient_forest).use { input ->
+            val buffer = ByteArray(FINGERPRINT_BUFFER_BYTES)
+            while (true) {
+                val read = input.read(buffer)
+                if (read <= 0) break
+                checksum.update(buffer, 0, read)
+            }
+        }
+        checksum.value
+    }.getOrElse { error ->
+        Log.w(TAG, "Prüfsumme der Musik nicht ermittelbar", error)
+        0L
+    }
+
+    /**
+     * Entfernt die Klangordner früherer Fassungen.
+     *
+     * Jede Erhöhung von [SOUND_CACHE_VERSION] legt einen neuen Ordner an; die
+     * alten blieben bisher liegen. Auf einem lange benutzten Gerät summierte
+     * sich das auf etliche Megabyte, die nie wieder jemand anfasst.
+     */
+    private fun pruneOldCaches(current: File) {
+        runCatching {
+            appContext.cacheDir.listFiles()
+                ?.filter { it.isDirectory && it.name.startsWith(CACHE_PREFIX) && it != current }
+                ?.forEach { it.deleteRecursively() }
+        }.onFailure { error ->
+            Log.w(TAG, "Alte Klangordner nicht aufräumbar", error)
+        }
     }
 
     /** Spielt, was das Spielgeschehen hergibt. */
@@ -339,9 +397,7 @@ class FairyAudio(context: Context) {
     private suspend fun startMusic() {
         stopMusic()
         runCatching {
-            val cacheDir = File(appContext.cacheDir, "sounds-v$SOUND_CACHE_VERSION")
-                .apply { mkdirs() }
-            val loop = withContext(Dispatchers.Default) { loadOrDecodeMusic(cacheDir) }
+            val loop = withContext(Dispatchers.Default) { loadOrDecodeMusic(soundCacheDir()) }
             val track = createMusicTrack(loop.size)
             track.write(loop, 0, loop.size)
             // Der ganze Puffer ist die Schleife — dadurch läuft die Musik ohne
@@ -354,6 +410,10 @@ class FairyAudio(context: Context) {
             Log.w(TAG, "Musik konnte nicht gestartet werden", error)
         }
     }
+
+    /** Der Ordner der aktuellen Klangfassung; er wird von zwei Seiten befüllt. */
+    private fun soundCacheDir(): File =
+        File(appContext.cacheDir, "$CACHE_PREFIX-v$SOUND_CACHE_VERSION").apply { mkdirs() }
 
     private fun stopMusic() {
         runCatching {
@@ -416,11 +476,23 @@ class FairyAudio(context: Context) {
         const val PRAISE_DELAY_MILLIS = 900L
         const val GAME_OVER_DELAY_MILLIS = 450L
 
+        const val CACHE_PREFIX = "sounds"
+
         /**
-         * Hochzählen, wenn sich die Synthese ändert — sonst spielt die App
-         * weiter die alten Klänge aus dem Zwischenspeicher.
+         * Hochzählen, wenn sich die **Synthese** in [FairySounds] ändert — sonst
+         * spielt die App weiter die alten Effekte aus dem Zwischenspeicher.
+         *
+         * Für die Musik gilt das nicht mehr: Ihr Zwischenspeicher hängt an der
+         * Prüfsumme der Aufnahme (siehe `musicFingerprint`), weil genau dieses
+         * Hochzählen beim Austausch der Musik einmal vergessen wurde.
+         *
+         * Auf 5 gesetzt, weil auch die Effekte seit „Musik lauter aussteuern"
+         * veraltet im Zwischenspeicher lagen.
          */
-        const val SOUND_CACHE_VERSION = 4
+        const val SOUND_CACHE_VERSION = 5
+
+        /** Häppchen beim Prüfsummenlesen — größer bringt messbar nichts mehr. */
+        const val FINGERPRINT_BUFFER_BYTES = 64 * 1024
 
         /** Überblendung an der Schleifennaht — kurz genug, um nicht aufzufallen. */
         const val LOOP_CROSSFADE_SECONDS = 0.4f
