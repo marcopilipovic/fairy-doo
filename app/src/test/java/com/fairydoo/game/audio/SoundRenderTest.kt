@@ -4,8 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -73,27 +71,8 @@ class SoundRenderTest {
         assertEquals(FairyClips.GIGGLE_COUNT, FairyClips.giggles.size)
     }
 
-    /** Schreibt 16-Bit-Mono-PCM als WAV. */
+    /** Nutzt dieselbe WAV-Erzeugung wie die App, damit beides nicht auseinanderläuft. */
     private fun writeWav(file: File, samples: FloatArray) {
-        val pcm = Synth.toPcm16(samples)
-        val dataBytes = pcm.size * 2
-        val buffer = ByteBuffer.allocate(44 + dataBytes).order(ByteOrder.LITTLE_ENDIAN)
-
-        buffer.put("RIFF".toByteArray())
-        buffer.putInt(36 + dataBytes)
-        buffer.put("WAVE".toByteArray())
-        buffer.put("fmt ".toByteArray())
-        buffer.putInt(16)                       // Länge des Format-Blocks
-        buffer.putShort(1)                      // PCM, unkomprimiert
-        buffer.putShort(1)                      // Mono
-        buffer.putInt(Synth.SAMPLE_RATE)
-        buffer.putInt(Synth.SAMPLE_RATE * 2)    // Bytes pro Sekunde
-        buffer.putShort(2)                      // Bytes pro Frame
-        buffer.putShort(16)                     // Bits pro Sample
-        buffer.put("data".toByteArray())
-        buffer.putInt(dataBytes)
-        pcm.forEach { buffer.putShort(it) }
-
-        file.writeBytes(buffer.array())
+        file.writeBytes(Synth.toWavBytes(samples))
     }
 }

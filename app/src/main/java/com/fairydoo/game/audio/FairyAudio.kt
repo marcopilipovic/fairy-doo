@@ -14,6 +14,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 /**
  * Spielt die Klangwelt ab.
@@ -29,7 +30,8 @@ class FairyAudio(context: Context) {
 
     private val voice = FairyVoice(appContext)
 
-    private var effects: Map<String, ShortArray> = emptyMap()
+    /** SoundPool-Kennungen der berechneten Klänge. */
+    private var effects: Map<String, Int> = emptyMap()
     private var music: AudioTrack? = null
 
     /**
@@ -93,17 +95,38 @@ class FairyAudio(context: Context) {
         startledId = clipPool.load(appContext, FairyClips.startled, 1)
     }
 
+    /**
+     * Berechnet die Klänge und übergibt sie SoundPool.
+     *
+     * Der Umweg über WAV-Dateien im Cache ist nötig, weil SoundPool nur aus
+     * Dateien oder Ressourcen lädt, nicht aus einem Speicherpuffer. Er lohnt
+     * sich: Vorher entstand für **jeden** Ton ein eigener AudioTrack — bei
+     * anhaltendem Tippen kann das an die Grenze gleichzeitiger Audiokanäle
+     * stoßen. SoundPool hält die Klänge dagegen dekodiert vor und mischt sie
+     * über eine feste Zahl von Kanälen.
+     */
     private suspend fun prepare() = withContext(Dispatchers.Default) {
-        val built = buildMap {
-            put(KEY_CHEER, Synth.toPcm16(FairySounds.cheer()))
-            put(KEY_SPARKLE, Synth.toPcm16(FairySounds.sparkle()))
-            put(KEY_SHIELD, Synth.toPcm16(FairySounds.shield()))
-            put(KEY_FREEZE, Synth.toPcm16(FairySounds.timeFreeze()))
-            put(KEY_TICK, Synth.toPcm16(FairySounds.tick()))
-            put(KEY_UNDO, Synth.toPcm16(FairySounds.undo()))
-            put(KEY_GAME_OVER, Synth.toPcm16(FairySounds.gameOver()))
-        }
-        effects = built
+        val sounds = mapOf(
+            KEY_CHEER to FairySounds.cheer(),
+            KEY_SPARKLE to FairySounds.sparkle(),
+            KEY_SHIELD to FairySounds.shield(),
+            KEY_FREEZE to FairySounds.timeFreeze(),
+            KEY_TICK to FairySounds.tick(),
+            KEY_UNDO to FairySounds.undo(),
+            KEY_GAME_OVER to FairySounds.gameOver(),
+        )
+
+        val cacheDir = File(appContext.cacheDir, "sounds").apply { mkdirs() }
+        effects = sounds.mapNotNull { (key, samples) ->
+            runCatching {
+                val file = File(cacheDir, "$key.wav")
+                file.writeBytes(Synth.toWavBytes(samples))
+                key to clipPool.load(file.absolutePath, 1)
+            }.onFailure { error ->
+                Log.w(TAG, "Klang $key konnte nicht vorbereitet werden", error)
+            }.getOrNull()
+        }.toMap()
+
         prepared = true
 
         if (musicEnabled) startMusic()
@@ -212,22 +235,13 @@ class FairyAudio(context: Context) {
 
     private fun playEffect(key: String) {
         if (!soundEnabled) return
-        val samples = effects[key] ?: return
+        val sampleId = effects[key] ?: return
+        if (sampleId !in loadedClips) return
 
-        scope.launch {
-            runCatching {
-                val track = createTrack(samples.size, looping = false)
-                track.write(samples, 0, samples.size)
-                track.play()
-
-                // Erst nach dem Ausklingen freigeben, sonst bricht der Ton ab.
-                val durationMillis = samples.size * 1000L / Synth.SAMPLE_RATE
-                delay(durationMillis + TRACK_RELEASE_GRACE_MILLIS)
-                track.stop()
-                track.release()
-            }.onFailure { error ->
-                Log.w(TAG, "Klang $key konnte nicht abgespielt werden", error)
-            }
+        runCatching {
+            clipPool.play(sampleId, EFFECT_VOLUME, EFFECT_VOLUME, 1, 0, 1f)
+        }.onFailure { error ->
+            Log.w(TAG, "Klang $key konnte nicht abgespielt werden", error)
         }
     }
 
@@ -237,7 +251,7 @@ class FairyAudio(context: Context) {
             val loop = withContext(Dispatchers.Default) {
                 Synth.toPcm16(FairySounds.ambientLoop())
             }
-            val track = createTrack(loop.size, looping = true)
+            val track = createMusicTrack(loop.size)
             track.write(loop, 0, loop.size)
             // Der ganze Puffer ist die Schleife — dadurch läuft die Musik ohne
             // Lücke weiter, ohne dass jemand nachfüllen muss.
@@ -258,20 +272,20 @@ class FairyAudio(context: Context) {
         music = null
     }
 
-    private fun createTrack(sampleCount: Int, looping: Boolean): AudioTrack {
+    /**
+     * Für die Musikschleife.
+     *
+     * Sie bleibt bei AudioTrack, weil SoundPool Einzelklänge auf etwa ein
+     * Megabyte begrenzt — der Ambient-Teppich ist ein Vielfaches davon.
+     */
+    private fun createMusicTrack(sampleCount: Int): AudioTrack {
         val sizeInBytes = sampleCount * BYTES_PER_SAMPLE
 
         return AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_GAME)
-                    .setContentType(
-                        if (looping) {
-                            AudioAttributes.CONTENT_TYPE_MUSIC
-                        } else {
-                            AudioAttributes.CONTENT_TYPE_SONIFICATION
-                        },
-                    )
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .build(),
             )
             .setAudioFormat(
@@ -286,7 +300,7 @@ class FairyAudio(context: Context) {
             .setTransferMode(AudioTrack.MODE_STATIC)
             .setBufferSizeInBytes(sizeInBytes)
             .build()
-            .also { it.setVolume(if (looping) MUSIC_VOLUME else EFFECT_VOLUME) }
+            .also { it.setVolume(MUSIC_VOLUME) }
     }
 
     private companion object {
@@ -305,11 +319,14 @@ class FairyAudio(context: Context) {
         const val EFFECT_VOLUME = 0.9f
         const val CLIP_VOLUME = 1.0f
 
-        /** Genug, damit sich mehrere Feenstimmen überlagern können. */
-        const val MAX_CLIP_STREAMS = 8
+        /**
+         * Kanäle für gleichzeitige Klänge. Stimmen und Effekte teilen sie sich,
+         * deshalb großzügig: Beim schnellen Setzen mehrerer Feen sollen weder
+         * Kichern noch Ticks abgeschnitten werden.
+         */
+        const val MAX_CLIP_STREAMS = 12
 
         const val PRAISE_DELAY_MILLIS = 900L
         const val GAME_OVER_DELAY_MILLIS = 450L
-        const val TRACK_RELEASE_GRACE_MILLIS = 120L
     }
 }

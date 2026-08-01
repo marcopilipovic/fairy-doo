@@ -152,6 +152,39 @@ object Synth {
         (samples[index].coerceIn(-1f, 1f) * Short.MAX_VALUE).toInt().toShort()
     }
 
+    /**
+     * Verpackt die Samples als WAV (16 Bit, Mono).
+     *
+     * Wird zweifach gebraucht: Zur Laufzeit legt die App die berechneten Klänge
+     * als WAV im Cache ab, damit SoundPool sie laden kann; im Test dient
+     * dasselbe Format zum Anhören.
+     */
+    fun toWavBytes(samples: FloatArray): ByteArray {
+        val pcm = toPcm16(samples)
+        val dataBytes = pcm.size * 2
+        val buffer = java.nio.ByteBuffer.allocate(WAV_HEADER_BYTES + dataBytes)
+            .order(java.nio.ByteOrder.LITTLE_ENDIAN)
+
+        buffer.put("RIFF".toByteArray())
+        buffer.putInt(36 + dataBytes)
+        buffer.put("WAVE".toByteArray())
+        buffer.put("fmt ".toByteArray())
+        buffer.putInt(16)                 // Länge des Format-Blocks
+        buffer.putShort(1)                // PCM, unkomprimiert
+        buffer.putShort(1)                // Mono
+        buffer.putInt(SAMPLE_RATE)
+        buffer.putInt(SAMPLE_RATE * 2)    // Bytes pro Sekunde
+        buffer.putShort(2)                // Bytes pro Frame
+        buffer.putShort(16)               // Bits pro Sample
+        buffer.put("data".toByteArray())
+        buffer.putInt(dataBytes)
+        pcm.forEach { buffer.putShort(it) }
+
+        return buffer.array()
+    }
+
+    private const val WAV_HEADER_BYTES = 44
+
     /** Zufallszahl in einem Bereich — für die Streuung zwischen Klangvarianten. */
     fun Random.between(min: Float, max: Float): Float = min + nextFloat() * (max - min)
 }
