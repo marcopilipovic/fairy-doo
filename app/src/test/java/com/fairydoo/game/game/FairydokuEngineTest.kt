@@ -325,4 +325,22 @@ class FairydokuEngineTest {
 
         assertEquals(running, engine.onInput(running, GameInput.NextLevel))
     }
+
+    @Test
+    fun `ein frischer Start bei hoeherem Level setzt Punkte, Leben und Vorraete zurueck`() {
+        // Regression: newGame(level) mit level > 1 gab früher angereicherte
+        // Vorräte statt eines wirklich frischen Levels — die Levelkarte
+        // erlaubt genau diesen Einstieg, darum muss er sauber sein.
+        val solvedFirstLevel = solve(startedGame())
+        val continued = engine.onInput(solvedFirstLevel, GameInput.NextLevel)
+        assertTrue("Vorbedingung: Level 2 hat schon etwas Punktestand", continued.score > 0)
+
+        val freshAtLevelFive = engine.newGame(level = 5)
+
+        assertEquals(5, freshAtLevelFive.level)
+        assertEquals(0, freshAtLevelFive.score)
+        assertEquals(GameState.MAX_LIVES, freshAtLevelFive.lives)
+        assertEquals(GameState.STARTING_POWER_UPS, freshAtLevelFive.powerUps)
+        assertEquals(GameState.sizeForLevel(5), freshAtLevelFive.boardSize)
+    }
 }

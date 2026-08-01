@@ -12,6 +12,7 @@ import com.fairydoo.game.data.PlayerProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -19,6 +20,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -50,6 +53,28 @@ class GameViewModel(
     )
 
     /**
+     * Der App-weite Lebenspool, live nachgeführt.
+     *
+     * Anders als [profile] tickt dieser Wert auch ohne neuen Schreibzugriff:
+     * Ein Sekundentakt gleicht [GlobalLives] gegen die aktuelle Uhrzeit ab,
+     * damit der Countdown bis zum nächsten Leben sichtbar herunterzählt.
+     */
+    val globalLives: StateFlow<GlobalLivesState> = combine(
+        preferences.profile,
+        tickerFlow(1_000L),
+    ) { current, _ ->
+        GlobalLives.normalize(current.globalLives, current.nextGlobalLifeAtMillis, System.currentTimeMillis())
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = GlobalLivesState(GlobalLives.MAX, 0L),
+    )
+
+    /** Steuert, ob die Levelkarte statt des Spiels gezeigt wird. Start: die Karte. */
+    private val _showLevelSelect = MutableStateFlow(true)
+    val showLevelSelect: StateFlow<Boolean> = _showLevelSelect.asStateFlow()
+
+    /**
      * Klangereignisse zum Spielgeschehen.
      *
      * `extraBufferCapacity`, damit schnelle Tipp-Folgen nicht verschluckt
@@ -61,8 +86,13 @@ class GameViewModel(
 
     private var loopJob: Job? = null
 
-    /** Erstes Level samt Willkommens-Overlay. */
-    fun startNewGame() {
+    /**
+     * Startet ein bestimmtes Level frisch — von der Levelkarte, als neuer
+     * Versuch nach einem verlorenen Level oder als direkte Wiederholung eines
+     * bereits geschafften Levels. Ohne das Willkommens-Overlay: Wer aus der
+     * Levelkarte heraus startet, kennt die Regeln schon.
+     */
+    fun startLevel(level: Int) {
         loopJob?.cancel()
         loopJob = null
 
@@ -70,26 +100,26 @@ class GameViewModel(
             _isPreparing.value = true
             // Das Erzeugen eines eindeutigen Rätsels kostet spürbar Rechenzeit
             // und gehört deshalb nicht auf den Main-Thread.
-            val fresh = withContext(Dispatchers.Default) { engine.newGame() }
-            _isPreparing.value = false
-            applyState(fresh)
-        }
-    }
-
-    /** „Neuer Versuch" nach dem Spielende — ohne das Willkommens-Overlay. */
-    fun restart() {
-        loopJob?.cancel()
-        loopJob = null
-
-        viewModelScope.launch {
-            _isPreparing.value = true
             val fresh = withContext(Dispatchers.Default) {
-                engine.onInput(engine.newGame(), GameInput.Begin)
+                engine.onInput(engine.newGame(level), GameInput.Begin)
             }
             _isPreparing.value = false
+            _showLevelSelect.value = false
             applyState(fresh)
             startLoop()
         }
+    }
+
+    /** Öffnet die Levelkarte — pausiert ein laufendes Spiel, falls nötig. */
+    fun openLevelSelect() {
+        pause()
+        _showLevelSelect.value = true
+    }
+
+    /** Schließt die Levelkarte wieder — nimmt ein pausiertes Spiel wieder auf. */
+    fun closeLevelSelect() {
+        _showLevelSelect.value = false
+        resume()
     }
 
     fun onInput(input: GameInput) {
@@ -157,7 +187,16 @@ class GameViewModel(
         SoundEvents.diff(previous, next).forEach(_soundEvents::tryEmit)
 
         if (previous.status != GameStatus.GameOver && next.status == GameStatus.GameOver) {
-            viewModelScope.launch { preferences.recordFinishedGame(next.score) }
+            viewModelScope.launch {
+                preferences.recordFinishedGame(next.score)
+                // Das Level ist verloren — kostet eins der App-weiten Leben.
+                preferences.consumeGlobalLife()
+            }
+        }
+
+        if (previous.status != GameStatus.LevelComplete && next.status == GameStatus.LevelComplete) {
+            // Das nächste Level bleibt freigeschaltet, auch wenn ein späterer Versuch misslingt.
+            viewModelScope.launch { preferences.recordLevelCompleted(next.level) }
         }
     }
 
@@ -187,6 +226,14 @@ class GameViewModel(
             }
         }
         loopJob = null
+    }
+
+    /** Emittiert im festen Abstand — Taktgeber für Werte, die nicht auf Ereignisse warten können. */
+    private fun tickerFlow(intervalMillis: Long): Flow<Unit> = flow {
+        while (true) {
+            emit(Unit)
+            delay(intervalMillis)
+        }
     }
 
     companion object {

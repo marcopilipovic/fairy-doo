@@ -9,8 +9,10 @@ import com.fairydoo.game.ui.screens.GameScreen
 import com.fairydoo.game.ui.theme.FairyDooTheme
 
 /**
- * Fairydoku hat genau einen Bildschirm; alles Weitere sind Overlays darüber.
- * Deshalb gibt es hier keinen Navigations-Graphen.
+ * Fairydoku schaltet zwischen Levelkarte und Spielbildschirm nur per
+ * Zustands-Flag um, nicht über einen Navigations-Graphen — dafür ist bei
+ * zwei Bildschirmen (plus Overlays darüber) noch kein Navigations-Framework
+ * nötig.
  */
 class MainActivity : ComponentActivity() {
 

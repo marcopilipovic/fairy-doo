@@ -53,6 +53,7 @@ class FairydokuEngine(
         previous = GameState(),
         level = level,
         status = GameStatus.Intro,
+        fresh = true,
     )
 
     override fun tick(state: GameState, deltaMillis: Long): GameState {
@@ -224,22 +225,27 @@ class FairydokuEngine(
      */
     private fun onNextLevel(state: GameState): GameState {
         if (state.status != GameStatus.LevelComplete) return state
-        return buildLevel(state, state.level + 1, GameStatus.Running)
+        return buildLevel(state, state.level + 1, GameStatus.Running, fresh = false)
     }
 
-    /** Baut ein Level auf; [previous] liefert Punktestand, Leben und Vorräte. */
-    private fun buildLevel(previous: GameState, level: Int, status: GameStatus): GameState {
+    /**
+     * Baut ein Level auf.
+     *
+     * [fresh] entscheidet, ob Punktestand, Leben und Vorräte neu beginnen
+     * (Levelauswahl, neuer Versuch) oder von [previous] mitwandern (Weiterzug
+     * nach gelöstem Rätsel im selben Lauf).
+     */
+    private fun buildLevel(previous: GameState, level: Int, status: GameStatus, fresh: Boolean): GameState {
         val duration = GameState.durationForLevel(level)
-        val isFirst = level <= 1
 
         return GameState(
             status = status,
             level = level,
-            score = if (isFirst) 0 else previous.score,
+            score = if (fresh) 0 else previous.score,
             gained = 0,
             puzzle = PuzzleGenerator.generate(GameState.sizeForLevel(level), random),
-            lives = if (isFirst) GameState.MAX_LIVES else previous.lives,
-            powerUps = if (isFirst) {
+            lives = if (fresh) GameState.MAX_LIVES else previous.lives,
+            powerUps = if (fresh) {
                 GameState.STARTING_POWER_UPS
             } else {
                 restock(previous.powerUps, previous.level)

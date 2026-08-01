@@ -9,8 +9,11 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -86,99 +89,14 @@ import com.fairydoo.game.ui.theme.TextPrimary
 /** Breitengrenze des Spielbretts, entspricht den 352 px der Vorlage. */
 private val BOARD_MAX_WIDTH = 352.dp
 
+/**
+ * Der nächtliche Wald-Hintergrund — vier Verlaufsschichten plus Glühwürmchen.
+ *
+ * Gemeinsames Gerüst für Spielbildschirm und Levelkarte, damit beide sich wie
+ * derselbe Ort anfühlen statt wie zwei verschiedene Apps.
+ */
 @Composable
-fun GameScreen(preferences: GamePreferencesRepository) {
-    val viewModel: GameViewModel = viewModel(
-        factory = remember(preferences) { GameViewModel.factory(preferences) },
-    )
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val isPreparing by viewModel.isPreparing.collectAsStateWithLifecycle()
-    val profile by viewModel.profile.collectAsStateWithLifecycle()
-
-    // Erstes Rätsel erzeugen — nur einmal, nicht bei jedem Recompose.
-    LaunchedEffect(Unit) {
-        if (state.puzzle == null) viewModel.startNewGame()
-    }
-
-    // Die Klangwelt lebt so lange wie der Bildschirm; beim Verlassen wird sie
-    // freigegeben, sonst liefen Musikspur und Sprachausgabe weiter.
-    val context = LocalContext.current
-    val audio = remember(context) { FairyAudio(context) }
-    DisposableEffect(audio) {
-        onDispose { audio.release() }
-    }
-
-    // Einstellungen durchreichen, sobald sie sich ändern.
-    LaunchedEffect(profile.musicEnabled, profile.soundEnabled, profile.voiceEnabled) {
-        audio.setMusicEnabled(profile.musicEnabled)
-        audio.setSoundEnabled(profile.soundEnabled)
-        audio.setVoiceEnabled(profile.voiceEnabled)
-    }
-
-    // Spielgeschehen hörbar machen. Level und Punktestand gehen mit, damit die
-    // Feenstimme sie im Lob nennen kann.
-    LaunchedEffect(audio) {
-        viewModel.soundEvents.collect { event ->
-            val current = viewModel.state.value
-            audio.play(event, level = current.level, score = current.score)
-        }
-    }
-
-    // Wandert die App in den Hintergrund, wird pausiert statt weitergespielt.
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner, audio) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_STOP -> {
-                    viewModel.pause()
-                    audio.pause()
-                }
-                Lifecycle.Event.ON_START -> {
-                    viewModel.resume()
-                    audio.resume()
-                }
-                else -> Unit
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-
-    GameContent(
-        state = state,
-        isPreparing = isPreparing,
-        bestScore = profile.highScore,
-        musicEnabled = profile.musicEnabled,
-        soundEnabled = profile.soundEnabled,
-        voiceEnabled = profile.voiceEnabled,
-        onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
-        onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
-        onBegin = { viewModel.onInput(GameInput.Begin) },
-        onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
-        onRestart = viewModel::restart,
-        onMusicChange = viewModel::setMusicEnabled,
-        onSoundChange = viewModel::setSoundEnabled,
-        onVoiceChange = viewModel::setVoiceEnabled,
-    )
-}
-
-@Composable
-private fun GameContent(
-    state: GameState,
-    isPreparing: Boolean,
-    bestScore: Int,
-    musicEnabled: Boolean,
-    soundEnabled: Boolean,
-    voiceEnabled: Boolean,
-    onTapCell: (Pos) -> Unit,
-    onUsePowerUp: (PowerUp) -> Unit,
-    onBegin: () -> Unit,
-    onNextLevel: () -> Unit,
-    onRestart: () -> Unit,
-    onMusicChange: (Boolean) -> Unit,
-    onSoundChange: (Boolean) -> Unit,
-    onVoiceChange: (Boolean) -> Unit,
-) {
+internal fun NightBackdrop(content: @Composable BoxScope.() -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -219,7 +137,114 @@ private fun GameContent(
             },
     ) {
         FireflyLayer()
+        content()
+    }
+}
 
+@Composable
+fun GameScreen(preferences: GamePreferencesRepository) {
+    val viewModel: GameViewModel = viewModel(
+        factory = remember(preferences) { GameViewModel.factory(preferences) },
+    )
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val isPreparing by viewModel.isPreparing.collectAsStateWithLifecycle()
+    val profile by viewModel.profile.collectAsStateWithLifecycle()
+    val globalLives by viewModel.globalLives.collectAsStateWithLifecycle()
+    val showLevelSelect by viewModel.showLevelSelect.collectAsStateWithLifecycle()
+
+    // Die Klangwelt lebt so lange wie der Bildschirm; beim Verlassen wird sie
+    // freigegeben, sonst liefen Musikspur und Sprachausgabe weiter.
+    val context = LocalContext.current
+    val audio = remember(context) { FairyAudio(context) }
+    DisposableEffect(audio) {
+        onDispose { audio.release() }
+    }
+
+    // Einstellungen durchreichen, sobald sie sich ändern.
+    LaunchedEffect(profile.musicEnabled, profile.soundEnabled, profile.voiceEnabled) {
+        audio.setMusicEnabled(profile.musicEnabled)
+        audio.setSoundEnabled(profile.soundEnabled)
+        audio.setVoiceEnabled(profile.voiceEnabled)
+    }
+
+    // Spielgeschehen hörbar machen. Level und Punktestand gehen mit, damit die
+    // Feenstimme sie im Lob nennen kann.
+    LaunchedEffect(audio) {
+        viewModel.soundEvents.collect { event ->
+            val current = viewModel.state.value
+            audio.play(event, level = current.level, score = current.score)
+        }
+    }
+
+    // Wandert die App in den Hintergrund, wird pausiert statt weitergespielt.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, audio) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_STOP -> {
+                    viewModel.pause()
+                    audio.pause()
+                }
+                Lifecycle.Event.ON_START -> {
+                    // Steht die Levelkarte offen, bleibt das Spiel pausiert.
+                    if (!showLevelSelect) viewModel.resume()
+                    audio.resume()
+                }
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    if (showLevelSelect) {
+        LevelSelectScreen(
+            highestLevelUnlocked = profile.highestLevelUnlocked,
+            currentLevel = state.level,
+            globalLives = globalLives,
+            // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man
+            // zurückkönnte — nicht beim allerersten Start der App.
+            onClose = if (state.puzzle != null) viewModel::closeLevelSelect else null,
+            onSelectLevel = viewModel::startLevel,
+        )
+    } else {
+        GameContent(
+            state = state,
+            isPreparing = isPreparing,
+            bestScore = profile.highScore,
+            musicEnabled = profile.musicEnabled,
+            soundEnabled = profile.soundEnabled,
+            voiceEnabled = profile.voiceEnabled,
+            onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
+            onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
+            onBegin = { viewModel.onInput(GameInput.Begin) },
+            onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
+            onOpenLevelSelect = viewModel::openLevelSelect,
+            onMusicChange = viewModel::setMusicEnabled,
+            onSoundChange = viewModel::setSoundEnabled,
+            onVoiceChange = viewModel::setVoiceEnabled,
+        )
+    }
+}
+
+@Composable
+private fun GameContent(
+    state: GameState,
+    isPreparing: Boolean,
+    bestScore: Int,
+    musicEnabled: Boolean,
+    soundEnabled: Boolean,
+    voiceEnabled: Boolean,
+    onTapCell: (Pos) -> Unit,
+    onUsePowerUp: (PowerUp) -> Unit,
+    onBegin: () -> Unit,
+    onNextLevel: () -> Unit,
+    onOpenLevelSelect: () -> Unit,
+    onMusicChange: (Boolean) -> Unit,
+    onSoundChange: (Boolean) -> Unit,
+    onVoiceChange: (Boolean) -> Unit,
+) {
+    NightBackdrop {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -292,6 +317,14 @@ private fun GameContent(
                 .padding(end = 6.dp, top = 2.dp),
         )
 
+        MapButton(
+            onClick = onOpenLevelSelect,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .safeDrawingPadding()
+                .padding(start = 6.dp, top = 2.dp),
+        )
+
         when (state.status) {
             GameStatus.Intro -> IntroOverlay(bestScore = bestScore, onStart = onBegin)
 
@@ -305,6 +338,7 @@ private fun GameContent(
                         GameState.speciesOnBoard(state.level).toSet(),
                 ),
                 onContinue = onNextLevel,
+                onShowLevelMap = onOpenLevelSelect,
             )
 
             GameStatus.GameOver -> GameOverOverlay(
@@ -312,11 +346,31 @@ private fun GameContent(
                 score = state.score,
                 level = state.level,
                 bestScore = bestScore,
-                onRestart = onRestart,
+                onShowLevelMap = onOpenLevelSelect,
             )
 
             else -> Unit
         }
+    }
+}
+
+/** Kleiner Rundknopf oben links — führt jederzeit zurück zur Levelkarte. */
+@Composable
+private fun MapButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
+            .border(1.dp, Gold.copy(alpha = 0.4f), CircleShape)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text = "🗺️", fontSize = 18.sp)
     }
 }
 

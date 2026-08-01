@@ -6,7 +6,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.fairydoo.game.game.GlobalLives
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -22,6 +24,11 @@ data class PlayerProfile(
     val musicEnabled: Boolean = true,
     /** Die lobende Feenstimme nach einem gelösten Rätsel. */
     val voiceEnabled: Boolean = true,
+    /** Höchstes je erreichtes Level + 1 — der Fortschritt im Levelraster. */
+    val highestLevelUnlocked: Int = 1,
+    /** Roher Stand des App-weiten Lebenspools, siehe [GlobalLives]. */
+    val globalLives: Int = GlobalLives.MAX,
+    val nextGlobalLifeAtMillis: Long = 0L,
 )
 
 /**
@@ -39,6 +46,9 @@ class GamePreferencesRepository(context: Context) {
             soundEnabled = prefs[KeySound] ?: true,
             musicEnabled = prefs[KeyMusic] ?: true,
             voiceEnabled = prefs[KeyVoice] ?: true,
+            highestLevelUnlocked = prefs[KeyHighestLevel] ?: 1,
+            globalLives = prefs[KeyGlobalLives] ?: GlobalLives.MAX,
+            nextGlobalLifeAtMillis = prefs[KeyNextGlobalLifeAt] ?: 0L,
         )
     }
 
@@ -48,6 +58,29 @@ class GamePreferencesRepository(context: Context) {
             val previousBest = prefs[KeyHighScore] ?: 0
             if (score > previousBest) prefs[KeyHighScore] = score
             prefs[KeyGamesPlayed] = (prefs[KeyGamesPlayed] ?: 0) + 1
+        }
+    }
+
+    /** Ein Level ist geschafft — schaltet das nächste dauerhaft frei, auch wenn spätere Versuche misslingen. */
+    suspend fun recordLevelCompleted(level: Int) {
+        store.edit { prefs ->
+            val previousBest = prefs[KeyHighestLevel] ?: 1
+            prefs[KeyHighestLevel] = maxOf(previousBest, level + 1)
+        }
+    }
+
+    /** Ein Level ist verloren — kostet eins der fünf App-weiten Leben. */
+    suspend fun consumeGlobalLife() {
+        store.edit { prefs ->
+            val now = System.currentTimeMillis()
+            val normalized = GlobalLives.normalize(
+                storedLives = prefs[KeyGlobalLives] ?: GlobalLives.MAX,
+                nextLifeAtMillis = prefs[KeyNextGlobalLifeAt] ?: 0L,
+                nowMillis = now,
+            )
+            val consumed = GlobalLives.consume(normalized, now)
+            prefs[KeyGlobalLives] = consumed.lives
+            prefs[KeyNextGlobalLifeAt] = consumed.nextLifeAtMillis
         }
     }
 
@@ -74,5 +107,8 @@ class GamePreferencesRepository(context: Context) {
         val KeySound = booleanPreferencesKey("sound_enabled")
         val KeyMusic = booleanPreferencesKey("music_enabled")
         val KeyVoice = booleanPreferencesKey("voice_enabled")
+        val KeyHighestLevel = intPreferencesKey("highest_level_unlocked")
+        val KeyGlobalLives = intPreferencesKey("global_lives")
+        val KeyNextGlobalLifeAt = longPreferencesKey("next_global_life_at")
     }
 }

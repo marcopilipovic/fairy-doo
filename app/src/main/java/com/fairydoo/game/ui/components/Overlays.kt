@@ -201,6 +201,7 @@ fun LevelUpOverlay(
     gained: Int,
     teaser: String,
     onContinue: () -> Unit,
+    onShowLevelMap: () -> Unit,
 ) {
     OverlayScaffold(
         borderColor = Gold.copy(alpha = 0.6f),
@@ -265,6 +266,22 @@ fun LevelUpOverlay(
         Spacer(Modifier.height(16.dp))
 
         GoldButton(label = "Tiefer in den Wald →", onClick = onContinue)
+
+        Spacer(Modifier.height(10.dp))
+
+        Text(
+            text = "Zur Levelkarte",
+            style = MaterialTheme.typography.labelSmall,
+            color = TextPrimary.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onShowLevelMap,
+                )
+                .padding(6.dp),
+        )
     }
 }
 
@@ -275,7 +292,7 @@ fun GameOverOverlay(
     score: Int,
     level: Int,
     bestScore: Int,
-    onRestart: () -> Unit,
+    onShowLevelMap: () -> Unit,
 ) {
     OverlayScaffold(
         borderColor = Color(0xFFFF788C).copy(alpha = 0.55f),
@@ -327,6 +344,6 @@ fun GameOverOverlay(
 
         Spacer(Modifier.height(16.dp))
 
-        GoldButton(label = "Neuer Versuch", onClick = onRestart)
+        GoldButton(label = "Zur Levelkarte", onClick = onShowLevelMap)
     }
 }
