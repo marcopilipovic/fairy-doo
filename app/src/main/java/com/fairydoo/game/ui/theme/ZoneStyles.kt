@@ -15,42 +15,42 @@ import androidx.compose.ui.graphics.Color
  * sagt „Fluss". Ein Streifenmuster sagt nur „Zone drei".
  */
 enum class ZoneTexture {
-    /** Funkelnde Sterne über der offenen Lichtung. */
-    Sparkles,
+    /** Vierzackige Sterne zwischen kleinen Farnwedeln. */
+    StarsAndFerns,
 
-    /** Beeren an rankenden Zweigen. */
-    Berries,
-
-    /** Herabgefallenes Herbstlaub. */
-    FallenLeaves,
-
-    /** Fließende Wellen. */
-    Waves,
-
-    /** Dornige Bögen, die sich ineinander schlingen. */
-    Thorns,
-
-    /** Aufgebrochene Kristallzellen. */
-    CrystalCells,
-
-    /** Strahlende Sonnenblumen. */
+    /** Radiale Sonnenblumen mit Blütenkranz. */
     Sunflowers,
 
-    /** Nadelzweige eines dichten Tanns. */
+    /** Nadelzweige, senkrecht und schräg ineinander. */
     PineNeedles,
 
-    /** Weiches, gesprenkeltes Moos. */
-    Speckles,
+    /** Gewundene Ranken mit spitzen Dornen. */
+    ThornVines,
 
-    /** Sternbilder mit ihren Verbindungslinien. */
+    /** Überlappendes Ahorn- und Eichenlaub. */
+    AutumnLeaves,
+
+    /** Feigen an kurzen Zweigen über einer 45°-Schraffur. */
+    FigsAndHatching,
+
+    /** Kristallgitter und Marmoradern. */
+    CrystalVeins,
+
+    /** Sinusförmige Wasserlinien. */
+    Waves,
+
+    /** Sternbilder als Punkt-zu-Linie-Netz. */
     Constellations,
+
+    /** Rissiger Lehmboden in Zellstruktur. */
+    CrackedEarth,
 }
 
 /**
  * Wie eine Waldzone aussieht — Fläche, Motiv und Name gehören zusammen.
  *
  * @param fill die deckende Grundfarbe des Gebiets
- * @param ink der Ton, in dem das Motiv daraufliegt
+ * @param ink der Ton des Motivs, samt seiner Deckkraft
  * @param texture das Motiv selbst
  * @param name der Ort, den die Zone darstellt
  */
@@ -64,107 +64,113 @@ data class ZoneStyle(
 /**
  * Die zehn Gebiete des Feenreichs.
  *
- * Zehn, weil zehn Feen im Wald leben und das Gitter auf 10×10 wachsen kann —
- * so bekommt jede Fee ein eigenes Zuhause, und keine Zone muss sich eine Farbe
- * mit einer anderen teilen.
+ * Zehn, weil zehn Feen im Wald leben — so bekommt jede ein eigenes Zuhause, und
+ * keine Zone muss sich eine Farbe mit einer anderen teilen.
  *
- * Die Farbtöne sind über den ganzen Farbkreis verteilt statt nach Geschmack
- * gewählt: Zwischen je zwei Gebieten liegt ein spürbarer Sprung im Farbton, und
- * wo zwei sich näherkommen — Goldlaub und Abendrot, Dornenranken und
- * Tannenhain — trennt sie ein deutlicher Helligkeitsunterschied.
- *
- * Der Motiv-Ton ist immer eine dunklere oder hellere Verwandte der Fläche, nie
- * eine Fremdfarbe: Das Motiv soll die Zone strukturieren, nicht eine zweite
- * Farbe in sie hineintragen.
+ * Farben und Deckkraft der Motive sind vorgegeben und hier unverändert
+ * übernommen. Zwei Paare liegen im Farbton dicht beieinander — Goldene Lichtung
+ * neben Sonnengarten, Tannenhain neben Dornenranke —, unterscheiden sich aber
+ * deutlich in der Helligkeit; ein drittes, Herbstboden und Erdreich, ist in
+ * beidem nah und wird allein von seinen Motiven getrennt: fallendes Laub gegen
+ * rissigen Lehm. Der Test in `ZoneStylesTest` hält das fest, statt es zu
+ * verschweigen.
  */
 val ZoneStyles: List<ZoneStyle> = listOf(
     ZoneStyle(
-        fill = Color(0xFFF2E8C9),
-        ink = Color(0x66A08A4E),
-        texture = ZoneTexture.Sparkles,
-        name = "Helle Wiese",
+        fill = Color(0xFFFDF6E3),
+        ink = Color(0x66D9B46A),
+        texture = ZoneTexture.StarsAndFerns,
+        name = "Goldene Lichtung",
     ),
     ZoneStyle(
-        fill = Color(0xFF9B79C9),
-        ink = Color(0x805B3E8C),
-        texture = ZoneTexture.Berries,
-        name = "Waldbeeren",
-    ),
-    ZoneStyle(
-        fill = Color(0xFFB25E2E),
-        ink = Color(0x80703518),
-        texture = ZoneTexture.FallenLeaves,
-        name = "Goldlaub",
-    ),
-    ZoneStyle(
-        fill = Color(0xFF7FD1D8),
-        ink = Color(0x803A9BA6),
-        texture = ZoneTexture.Waves,
-        name = "Flussquelle",
-    ),
-    ZoneStyle(
-        fill = Color(0xFF3D9970),
-        ink = Color(0x8C1E5C43),
-        texture = ZoneTexture.Thorns,
-        name = "Dornenranken",
-    ),
-    ZoneStyle(
-        // Karmesin statt des Lachstons der Vorlage: Der lag im Farbton nur
-        // sechzehn Grad neben Goldlaub und war bei ähnlicher Helligkeit kaum
-        // davon zu trennen. Das bläuliche Rot rückt beide auseinander, ohne
-        // die Kristallhöhle aus dem warmen Teil der Palette zu nehmen.
-        fill = Color(0xFFCE4257),
-        ink = Color(0x808A2438),
-        texture = ZoneTexture.CrystalCells,
-        name = "Kristallhöhle",
-    ),
-    ZoneStyle(
-        fill = Color(0xFFE8A317),
-        ink = Color(0x8C9E6809),
+        fill = Color(0xFFF6C445),
+        ink = Color(0x599E6B00),
         texture = ZoneTexture.Sunflowers,
-        name = "Abendrot",
+        name = "Sonnengarten",
     ),
     ZoneStyle(
-        fill = Color(0xFF2E4A38),
-        ink = Color(0x8C7FB894),
+        fill = Color(0xFF1B4332),
+        ink = Color(0x8040916C),
         texture = ZoneTexture.PineNeedles,
         name = "Tannenhain",
     ),
     ZoneStyle(
-        fill = Color(0xFFC6CBC0),
-        ink = Color(0x707C8676),
-        texture = ZoneTexture.Speckles,
-        name = "Silbermoos",
+        fill = Color(0xFF00A86B),
+        ink = Color(0x99004B23),
+        texture = ZoneTexture.ThornVines,
+        name = "Dornenranke",
     ),
     ZoneStyle(
-        fill = Color(0xFF3E3F7A),
-        ink = Color(0x8CAFB4E8),
+        fill = Color(0xFFC05621),
+        ink = Color(0x735C2000),
+        texture = ZoneTexture.AutumnLeaves,
+        name = "Herbstboden",
+    ),
+    ZoneStyle(
+        fill = Color(0xFF6B3074),
+        ink = Color(0x59B86BB3),
+        texture = ZoneTexture.FigsAndHatching,
+        name = "Feigenhain",
+    ),
+    ZoneStyle(
+        fill = Color(0xFFE2E8F0),
+        ink = Color(0x8064748B),
+        texture = ZoneTexture.CrystalVeins,
+        name = "Kristallader",
+    ),
+    ZoneStyle(
+        fill = Color(0xFF38BDF8),
+        ink = Color(0x660369A1),
+        texture = ZoneTexture.Waves,
+        name = "Flusslauf",
+    ),
+    ZoneStyle(
+        fill = Color(0xFF1E1B4B),
+        ink = Color(0xB3A5B4FC),
         texture = ZoneTexture.Constellations,
         name = "Himmelstor",
+    ),
+    ZoneStyle(
+        fill = Color(0xFFE05A47),
+        ink = Color(0x667A1C10),
+        texture = ZoneTexture.CrackedEarth,
+        name = "Erdreich",
     ),
 )
 
 /**
- * Die Außenlinie einer Zone — cremeweiß statt bunt.
+ * Die Außenlinie einer Zone.
  *
- * Früher trug die Grenze die Zonenfarbe. Das doppelte die Information, die
- * ohnehin in der Fläche steckt, und zwang das Auge, zehn leuchtende Farbtöne
- * gleichzeitig an Kanten auseinanderzuhalten. Eine einheitliche helle Linie
- * sagt nur noch „hier endet eine Zone"; *welche* Zone es ist, beantwortet die
- * Füllung.
+ * Für alle Gebiete dieselbe Farbe: Welche Zone hinter einer Grenze liegt,
+ * beantwortet die Fläche — die Linie sagt nur, *dass* dort eine Grenze
+ * verläuft. Bunte Ränder zwängen das Auge, zehn Farbtöne gleichzeitig an
+ * Kanten auseinanderzuhalten.
+ *
+ * Gebrochenes Elfenbein statt Weiß: Reinweiß schnitt die Gebiete wie mit dem
+ * Skalpell auseinander und ließ das Brett grell wirken.
  */
-val ZoneBorder = Color(0xFFE8E4DA)
+val ZoneBorder = Color(0xFFDCD3BE)
 
 /**
  * Der dunkle Saum an der Innenseite der hellen Grenzlinie.
  *
- * Eine helle Linie allein reicht nicht: Auf der Hellen Wiese, die selbst fast
- * cremefarben ist, verschwände sie vollständig — gemessen ein Kontrast von
- * 1,04 zu 1. Mit dem Saum trägt jede Grenze beides in sich, hell und dunkel,
- * und mindestens eines davon hebt sich von jeder der zehn Flächen ab. Dasselbe
- * Mittel, mit dem man Schrift über wechselnden Bildern lesbar hält.
+ * Eine helle Linie allein reicht nicht: Auf der Goldenen Lichtung und der
+ * Kristallader, die selbst fast weiß sind, verschwände sie vollständig. Mit dem
+ * Saum trägt jede Grenze beides in sich, hell und dunkel, und mindestens eines
+ * davon hebt sich von jeder der zehn Flächen ab. Dasselbe Mittel, mit dem man
+ * Schrift über wechselnden Bildern lesbar hält.
  */
-val ZoneBorderShade = Color(0xE01A1A14)
+val ZoneBorderShade = Color(0xEB18140E)
 
 /** Die Fuge zwischen zwei Feldern derselben Zone. */
-val CellSeam = Color(0x33000000)
+val CellSeam = Color(0x24000000)
+
+/**
+ * Feine Körnung über jeder Zonenfläche.
+ *
+ * Ohne sie liegen zehn satte Farben als glatte Blöcke nebeneinander, und das
+ * Brett wirkt plakativ statt gemalt. Die Körnung nimmt den Flächen den Lack,
+ * ohne ihre Farbe zu verändern — der Unterschied zwischen bedrucktem Papier und
+ * lackiertem Blech.
+ */
+val ZoneGrain = Color(0x0E000000)

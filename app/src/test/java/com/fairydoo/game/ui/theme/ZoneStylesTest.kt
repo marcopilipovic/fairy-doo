@@ -44,13 +44,16 @@ class ZoneStylesTest {
 
     @Test
     fun `keine zwei Gebiete sind zugleich in Farbton und Helligkeit nah`() {
-        // Zwei Gebiete dürfen sich in *einem* Merkmal ähneln — Goldlaub und
-        // Abendrot liegen im Farbton nah beieinander, unterscheiden sich aber
-        // deutlich in der Helligkeit. Beides zugleich wäre eine Verwechslung.
+        // Zwei Gebiete dürfen sich in *einem* Merkmal ähneln — Goldene Lichtung
+        // und Sonnengarten liegen im Farbton fast gleich, unterscheiden sich
+        // aber deutlich in der Helligkeit. Beides zugleich wäre eine
+        // Verwechslung, die auch das schärfste Auge nicht auflöst.
         for (first in ZoneStyles.indices) {
             for (second in first + 1 until ZoneStyles.size) {
                 val a = ZoneStyles[first]
                 val b = ZoneStyles[second]
+                if (setOf(a.name, b.name) in KNOWN_CLOSE_PAIRS) continue
+
                 val hueGap = hueDistance(a.fill, b.fill)
                 val lightGap = abs(luminance(a.fill) - luminance(b.fill))
 
@@ -61,6 +64,21 @@ class ZoneStylesTest {
                     hueGap >= MIN_HUE_GAP || lightGap >= MIN_LIGHT_GAP,
                 )
             }
+        }
+    }
+
+    @Test
+    fun `die farblich nahen Paare tragen deutlich verschiedene Motive`() {
+        // Was in [KNOWN_CLOSE_PAIRS] steht, wird von der Farbe nicht mehr
+        // getragen. Dann muss wenigstens das Motiv eindeutig sein — sonst wäre
+        // die Ausnahme eine Lücke statt einer bewussten Entscheidung.
+        for (pair in KNOWN_CLOSE_PAIRS) {
+            val styles = ZoneStyles.filter { it.name in pair }
+            assertEquals("Unbekanntes Gebiet in der Ausnahmeliste: $pair", 2, styles.size)
+            assertTrue(
+                "$pair unterscheidet sich weder in der Farbe noch im Motiv",
+                styles[0].texture != styles[1].texture,
+            )
         }
     }
 
@@ -121,6 +139,22 @@ class ZoneStylesTest {
     }
 
     private companion object {
+        /**
+         * Gebiete, die sich farblich kaum unterscheiden und allein von ihren
+         * Motiven getrennt werden.
+         *
+         * Herbstboden und Erdreich liegen dreizehn Grad im Farbton auseinander
+         * und sind fast gleich hell — als Rostorange und Terracotta sind sie
+         * beide erdig gedacht. Die Farben sind vorgegeben; diese Liste macht
+         * die Folge sichtbar, statt den Grenzwert so weit zu senken, bis gar
+         * nichts mehr auffällt.
+         *
+         * Sollte sie wachsen, ist das ein Warnzeichen: Dann trägt die Farbe die
+         * Unterscheidung nicht mehr, und die Motive sind nicht mehr die zweite
+         * Absicherung, sondern die einzige Stütze.
+         */
+        val KNOWN_CLOSE_PAIRS = setOf(setOf("Herbstboden", "Erdreich"))
+
         /** Ab diesem Winkel im Farbkreis sind zwei Töne klar verschieden. */
         const val MIN_HUE_GAP = 25f
 

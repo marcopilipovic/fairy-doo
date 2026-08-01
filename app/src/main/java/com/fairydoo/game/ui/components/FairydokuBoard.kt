@@ -67,6 +67,7 @@ import com.fairydoo.game.ui.theme.ConflictRed
 import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.ZoneBorder
 import com.fairydoo.game.ui.theme.ZoneBorderShade
+import com.fairydoo.game.ui.theme.ZoneGrain
 import com.fairydoo.game.ui.theme.ZoneStyles
 
 /** Der Eigenton, den eine Fee um sich verbreitet. */
@@ -183,6 +184,7 @@ private fun BoardCell(
                 // sich, statt sie erst aus der Nachbarschaft ableiten zu lassen.
                 drawRect(zone.fill)
                 drawZoneTexture(texture = zone.texture, color = zone.ink, pos = pos)
+                drawZoneGrain(pos)
                 drawZoneShading()
                 drawZoneBorders(
                     top = topEdge,
@@ -271,15 +273,51 @@ private fun DrawScope.drawZoneShading() {
     drawRect(
         brush = Brush.radialGradient(
             colorStops = arrayOf(
-                0.0f to Color(0x0EFFFFFF),
+                0.0f to Color(0x0AFFFFFF),
                 0.7f to Color.Transparent,
-                1.0f to Color(0x14000000),
+                1.0f to Color(0x0F000000),
             ),
             center = Offset(size.width * 0.4f, size.height * 0.35f),
             radius = size.maxDimension * 0.8f,
         ),
     )
 }
+
+/**
+ * Feine Körnung über der Zonenfläche.
+ *
+ * Zehn satte Farben als glatte Blöcke nebeneinander wirken plakativ — nach
+ * Buntpapier, nicht nach gemaltem Wald. Die Körnung nimmt den Flächen den Lack,
+ * ohne ihre Farbe anzutasten: der Unterschied zwischen bedrucktem Papier und
+ * lackiertem Blech.
+ *
+ * Die Punkte liegen fest, nicht zufällig — ein Feld sieht bei jedem
+ * Neuzeichnen gleich aus, und über die Position gestreut wiederholt sich das
+ * Korn auch zwischen benachbarten Feldern nicht.
+ */
+private fun DrawScope.drawZoneGrain(pos: Pos) {
+    val seed = pos.row * 131 + pos.col * 71
+    val radius = size.minDimension * 0.014f
+
+    repeat(GRAIN_DOTS) { index ->
+        val a = (((seed + index * 97) * 1103515245L + 12345L) ushr 16) % 1000L / 1000f
+        val b = (((seed + index * 61) * 1103515245L + 54321L) ushr 16) % 1000L / 1000f
+        drawCircle(
+            color = ZoneGrain,
+            radius = radius,
+            center = Offset(size.width * a, size.height * b),
+        )
+    }
+}
+
+/**
+ * Wie viele Körner je Feld.
+ *
+ * Genug, dass die Fläche lebt; wenige genug, dass das Zeichnen eines
+ * 8×8-Bretts nicht spürbar wird — die Körnung wird nur bei einer Änderung neu
+ * gezeichnet, nicht in jedem Bild.
+ */
+private const val GRAIN_DOTS = 26
 
 /**
  * Die Kantenlinien: cremeweiß an Zonengrenzen, als feine Fuge zwischen Feldern

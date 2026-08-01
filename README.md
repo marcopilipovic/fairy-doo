@@ -103,16 +103,16 @@ Farbe und ein gezeichnetes Motiv.
 
 | Gebiet | Farbe | Motiv |
 | --- | --- | --- |
-| Helle Wiese | Creme | Funkelnde Sterne |
-| Waldbeeren | Violett | Beeren an Ranken |
-| Goldlaub | Rostbraun | Herbstlaub |
-| Flussquelle | Aqua | Wellen |
-| Dornenranken | Grün | Dornige Bögen |
-| Kristallhöhle | Karmesin | Kristallzellen |
-| Abendrot | Gold | Sonnenblumen |
-| Tannenhain | Dunkelgrün | Nadelzweige |
-| Silbermoos | Hellgrau | Gesprenkeltes Moos |
-| Himmelstor | Blauviolett | Sternbilder |
+| Goldene Lichtung | Creme `#FDF6E3` | Sterne und Farnwedel |
+| Sonnengarten | Warmes Gelb `#F6C445` | Sonnenblumen |
+| Tannenhain | Waldgrün `#1B4332` | Nadelzweige |
+| Dornenranke | Smaragd `#00A86B` | Ranken mit Dornen |
+| Herbstboden | Rostorange `#C05621` | Fallendes Laub |
+| Feigenhain | Violett `#6B3074` | Feigen über 45°-Schraffur |
+| Kristallader | Grauweiß `#E2E8F0` | Marmoradern und Facetten |
+| Flusslauf | Aquamarin `#38BDF8` | Wasserwellen |
+| Himmelstor | Indigo `#1E1B4B` | Sternbilder |
+| Erdreich | Terracotta `#E05A47` | Rissiger Lehmboden |
 
 Das ist der Doppel-Kodierungs-Grundsatz: Wer Farben schlecht oder gar nicht
 unterscheidet, liest das Gebiet am Motiv ab; wer sie gut unterscheidet, nimmt
@@ -121,13 +121,19 @@ das Motiv kaum wahr. Keines der beiden ist auf das andere angewiesen.
 Zehn, weil zehn Feen im Wald leben — so bekommt jede ein eigenes Zuhause, und
 auf dem größten Brett muss sich keine Zone eine Farbe teilen.
 
-**Die Grenzlinien** tragen für alle Gebiete dieselbe cremeweiße Farbe. Vorher
-trug jede Grenze die Farbe ihrer Zone; das doppelte die Information, die
+**Die Grenzlinien** tragen für alle Gebiete dieselbe elfenbeinfarbene Linie.
+Vorher trug jede Grenze die Farbe ihrer Zone; das doppelte die Information, die
 ohnehin in der Fläche steckt, und zwang das Auge, zehn Farbtöne gleichzeitig an
 Kanten auseinanderzuhalten. Unter der hellen Linie liegt ein dunkler Saum —
-ohne ihn verschwände sie auf der Hellen Wiese, die selbst fast cremefarben ist
+ohne ihn verschwände sie auf der Goldenen Lichtung, die selbst fast weiß ist
 (gemessen ein Kontrast von 1,04 zu 1). Dasselbe gilt für das ✕: Es hat einen
 dunklen Umriss, damit es auf allen zehn Flächen gleich schwer wiegt.
+
+**Die Motive sind dicht gestreut**, nicht als zwei, drei große Zeichen je Feld.
+Ein einzelnes großes Blatt liest sich als Symbol, das auf der Fläche klebt;
+viele kleine lesen sich als Beschaffenheit der Fläche selbst. Dazu kommt eine
+feine Körnung: Zehn satte Farben als glatte Blöcke wirken plakativ — der
+Unterschied zwischen bedrucktem Papier und lackiertem Blech.
 
 **Der Graustufen-Test** ist als Unit-Test hinterlegt (`ZoneStylesTest`). Er
 nimmt jedem Gebiet die Farbe und prüft, was übrig bleibt: dass keine zwei
@@ -136,6 +142,13 @@ jedes Motiv sich von seiner eigenen Fläche abhebt und dass jede Grenzlinie
 sichtbar bleibt. Zehn Farben können in Graustufen nicht alle zehn verschiedene
 Helligkeiten haben — dafür ist der Bereich zu schmal; genau deshalb tragen die
 Motive die zweite Hälfte der Unterscheidung.
+
+Ein Paar hält der Prüfung bewusst nicht stand: **Herbstboden und Erdreich**
+liegen dreizehn Grad im Farbton auseinander und sind fast gleich hell — als
+Rostorange und Terracotta sind sie beide erdig gedacht. Sie stehen als benannte
+Ausnahme im Test, getrennt allein durch ihre Motive (fallendes Laub gegen
+rissigen Lehm). Wächst diese Liste, trägt die Farbe die Unterscheidung nicht
+mehr.
 
 ## Die Feen
 
