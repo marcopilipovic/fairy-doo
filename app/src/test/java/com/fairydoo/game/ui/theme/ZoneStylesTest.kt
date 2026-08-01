@@ -100,19 +100,22 @@ class ZoneStylesTest {
     }
 
     @Test
-    fun `die Zonengrenze ist auf jedem Gebiet zu sehen`() {
-        // Die Grenze besteht aus einer hellen Linie mit dunklem Saum. Auf einer
-        // dunklen Fläche trägt die helle Linie, auf einer hellen der Saum —
-        // gefordert ist deshalb nicht, dass beide auffallen, sondern dass
-        // mindestens eines von beiden es tut.
+    fun `die Heckengrenze ist auf jedem Gebiet zu sehen`() {
+        // Die Grenze besteht aus grünen Blattbüscheln über einem dunklen Saum.
+        // Auf einer hellen Fläche trägt die Hecke selbst, auf einem dunklen
+        // Gebiet der Saum — und auf dem Tannenhain, der beinahe die Farbe der
+        // Hecke hat, bleibt nur der Saum. Gefordert ist deshalb nicht, dass
+        // beide auffallen, sondern dass mindestens eines von beiden es tut.
         for (style in ZoneStyles) {
-            val light = contrastRatio(ZoneBorder, style.fill)
-            val shade = contrastRatio(over(ZoneBorderShade, style.fill), style.fill)
+            val hedge = contrastRatio(HedgeGreen, style.fill)
+            val light = contrastRatio(HedgeLight, style.fill)
+            val shade = contrastRatio(over(HedgeShade, style.fill), style.fill)
 
             assertTrue(
-                "Die Zonengrenze verschwindet auf ${style.name}: helle Linie " +
-                    "${"%.2f".format(light)}:1, Saum ${"%.2f".format(shade)}:1",
-                maxOf(light, shade) >= MIN_BORDER_CONTRAST,
+                "Die Heckengrenze verschwindet auf ${style.name}: Blätter " +
+                    "${"%.2f".format(hedge)}:1, Lichtseite ${"%.2f".format(light)}:1, " +
+                    "Saum ${"%.2f".format(shade)}:1",
+                maxOf(hedge, light, shade) >= MIN_BORDER_CONTRAST,
             )
         }
     }

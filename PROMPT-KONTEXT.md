@@ -75,7 +75,18 @@ häng den passenden Abschnitt aus Teil 2 oder 3 an.
 > eyes, two antennae, one pair of wings, short legs.
 > Character: *[Beschreibung aus der Tabelle einsetzen]*
 
-### 2b) Hintergrund-Illustration
+### 2b) Gebietskacheln des Spielbretts
+
+Die zehn Waldgebiete, über deren Felder das Rätsel läuft, haben eine **eigene
+Datei mit fertigen Prompts**: [PROMPTS-ZONEN.md](PROMPTS-ZONEN.md). Dort stehen
+der gemeinsame Kopf, alle zehn Einzelprompts mit ihren Hex-Farben, der
+Negativ-Prompt und die Prüfanleitung für die Kachelbarkeit.
+
+Der Grund für die eigene Datei: Diese Bilder müssen **nahtlos wiederholbar**
+sein, und daran scheitern die meisten Versuche. Die Anforderungen sind zu
+speziell, um sie zwischen den übrigen Grafiken zu verstecken.
+
+### 2c) Hintergrund-Illustration
 
 > Hochformat-Hintergrund für ein Handyspiel (Seitenverhältnis 9:19,5),
 > biolumineszenter Nachtwald bei Nacht. Tiefblau-violette Farbtöne (`#0D1330`
@@ -84,7 +95,7 @@ häng den passenden Abschnitt aus Teil 2 oder 3 an.
 > **Wichtig:** Die Bildmitte muss ruhig und dunkel bleiben — dort liegt das
 > Spielbrett. Keine Figuren, kein Text, keine harten Kontraste in der Mitte.
 
-### 2c) Symbole der drei Fähigkeiten
+### 2d) Symbole der drei Fähigkeiten
 
 > Drei Symbole im selben Stil, je 64×64 Pixel, Pixel-Art, transparenter
 > Hintergrund, für runde Schaltflächen auf dunkelblauem Grund:

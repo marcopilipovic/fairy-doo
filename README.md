@@ -121,15 +121,29 @@ das Motiv kaum wahr. Keines der beiden ist auf das andere angewiesen.
 Zehn, weil zehn Feen im Wald leben — so bekommt jede ein eigenes Zuhause, und
 auf dem größten Brett muss sich keine Zone eine Farbe teilen.
 
-**Die Grenzlinien** tragen für alle Gebiete dieselbe elfenbeinfarbene Linie.
-Vorher trug jede Grenze die Farbe ihrer Zone; das doppelte die Information, die
-ohnehin in der Fläche steckt, und zwang das Auge, zehn Farbtöne gleichzeitig an
-Kanten auseinanderzuhalten. Unter der hellen Linie liegt ein dunkler Saum —
-ohne ihn verschwände sie auf der Goldenen Lichtung, die selbst fast weiß ist
-(gemessen ein Kontrast von 1,04 zu 1). Dasselbe gilt für das ✕: Es hat einen
-dunklen Umriss, damit es auf allen zehn Flächen gleich schwer wiegt.
+**Die Grenzen sind Hecken.** An jeder Zonenkante läuft ein schmales Band aus
+überlappenden Blattbüscheln, von oben gesehen wie eine niedrig geschnittene
+Hecke. Vorher war es eine gezogene elfenbeinfarbene Linie — in einem Wald ein
+Fremdkörper, der die Gebiete auseinanderschnitt, statt sie zu begrenzen.
 
-**Die Motive sind dicht gestreut**, nicht als zwei, drei große Zeichen je Feld.
+Die Hecke trägt drei Töne, und das ist keine Spielerei: ein dunkles Grün, eine
+hellere Lichtseite und darunter einen dunklen Saum. Auf hellen Gebieten fällt
+das dunkle Grün auf, auf dunklen die Lichtseite. Der Tannenhain hat den Fall
+erzwungen — er ist selbst ein dunkles Waldgrün, und dort hatten Hecke wie Saum
+nur 1,46 zu 1 Kontrast. Erst ein deutlich helleres Laubgrün löst das.
+
+Für das ✕ gilt dasselbe Prinzip: Es hat einen dunklen Umriss, damit es auf
+allen zehn Flächen gleich schwer wiegt.
+
+**Statt gezeichneter Motive kann ein Gebiet eine gemalte Kachel tragen.** Eine
+nahtlose Kachel deckt drei Felder je Kante ab; jedes Feld zeichnet daraus seinen
+Ausschnitt, sodass ein durchgehendes Bild entsteht statt eines Rasters
+(`ZoneImageCache`, `drawZoneTile`). Beides steht nebeneinander: Ein Gebiet ohne
+Bild behält sein Motiv. So lassen sich die Kacheln nach und nach einbauen, und
+eine unbrauchbare ist mit einer Zeile wieder draußen. Die Prompts dafür stehen
+in [PROMPTS-ZONEN.md](PROMPTS-ZONEN.md).
+
+**Die gezeichneten Motive sind dicht gestreut**, nicht als zwei, drei große Zeichen je Feld.
 Ein einzelnes großes Blatt liest sich als Symbol, das auf der Fläche klebt;
 viele kleine lesen sich als Beschaffenheit der Fläche selbst. Dazu kommt eine
 feine Körnung: Zehn satte Farben als glatte Blöcke wirken plakativ — der

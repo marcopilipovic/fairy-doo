@@ -33,6 +33,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
@@ -62,11 +63,13 @@ import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.model.CellMark
 import com.fairydoo.game.game.model.Pos
 import com.fairydoo.game.ui.sprites.FairySpriteCache
+import com.fairydoo.game.ui.sprites.ZoneImageCache
 import com.fairydoo.game.ui.theme.CellSeam
 import com.fairydoo.game.ui.theme.ConflictRed
 import com.fairydoo.game.ui.theme.Gold
-import com.fairydoo.game.ui.theme.ZoneBorder
-import com.fairydoo.game.ui.theme.ZoneBorderShade
+import com.fairydoo.game.ui.theme.HedgeGreen
+import com.fairydoo.game.ui.theme.HedgeLight
+import com.fairydoo.game.ui.theme.HedgeShade
 import com.fairydoo.game.ui.theme.ZoneGrain
 import com.fairydoo.game.ui.theme.ZoneStyles
 
@@ -163,6 +166,8 @@ private fun BoardCell(
     val haptics = LocalHapticFeedback.current
     val region = puzzle.regionAt(pos)
     val zone = ZoneStyles[region % ZoneStyles.size]
+    val context = LocalContext.current
+    val tile = remember(zone) { ZoneImageCache.bitmapOf(context, zone) }
     val mark = state.markAt(pos)
     val isConflicting = pos in state.conflicts
 
@@ -182,11 +187,19 @@ private fun BoardCell(
                 // Die Zone liegt als volle Fläche im Feld, nicht als Schein an
                 // seinen Kanten: So trägt jedes Feld seine Zugehörigkeit in
                 // sich, statt sie erst aus der Nachbarschaft ableiten zu lassen.
-                drawRect(zone.fill)
-                drawZoneTexture(texture = zone.texture, color = zone.ink, pos = pos)
-                drawZoneGrain(pos)
+                if (tile != null) {
+                    drawZoneTile(tile, pos)
+                } else {
+                    // Kein Bild für dieses Gebiet: das gezeichnete Motiv. Die
+                    // Körnung gehört nur hierher — eine gemalte Kachel bringt
+                    // ihre eigene Beschaffenheit mit.
+                    drawRect(zone.fill)
+                    drawZoneTexture(texture = zone.texture, color = zone.ink, pos = pos)
+                    drawZoneGrain(pos)
+                }
                 drawZoneShading()
                 drawZoneBorders(
+                    pos = pos,
                     top = topEdge,
                     bottom = bottomEdge,
                     left = leftEdge,
@@ -259,6 +272,37 @@ private fun BoardCell(
 }
 
 /**
+ * Legt den Ausschnitt der Zonenkachel in dieses Feld.
+ *
+ * Eine Kachel deckt [ZoneImageCache.TILE_CELLS] Felder je Kante ab; jedes Feld
+ * zeichnet daraus nur seinen Teil. Benachbarte Felder ziehen benachbarte
+ * Ausschnitte und ergeben ein durchgehendes Bild — alle drei Felder beginnt die
+ * Kachel von vorn, und weil sie nahtlos ist, fällt das nicht auf.
+ *
+ * Der Weg über den Quellausschnitt statt über einen wiederholenden Shader ist
+ * Absicht: Ein Shader kachelt in Bildpunkten, nicht in dp, und käme auf
+ * Geräten unterschiedlicher Dichte in verschiedenen Größen heraus. So passt
+ * sich die Kachel dagegen jeder Feldgröße von selbst an, vom 4×4-Brett bis zum
+ * 8×8.
+ */
+private fun DrawScope.drawZoneTile(tile: ImageBitmap, pos: Pos) {
+    val cells = ZoneImageCache.TILE_CELLS
+    val slice = tile.width / cells
+    drawImage(
+        image = tile,
+        srcOffset = IntOffset(
+            x = pos.col.mod(cells) * slice,
+            y = pos.row.mod(cells) * slice,
+        ),
+        srcSize = IntSize(slice, slice),
+        dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+        // Medium statt None: Die Kachel wird verkleinert, nicht vergrößert —
+        // ohne Glättung entstünden Treppen in den gemalten Übergängen.
+        filterQuality = FilterQuality.Medium,
+    )
+}
+
+/**
  * Eine sehr leichte Wölbung über der Zonenfläche.
  *
  * Der Vorgänger war ein Stein-Relief mit heller Ober- und dunkler Unterkante.
@@ -320,47 +364,44 @@ private fun DrawScope.drawZoneGrain(pos: Pos) {
 private const val GRAIN_DOTS = 26
 
 /**
- * Die Kantenlinien: cremeweiß an Zonengrenzen, als feine Fuge zwischen Feldern
- * derselben Zone.
+ * Die Kanten eines Feldes: eine Hecke an Zonengrenzen, eine feine Fuge zwischen
+ * Feldern derselben Zone.
  *
- * Beide Linien tragen für jede Zone dieselbe Farbe. Welche Zone hinter einer
- * Grenze liegt, beantwortet die Fläche — die Linie sagt nur, *dass* dort eine
- * Grenze verläuft. Das entlastet das Auge, das sonst zehn leuchtende Farbtöne
- * gleichzeitig an Kanten auseinanderhalten müsste.
+ * Die Hecke trägt für alle Gebiete dieselbe Farbe. Welche Zone hinter ihr
+ * liegt, beantwortet die Fläche — die Grenze sagt nur, *dass* dort eine
+ * verläuft. Das entlastet das Auge, das sonst zehn Farbtöne gleichzeitig an
+ * Kanten auseinanderhalten müsste.
  *
  * Die Fuge innerhalb der Zone bleibt dagegen dunkel und schmal: Sie soll die
  * Felder abzählbar machen, ohne die Zone optisch zu zerschneiden.
  */
 private fun DrawScope.drawZoneBorders(
+    pos: Pos,
     top: Boolean,
     bottom: Boolean,
     left: Boolean,
     right: Boolean,
 ) {
-    val zoneStroke = 3.dp.toPx()
     val seamStroke = 1.dp.toPx()
 
-    /** Legt einen Streifen der Breite [width] an die gewählte Kante. */
-    fun stripe(color: Color, width: Float, inset: Float, atStart: Boolean, horizontal: Boolean) {
+    fun seam(atStart: Boolean, horizontal: Boolean) {
         val topLeft = when {
-            horizontal && atStart -> Offset(0f, inset)
-            horizontal -> Offset(0f, size.height - inset - width)
-            atStart -> Offset(inset, 0f)
-            else -> Offset(size.width - inset - width, 0f)
+            horizontal && atStart -> Offset.Zero
+            horizontal -> Offset(0f, size.height - seamStroke)
+            atStart -> Offset.Zero
+            else -> Offset(size.width - seamStroke, 0f)
         }
-        val edgeSize = if (horizontal) Size(size.width, width) else Size(width, size.height)
-        drawRect(color, topLeft = topLeft, size = edgeSize)
+        val edgeSize =
+            if (horizontal) Size(size.width, seamStroke) else Size(seamStroke, size.height)
+        drawRect(CellSeam, topLeft = topLeft, size = edgeSize)
     }
 
     fun edge(isZoneEdge: Boolean, atStart: Boolean, horizontal: Boolean) {
-        if (!isZoneEdge) {
-            stripe(CellSeam, seamStroke, 0f, atStart, horizontal)
-            return
+        if (isZoneEdge) {
+            drawHedge(pos = pos, atStart = atStart, horizontal = horizontal)
+        } else {
+            seam(atStart, horizontal)
         }
-        stripe(ZoneBorder, zoneStroke, 0f, atStart, horizontal)
-        // Der Saum liegt innen an, damit die helle Linie nach außen sauber
-        // gegen die Nachbarzone abschließt.
-        stripe(ZoneBorderShade, seamStroke, zoneStroke, atStart, horizontal)
     }
 
     edge(top, atStart = true, horizontal = true)
@@ -368,6 +409,103 @@ private fun DrawScope.drawZoneBorders(
     edge(left, atStart = true, horizontal = false)
     edge(right, atStart = false, horizontal = false)
 }
+
+/**
+ * Eine niedrig geschnittene Hecke entlang einer Zonenkante.
+ *
+ * Von oben gesehen: überlappende Blattbüschel unterschiedlicher Größe, dazu
+ * einzelne hellere Blätter obenauf. Das Unregelmäßige ist der ganze Zweck — eine
+ * gleichmäßige Reihe wäre wieder ein gezogener Strich, nur in Grün.
+ *
+ * Die Größen sind aus der Feldposition und der Lage der Kante **berechnet**, nicht
+ * zufällig gezogen. Damit sieht ein Feld bei jedem Neuzeichnen gleich aus, und
+ * zwei Felder nebeneinander bekommen trotzdem verschiedene Büschel.
+ *
+ * Unter den Blättern liegt ein dunkler Saum. Er ist nicht Zierrat: Auf dem
+ * Tannenhain, der fast dieselbe Farbe hat wie die Hecke, wäre die Grenze sonst
+ * nicht mehr zu sehen — und die Zonenregel ist der Kern des Rätsels.
+ */
+private fun DrawScope.drawHedge(pos: Pos, atStart: Boolean, horizontal: Boolean) {
+    val depth = HEDGE_DEPTH_DP.dp.toPx()
+    val along = if (horizontal) size.width else size.height
+
+    // Der Saum sitzt an der äußersten Kante, die Blätter wachsen nach innen
+    // darüber — so schließt die Hecke sauber gegen die Nachbarzone ab.
+    val shadeTopLeft = when {
+        horizontal && atStart -> Offset.Zero
+        horizontal -> Offset(0f, size.height - depth * 0.42f)
+        atStart -> Offset.Zero
+        else -> Offset(size.width - depth * 0.42f, 0f)
+    }
+    drawRect(
+        color = HedgeShade,
+        topLeft = shadeTopLeft,
+        size = if (horizontal) {
+            Size(size.width, depth * 0.42f)
+        } else {
+            Size(depth * 0.42f, size.height)
+        },
+    )
+
+    // Die Kante wird in gleich breite Abschnitte geteilt; in jedem sitzt ein
+    // Büschel. Ein Rest bliebe an der Feldgrenze als Lücke stehen, deshalb
+    // rundet die Zahl der Büschel auf.
+    val clusters = kotlin.math.ceil(along / (depth * 1.25f)).toInt().coerceAtLeast(2)
+    val step = along / clusters
+    val seed = pos.row * 47 + pos.col * 23 + (if (horizontal) 0 else 11) + (if (atStart) 0 else 5)
+
+    for (index in 0..clusters) {
+        // Drei voneinander unabhängige Streuwerte je Büschel. Ohne die
+        // Verschiebung *entlang* der Kante säßen die Büschel exakt äquidistant,
+        // und die Hecke sähe aus wie eine aufgefädelte Perlenkette — regelmäßig
+        // ist beinahe so schlimm wie ein gezogener Strich.
+        val jitterSize = ((seed + index * 37) % 11) / 11f
+        val jitterAlong = (((seed + index * 53) % 9) / 9f - 0.5f) * 0.55f
+        val jitterDepth = ((seed + index * 29) % 5) / 5f
+
+        val radius = depth * (0.34f + jitterSize * 0.52f)
+        val alongAt = (index + jitterAlong) * step
+        // Wie tief das Büschel auf der Kante sitzt: mal weiter innen, mal weiter
+        // außen, damit der Saum eine unruhige Kontur bekommt.
+        val sink = depth * (0.10f + jitterDepth * 0.22f)
+
+        // Die Büschel sitzen mit ihrer Mitte nahe der Kante, sodass ein Teil
+        // ins Nachbarfeld ragt — dort zeichnet dessen eigene Hecke weiter, und
+        // beide greifen ineinander.
+        val center = when {
+            horizontal && atStart -> Offset(alongAt, sink)
+            horizontal -> Offset(alongAt, size.height - sink)
+            atStart -> Offset(sink, alongAt)
+            else -> Offset(size.width - sink, alongAt)
+        }
+        drawCircle(HedgeGreen, radius, center)
+
+        // Ein kleineres, helleres Blatt obenauf: Erst der Ton-in-Ton-Kontrast
+        // macht aus dem Büschel Laub statt eines grünen Flecks.
+        if ((seed + index) % 4 != 0) {
+            val lightOffset = radius * 0.38f
+            drawCircle(
+                color = HedgeLight,
+                radius = radius * 0.52f,
+                center = when {
+                    horizontal && atStart -> center + Offset(lightOffset * 0.5f, lightOffset)
+                    horizontal -> center + Offset(lightOffset * 0.5f, -lightOffset)
+                    atStart -> center + Offset(lightOffset, lightOffset * 0.5f)
+                    else -> center + Offset(-lightOffset, lightOffset * 0.5f)
+                },
+            )
+        }
+    }
+}
+
+/**
+ * Wie tief die Hecke ins Feld hineinragt.
+ *
+ * Breiter als die 3 dp der früheren Linie — eine Hecke, die man für einen
+ * Strich halten kann, ist keine. Deutlich breiter ginge auf Kosten der
+ * Spielfläche: Auf dem 8×8-Brett ist ein Feld nur 44 dp groß.
+ */
+private const val HEDGE_DEPTH_DP = 5
 
 /**
  * Die Fee auf dem Feld.

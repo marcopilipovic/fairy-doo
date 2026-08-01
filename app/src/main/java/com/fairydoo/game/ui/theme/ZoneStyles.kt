@@ -1,5 +1,6 @@
 package com.fairydoo.game.ui.theme
 
+import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
 
 /**
@@ -51,15 +52,32 @@ enum class ZoneTexture {
  *
  * @param fill die deckende Grundfarbe des Gebiets
  * @param ink der Ton des Motivs, samt seiner Deckkraft
- * @param texture das Motiv selbst
+ * @param texture das gezeichnete Motiv
  * @param name der Ort, den die Zone darstellt
+ * @param image eine gemalte Kachel, die Farbe und Motiv ersetzt — siehe unten
  */
 data class ZoneStyle(
     val fill: Color,
     val ink: Color,
     val texture: ZoneTexture,
     val name: String,
-)
+    @DrawableRes val image: Int? = null,
+) {
+    /**
+     * Ob dieses Gebiet als gemalte Kachel erscheint statt als gezeichnetes
+     * Motiv.
+     *
+     * Beides steht nebeneinander, weil die Kacheln nach und nach entstehen: Ein
+     * Gebiet ohne Bild sieht aus wie bisher, eines mit Bild trägt die Kachel.
+     * So lässt sich Zone für Zone austauschen, ohne dass das Brett dazwischen
+     * unfertig aussieht — und wenn sich eine Kachel als unbrauchbar erweist,
+     * genügt es, `image` wieder zu entfernen.
+     *
+     * [fill] bleibt in jedem Fall gesetzt: Der Schein der Fee nimmt seine Farbe
+     * daher, und sollte eine Bilddatei fehlen, ist es der Rückfall.
+     */
+    val hasImage: Boolean get() = image != null
+}
 
 /**
  * Die zehn Gebiete des Feenreichs.
@@ -139,28 +157,40 @@ val ZoneStyles: List<ZoneStyle> = listOf(
 )
 
 /**
- * Die Außenlinie einer Zone.
+ * Die Hecke, die zwei Gebiete voneinander trennt.
  *
  * Für alle Gebiete dieselbe Farbe: Welche Zone hinter einer Grenze liegt,
- * beantwortet die Fläche — die Linie sagt nur, *dass* dort eine Grenze
+ * beantwortet die Fläche — die Hecke sagt nur, *dass* dort eine Grenze
  * verläuft. Bunte Ränder zwängen das Auge, zehn Farbtöne gleichzeitig an
  * Kanten auseinanderzuhalten.
  *
- * Gebrochenes Elfenbein statt Weiß: Reinweiß schnitt die Gebiete wie mit dem
- * Skalpell auseinander und ließ das Brett grell wirken.
+ * Zuvor war es eine gezogene elfenbeinfarbene Linie: in einem Wald ein
+ * Fremdkörper, der die Gebiete auseinanderschnitt, statt sie zu begrenzen. Ein
+ * gedämpftes Waldgrün gehört dorthin, wo es liegt.
  */
-val ZoneBorder = Color(0xFFDCD3BE)
+val HedgeGreen = Color(0xFF3F5B3C)
 
 /**
- * Der dunkle Saum an der Innenseite der hellen Grenzlinie.
+ * Die Lichtseite der Blätter.
  *
- * Eine helle Linie allein reicht nicht: Auf der Goldenen Lichtung und der
- * Kristallader, die selbst fast weiß sind, verschwände sie vollständig. Mit dem
- * Saum trägt jede Grenze beides in sich, hell und dunkel, und mindestens eines
- * davon hebt sich von jeder der zehn Flächen ab. Dasselbe Mittel, mit dem man
- * Schrift über wechselnden Bildern lesbar hält.
+ * Sie macht aus dem grünen Band erst Laub — und trägt darüber hinaus eine
+ * Aufgabe, die ihr erst das Messen zugewiesen hat: Auf dem Tannenhain, einem
+ * dunklen Waldgrün, hat weder die Hecke noch ihr Saum genug Kontrast; gemessen
+ * 1,46 und 1,48 zu 1. Beide sind zu nah an der Fläche. Ein deutlich helleres
+ * Laubgrün löst das, ohne die Hecke aufdringlich zu machen: Auf den hellen
+ * Gebieten fällt weiterhin der dunkle Grundton auf, auf den dunklen dieses hier.
  */
-val ZoneBorderShade = Color(0xEB18140E)
+val HedgeLight = Color(0xFF8CAB74)
+
+/**
+ * Der dunkle Saum unter der Hecke.
+ *
+ * Nicht Kosmetik: Die Zonenregel ist der Kern des Rätsels, und zwei Gebiete
+ * müssen auch dann getrennt bleiben, wenn die Hecke selbst in einer der beiden
+ * Flächen aufginge — auf dem Tannenhain etwa, der fast dieselbe Farbe hat.
+ * Dasselbe Mittel, mit dem man Schrift über wechselnden Bildern lesbar hält.
+ */
+val HedgeShade = Color(0xC7121A10)
 
 /** Die Fuge zwischen zwei Feldern derselben Zone. */
 val CellSeam = Color(0x24000000)
