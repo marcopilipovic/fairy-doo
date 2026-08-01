@@ -6,6 +6,7 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import android.media.SoundPool
 import android.util.Log
+import com.fairydoo.game.R
 import com.fairydoo.game.game.PowerUp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -76,7 +77,11 @@ class FairyAudio(context: Context) {
 
     init {
         loadClips()
+        // Effekte und Musik nebeneinander vorbereiten: Nacheinander summierten
+        // sich Klangberechnung und Musik-Dekodierung, und bis beides fertig war,
+        // blieb das Spiel stumm. Sie hängen nicht voneinander ab.
         scope.launch { prepare() }
+        scope.launch { if (musicEnabled) startMusic() }
     }
 
     /** Lädt die aufgenommenen Stimmen; das Dekodieren übernimmt SoundPool. */
@@ -136,17 +141,18 @@ class FairyAudio(context: Context) {
         }.toMap()
 
         prepared = true
-
-        if (musicEnabled) startMusic(cacheDir)
     }
 
     /**
-     * Die Musikschleife als rohes PCM im Cache.
+     * Die Musikschleife als rohe Abtastwerte im Zwischenspeicher.
      *
-     * Kein WAV, weil AudioTrack die Daten als Zahlenfeld erwartet — ein
-     * Container brächte hier nur einen Kopfsatz zum Überspringen.
+     * Die Datei wird einmal dekodiert und danach von hier geladen — das
+     * Dekodieren einer Minute Musik kostet spürbar Zeit, und so lange bliebe
+     * es still. Abgelegt wird rohes PCM, weil AudioTrack die Daten als
+     * Zahlenfeld erwartet; ein Container brächte nur einen Kopfsatz zum
+     * Überspringen.
      */
-    private fun loadOrBuildMusic(cacheDir: File): ShortArray {
+    private fun loadOrDecodeMusic(cacheDir: File): ShortArray {
         val file = File(cacheDir, "ambient.pcm")
 
         if (file.exists() && file.length() > 0) {
@@ -162,7 +168,12 @@ class FairyAudio(context: Context) {
             }
         }
 
-        val samples = Synth.toPcm16(FairySounds.ambientLoop())
+        val decoded = MusicDecoder.decodeToMono(appContext, R.raw.ambient_forest)
+        // Kurzes Überblenden von Schluss auf Anfang: MP3 trägt kodierungsbedingt
+        // etwas Stille an den Rändern, die beim Wiederholen als Lücke hörbar
+        // wäre.
+        val samples = Synth.crossfadeLoop(decoded, seconds = LOOP_CROSSFADE_SECONDS)
+
         runCatching {
             val bytes = ByteArray(samples.size * 2)
             samples.forEachIndexed { index, value ->
@@ -245,7 +256,9 @@ class FairyAudio(context: Context) {
         musicEnabled = enabled
 
         if (enabled) {
-            if (prepared) scope.launch { startMusic() }
+            // Die Musik hängt nicht an den berechneten Effekten und kann
+            // unabhängig von ihnen anlaufen.
+            scope.launch { startMusic() }
         } else {
             stopMusic()
         }
@@ -295,12 +308,12 @@ class FairyAudio(context: Context) {
         }
     }
 
-    private suspend fun startMusic(
-        cacheDir: File = File(appContext.cacheDir, "sounds-v$SOUND_CACHE_VERSION"),
-    ) {
+    private suspend fun startMusic() {
         stopMusic()
         runCatching {
-            val loop = withContext(Dispatchers.Default) { loadOrBuildMusic(cacheDir) }
+            val cacheDir = File(appContext.cacheDir, "sounds-v$SOUND_CACHE_VERSION")
+                .apply { mkdirs() }
+            val loop = withContext(Dispatchers.Default) { loadOrDecodeMusic(cacheDir) }
             val track = createMusicTrack(loop.size)
             track.write(loop, 0, loop.size)
             // Der ganze Puffer ist die Schleife — dadurch läuft die Musik ohne
@@ -383,6 +396,9 @@ class FairyAudio(context: Context) {
          * Hochzählen, wenn sich die Synthese ändert — sonst spielt die App
          * weiter die alten Klänge aus dem Zwischenspeicher.
          */
-        const val SOUND_CACHE_VERSION = 3
+        const val SOUND_CACHE_VERSION = 4
+
+        /** Überblendung an der Schleifennaht — kurz genug, um nicht aufzufallen. */
+        const val LOOP_CROSSFADE_SECONDS = 0.4f
     }
 }
