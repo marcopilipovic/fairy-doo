@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -45,9 +46,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
-import com.fairydoo.game.art.SPRITE_SIZE
 import com.fairydoo.game.art.glowArgb
-import com.fairydoo.game.art.sprite
 import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.model.CellMark
@@ -434,35 +433,18 @@ private fun FairyGlyph(
         label = "pulse",
     )
 
-    val sprite = species.sprite
-    val bitmaps = remember(species) { FairySpriteCache.framesOf(species) }
-    val frameCount = bitmaps.size
-    val cycleMillis = sprite.frameMillis * frameCount
-
-    val frame = transition.animateFloat(
-        initialValue = 0f,
-        targetValue = frameCount.toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(cycleMillis, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-            // FastForward: Die Fee startet mitten in ihrem Takt. Sonst zappeln
-            // beim Levelstart alle im Gleichschritt los.
-            initialStartOffset = StartOffset(phaseOffset % cycleMillis, StartOffsetType.FastForward),
-        ),
-        label = "spriteFrame",
-    )
+    val context = LocalContext.current
+    val bitmap = remember(species) { FairySpriteCache.bitmapOf(context, species) }
 
     val ownGlow = if (pulsing) Gold else species.glowColor()
 
-    // Ganzzahlige Vergrößerung, damit die Pixelkanten nicht wabern: Bei
-    // gebrochenem Faktor wird jede zweite Pixelreihe einen Bildpunkt breiter
-    // als ihre Nachbarn.
     val density = LocalDensity.current
     val spriteSide = remember(cellSize, density) {
-        val target = with(density) { cellSize.toPx() } * SPRITE_FILL
-        (target / SPRITE_SIZE).roundToInt().coerceAtLeast(1) * SPRITE_SIZE
+        (with(density) { cellSize.toPx() } * SPRITE_FILL).roundToInt().coerceAtLeast(1)
     }
-    val pixelScale = spriteSide / SPRITE_SIZE
+    // Das Schweben rastet auf diese Schrittweite ein, damit die Figur nicht in
+    // Zwischenschritten wandert und die Kanten flimmern.
+    val hoverStep = (spriteSide / 32f).coerceAtLeast(1f)
 
     Box(
         modifier = Modifier.size(cellSize),
@@ -521,27 +503,24 @@ private fun FairyGlyph(
                 .graphicsLayer {
                     scaleX = scale.value
                     scaleY = scale.value
-                    // Das Schweben rastet auf ganze Sprite-Pixel ein — sonst
-                    // wandert die Fee in Zwischenschritten und die Kanten
-                    // flimmern.
                     val amplitude = cellSize.toPx() * 0.05f
-                    translationY =
-                        (hover.value * amplitude / pixelScale).roundToInt() * pixelScale.toFloat()
+                    translationY = (hover.value * amplitude / hoverStep).roundToInt() * hoverStep
                 }
                 .drawBehind {
-                    val index = frame.value.toInt().coerceIn(0, bitmaps.lastIndex)
                     val left = ((size.width - spriteSide) / 2f).roundToInt()
                     val top = ((size.height - spriteSide) / 2f).roundToInt()
 
                     drawImage(
-                        image = bitmaps[index],
+                        image = bitmap,
                         srcOffset = IntOffset.Zero,
-                        srcSize = IntSize(SPRITE_SIZE, SPRITE_SIZE),
+                        srcSize = IntSize(bitmap.width, bitmap.height),
                         dstOffset = IntOffset(left, top),
                         dstSize = IntSize(spriteSide, spriteSide),
-                        // Ohne das interpoliert Skia und aus Pixelkunst wird
-                        // Aquarell.
-                        filterQuality = FilterQuality.None,
+                        // Die Vorlagen sind hochauflösende Pixel-Art und werden
+                        // hier verkleinert. Ungefiltert fielen dabei Bildpunkte
+                        // ersatzlos weg und die Figur bekäme Löcher; gefiltert
+                        // bleiben Konturen und Muster erhalten.
+                        filterQuality = FilterQuality.Medium,
                     )
                 },
         )

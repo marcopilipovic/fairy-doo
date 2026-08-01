@@ -1,54 +1,46 @@
 package com.fairydoo.game.ui.sprites
 
-import android.graphics.Bitmap
+import android.content.Context
+import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import com.fairydoo.game.art.PixelSprite
-import com.fairydoo.game.art.SPRITE_SIZE
-import com.fairydoo.game.art.sprite
 import com.fairydoo.game.game.FairySpecies
 
 /**
- * Die fertigen Sprite-Bilder.
+ * Die geladenen Feen-Bilder.
  *
  * Bewusst ein `object` statt `remember`: Die Bilder überleben Recomposition,
- * Levelwechsel und Neustart der Activity. Zehn Feen à zwei Bilder à 32×32
- * Pixel sind zusammen rund 80 KB — jede Verwaltung, die das wieder freigäbe,
- * wäre teurer als der Speicher. Ein Kontext wird nicht gehalten, es kann also
- * nichts auslaufen.
+ * Levelwechsel und Neustart der Activity. Zehn Bilder à 256×256 Bildpunkte sind
+ * zusammen rund 2,5 MB — ein Bruchteil dessen, was Compose ohnehin belegt, und
+ * jede Verwaltung, die sie wieder freigäbe, wäre teurer als der Speicher.
  *
- * Gecacht wird das **unskalierte** Bild. Die Zellgröße ändert sich mit Level,
- * Gerät und Ausrichtung; ein größenabhängiger Cache bräuchte einen
- * zusammengesetzten Schlüssel und eine Invalidierung — Aufwand ohne Gewinn,
- * denn das Vergrößern per Nearest-Neighbour kostet die Grafikeinheit nichts.
- *
- * Zugriff erfolgt ausschließlich aus dem UI-Thread (Zeichenphase), deshalb
- * genügt eine einfache HashMap.
+ * Gehalten wird der Anwendungskontext nicht: Die Bilder werden über einen
+ * übergebenen Kontext geladen und danach nur noch als [ImageBitmap] behalten —
+ * es kann also nichts auslaufen.
  */
 object FairySpriteCache {
 
-    private val frames = HashMap<FairySpecies, List<ImageBitmap>>(FairySpecies.entries.size)
+    private val bitmaps = HashMap<FairySpecies, ImageBitmap>(FairySpecies.entries.size)
 
-    fun framesOf(species: FairySpecies): List<ImageBitmap> =
-        frames.getOrPut(species) { species.sprite.toImageBitmaps() }
-
-    /**
-     * Baut die Bilder eines Bretts vorab.
-     *
-     * Ohne das entstünden sie beim allerersten Setzen einer Fee mitten in der
-     * Zeichenphase.
-     */
-    fun warmUp(species: Iterable<FairySpecies>) = species.forEach { framesOf(it) }
-
-    private fun PixelSprite.toImageBitmaps(): List<ImageBitmap> =
-        frames.indices.map { frame ->
-            val pixels = IntArray(SPRITE_SIZE * SPRITE_SIZE)
-            for (y in 0 until SPRITE_SIZE) {
-                for (x in 0 until SPRITE_SIZE) {
-                    pixels[y * SPRITE_SIZE + x] = colorAt(frame, x, y)
-                }
+    fun bitmapOf(context: Context, species: FairySpecies): ImageBitmap =
+        bitmaps.getOrPut(species) {
+            val options = BitmapFactory.Options().apply {
+                // Die Bilder liegen in drawable-nodpi und sollen exakt in ihrer
+                // Originalauflösung geladen werden — sonst skaliert Android sie
+                // je nach Gerätedichte vor und macht die Pixelkanten weich.
+                inScaled = false
             }
-            Bitmap.createBitmap(pixels, SPRITE_SIZE, SPRITE_SIZE, Bitmap.Config.ARGB_8888)
+            BitmapFactory
+                .decodeResource(context.resources, species.drawableRes, options)
                 .asImageBitmap()
         }
+
+    /**
+     * Lädt die Feen eines Bretts vorab.
+     *
+     * Ohne das entstünden die Bilder beim allerersten Setzen einer Fee mitten in
+     * der Zeichenphase.
+     */
+    fun warmUp(context: Context, species: Iterable<FairySpecies>) =
+        species.forEach { bitmapOf(context, it) }
 }

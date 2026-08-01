@@ -94,25 +94,25 @@ dreht sich der Reigen mit jedem Level um einen Platz weiter
 daran hängen beide Zusagen: Auf einem Brett trägt keine Zone dieselbe Fee wie eine
 andere, und über zehn Level kommt in jeder Zone jede Fee genau einmal vor.
 
-**Die Sprites stehen im Code**, nicht als Bilddateien: 32×32-Raster aus
-Zeichenketten plus Farbpalette (`art/`). Das hält den Versionsverlauf lesbar und
-macht jedes einzelne Pixel nachträglich änderbar.
+**Die Bilder** liegen als freigestellte Pixel-Art in `res/drawable-nodpi/`, alle
+in einem 256×256-Feld auf gemeinsamer Grundlinie — dadurch stehen die Figuren
+auf dem Brett gleich hoch, obwohl die Vorlagen unterschiedlich groß waren. Die
+Vorlage mit allen zehn liegt unter `Bilder/feen.jpg`.
+
+Freigestellt wurden sie durch eine Flutung des Hintergrunds vom Bildrand her,
+nicht durch einen Weiß-Schwellwert: Nur so bleiben helle Flächen *innerhalb*
+einer Figur erhalten — Auras weißes Kleid, Nixies Haar, Trixies karierter
+Flügel. Jede Figur wird zudem einzeln vom eigenen Saatpunkt aus eingesammelt,
+weil sich die Vorlagen im Sammelbild überlappen.
 
 Damit sich Fee und Zonenfarbe nicht beißen, tragen die zwei Ringe des Scheins
 verschiedene Rollen: der **äußere Hof die Zonenfarbe** — an ihr hängt die
 Lesbarkeit des Rätsels —, der **innere Kern den Eigenton der Fee**. Die Harmonie
 entsteht durch Rahmung statt durch Übereinstimmung.
 
-### Sprites anschauen, ohne die App zu starten
-
-```powershell
-.\gradlew.bat testDebugUnitTest --tests "*SpriteRenderTest*"
-```
-
-Schreibt nach `app/build/sprites/`: jede Fee einzeln, einen Filmstreifen ihrer
-Einzelbilder, einen Kontaktbogen aller zehn und Brett-Ansichten der Level 1–3 mit
-echten Rätseln. Dieselben Tests prüfen Rasterformat, Sichtbarkeit, Bewegung,
-Randabstand und den Kontrast zum Moosgrund.
+Tests halten fest, dass zu jeder Fee ein Bild vorliegt, keine verwaisten Bilder
+herumliegen und jede Fee einen eigenen Schein hat — ein fehlendes Bild fiele
+sonst erst im laufenden Spiel als leeres Feld auf.
 
 ## Bauen und starten
 
@@ -137,9 +137,7 @@ app/src/main/java/com/fairydoo/game/
 │   ├── GameEngine.kt                FairydokuEngine: Züge, Fähigkeiten, Punkte
 │   └── GameViewModel.kt             Spieluhr, Zustandsverwaltung, Persistenz
 ├── art/
-│   ├── PixelSprite.kt               Sprite-Format, Palette, Prüfung
-│   ├── FloraSprite.kt               Die Raster je Fee, eine Datei pro Charakter
-│   └── FairySprites.kt              Zuordnung Fee → Gestalt und Eigenton
+│   └── FairySprites.kt              Der Eigenton jeder Fee (Android-frei)
 ├── audio/
 │   ├── Synth.kt                     Tonerzeugung (reines Kotlin, testbar)
 │   ├── FairySounds.kt               Die Klänge des Waldes
@@ -151,6 +149,9 @@ app/src/main/java/com/fairydoo/game/
 └── ui/
     ├── GameCopy.kt                  Alle Texte und Zonennamen
     ├── theme/                       Design-Tokens, Schriften, Farbschema
+    ├── sprites/
+    │   ├── FairyArt.kt              Zuordnung Fee → Bildressource
+    │   └── FairySpriteCache.kt      Bilder einmal laden und behalten
     ├── components/
     │   ├── FairydokuBoard.kt        Brett: Moosfelder, Zonenränder, Feen
     │   ├── PowerUpBar.kt            Die drei Fähigkeiten
@@ -197,14 +198,14 @@ Bretts hängt an den Zonenfarben.
 
 ### Offen gegenüber dem Handoff
 
-- **Feen-Sprites.** Die Feen sind Emoji-Platzhalter, wie im Prototyp. Das
-  Handoff nennt vier Sprite-Sets als noch zu produzieren.
-- **Feen-Arten unterscheiden sich nur am Schein.** Der Prototyp färbt das Emoji
-  per CSS-`hue-rotate` um; ein Farbfilter auf Text ist in Compose erst ab API 31
-  möglich. Bis die Sprites da sind, tragen die Arten deshalb dieselbe Figur mit
-  artspezifischem Glow (rosa/blau/orange/gold).
 - **Schriftbild des Titels.** Cinzel Decorative enthält nur Versalien, „Fairydoku"
   erscheint daher als „FAIRYDOKU".
+- **Die Feen bewegen sich nur als Ganzes** (Schweben, Erscheinen). Für
+  Leerlauf-Animationen — Nebulas rieselnder Staub, Ignis' züngelnde Flügel,
+  Trixies Würfel — bräuchte es je Fee ein zweites Bild; die Zeichenschicht ist
+  darauf vorbereitet.
+- Die beiden Emoji in der Titelzeile und im „Level up"-Overlay sind noch
+  Platzhalter.
 - Hintergrund-Illustration fehlt noch.
 - **Jubel und Fähigkeiten sind noch synthetisch.** Die Feenstimmen sind
   inzwischen Aufnahmen; wer auch den Rest aufgenommen haben will, ersetzt die
