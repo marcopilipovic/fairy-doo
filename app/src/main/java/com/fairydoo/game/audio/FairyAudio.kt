@@ -1,4 +1,4 @@
-package com.fairydoo.game.audio
+﻿package com.fairydoo.game.audio
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -7,6 +7,7 @@ import android.media.AudioTrack
 import android.media.SoundPool
 import android.util.Log
 import com.fairydoo.game.R
+import com.fairydoo.game.data.PlayerProfile
 import com.fairydoo.game.game.PowerUp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,17 +64,18 @@ class FairyAudio(context: Context) {
     @Volatile
     private var prepared = false
 
+    // Stufenlos statt an/aus: Der Spieler stellt Musik und Klänge getrennt ein,
+    // null bedeutet stumm.
     @Volatile
-    var soundEnabled: Boolean = true
-        private set
+    private var musicVolume: Float = PlayerProfile.DEFAULT_MUSIC_VOLUME
 
     @Volatile
-    var musicEnabled: Boolean = true
-        private set
+    private var soundVolume: Float = PlayerProfile.DEFAULT_SOUND_VOLUME
 
     @Volatile
-    var voiceEnabled: Boolean = true
-        private set
+    private var voiceVolume: Float = PlayerProfile.DEFAULT_VOICE_VOLUME
+
+    private val musicEnabled: Boolean get() = musicVolume > 0f
 
     init {
         loadClips()
@@ -220,10 +222,11 @@ class FairyAudio(context: Context) {
                 playEffect(KEY_CHEER)
                 // Das Lob setzt erst ein, wenn der Jubel abgeklungen ist —
                 // sonst reden Fanfare und Stimme durcheinander.
-                if (voiceEnabled) {
+                val volume = voiceVolume
+                if (volume > 0f) {
                     scope.launch {
                         delay(PRAISE_DELAY_MILLIS)
-                        voice.praise(level, score)
+                        voice.praise(level, score, volume)
                     }
                 }
             }
@@ -238,29 +241,31 @@ class FairyAudio(context: Context) {
         }
     }
 
-    fun setSoundEnabled(enabled: Boolean) {
-        soundEnabled = enabled
+    fun setSoundVolume(volume: Float) {
+        soundVolume = volume.coerceIn(0f, 1f)
     }
 
-    fun setVoiceEnabled(enabled: Boolean) {
-        voiceEnabled = enabled
-        if (!enabled) voice.stop()
+    fun setVoiceVolume(volume: Float) {
+        voiceVolume = volume.coerceIn(0f, 1f)
+        if (voiceVolume == 0f) voice.stop()
     }
 
-    fun setMusicEnabled(enabled: Boolean) {
-        // Nur auf echte Wechsel reagieren: Die Oberfläche reicht die
-        // gespeicherten Einstellungen bei jeder Änderung durch, und ein
-        // erneutes Einschalten würde die laufende Schleife abbrechen und neu
-        // beginnen — hörbar als kurzes Aussetzen.
-        if (musicEnabled == enabled) return
-        musicEnabled = enabled
+    /**
+     * Stellt die Musik ein — ohne sie neu zu beginnen.
+     *
+     * Ein laufender Ton lässt sich in der Lautstärke verändern; nur der
+     * Übergang von stumm auf hörbar braucht einen Start. Andernfalls setzte die
+     * Schleife bei jeder Reglerbewegung neu ein.
+     */
+    fun setMusicVolume(volume: Float) {
+        val next = volume.coerceIn(0f, 1f)
+        val wasSilent = musicVolume == 0f
+        musicVolume = next
 
-        if (enabled) {
-            // Die Musik hängt nicht an den berechneten Effekten und kann
-            // unabhängig von ihnen anlaufen.
-            scope.launch { startMusic() }
-        } else {
-            stopMusic()
+        when {
+            next == 0f -> stopMusic()
+            wasSilent -> scope.launch { startMusic() }
+            else -> runCatching { music?.setVolume(next) }
         }
     }
 
@@ -283,26 +288,28 @@ class FairyAudio(context: Context) {
 
     /** Spielt eine aufgenommene Feenstimme. */
     private fun playClip(sampleId: Int?) {
-        if (!soundEnabled) return
+        val volume = soundVolume
+        if (volume <= 0f) return
         if (sampleId == null || sampleId == 0) return
         // Ein noch nicht fertig dekodierter Clip würde stumm bleiben und den
         // Stream trotzdem belegen.
         if (sampleId !in loadedClips) return
 
         runCatching {
-            clipPool.play(sampleId, CLIP_VOLUME, CLIP_VOLUME, 1, 0, 1f)
+            clipPool.play(sampleId, volume, volume, 1, 0, 1f)
         }.onFailure { error ->
             Log.w(TAG, "Feenstimme $sampleId konnte nicht abgespielt werden", error)
         }
     }
 
     private fun playEffect(key: String) {
-        if (!soundEnabled) return
+        val volume = soundVolume
+        if (volume <= 0f) return
         val sampleId = effects[key] ?: return
         if (sampleId !in loadedClips) return
 
         runCatching {
-            clipPool.play(sampleId, EFFECT_VOLUME, EFFECT_VOLUME, 1, 0, 1f)
+            clipPool.play(sampleId, volume, volume, 1, 0, 1f)
         }.onFailure { error ->
             Log.w(TAG, "Klang $key konnte nicht abgespielt werden", error)
         }
@@ -319,7 +326,7 @@ class FairyAudio(context: Context) {
             // Der ganze Puffer ist die Schleife — dadurch läuft die Musik ohne
             // Lücke weiter, ohne dass jemand nachfüllen muss.
             track.setLoopPoints(0, loop.size, -1)
-            track.setVolume(MUSIC_VOLUME)
+            track.setVolume(musicVolume)
             track.play()
             music = track
         }.onFailure { error ->
@@ -363,7 +370,7 @@ class FairyAudio(context: Context) {
             .setTransferMode(AudioTrack.MODE_STATIC)
             .setBufferSizeInBytes(sizeInBytes)
             .build()
-            .also { it.setVolume(MUSIC_VOLUME) }
+            .also { it.setVolume(musicVolume) }
     }
 
     private companion object {
@@ -377,10 +384,6 @@ class FairyAudio(context: Context) {
         const val KEY_TICK = "tick"
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"
-
-        const val MUSIC_VOLUME = 0.8f
-        const val EFFECT_VOLUME = 1.0f
-        const val CLIP_VOLUME = 1.0f
 
         /**
          * Kanäle für gleichzeitige Klänge. Stimmen und Effekte teilen sie sich,

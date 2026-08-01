@@ -31,7 +31,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +54,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fairydoo.game.audio.FairyAudio
 import com.fairydoo.game.data.GamePreferencesRepository
+import com.fairydoo.game.data.PlayerProfile
 import com.fairydoo.game.game.GameInput
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GameStatus
@@ -58,13 +62,14 @@ import com.fairydoo.game.game.GameViewModel
 import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.model.Pos
 import com.fairydoo.game.ui.GameCopy
-import com.fairydoo.game.ui.components.AudioToggles
 import com.fairydoo.game.ui.components.FairydokuBoard
 import com.fairydoo.game.ui.components.FireflyLayer
 import com.fairydoo.game.ui.components.GameOverOverlay
 import com.fairydoo.game.ui.components.IntroOverlay
 import com.fairydoo.game.ui.components.LevelUpOverlay
 import com.fairydoo.game.ui.components.PowerUpBar
+import com.fairydoo.game.ui.components.SoundMenuButton
+import com.fairydoo.game.ui.components.SoundSettingsOverlay
 import com.fairydoo.game.ui.theme.BlossomPink
 import com.fairydoo.game.ui.theme.DangerPink
 import com.fairydoo.game.ui.theme.GlowBlue
@@ -108,11 +113,11 @@ fun GameScreen(preferences: GamePreferencesRepository) {
         onDispose { audio.release() }
     }
 
-    // Einstellungen durchreichen, sobald sie sich ändern.
-    LaunchedEffect(profile.musicEnabled, profile.soundEnabled, profile.voiceEnabled) {
-        audio.setMusicEnabled(profile.musicEnabled)
-        audio.setSoundEnabled(profile.soundEnabled)
-        audio.setVoiceEnabled(profile.voiceEnabled)
+    // Lautstärken durchreichen, sobald sie sich ändern.
+    LaunchedEffect(profile.musicVolume, profile.soundVolume, profile.voiceVolume) {
+        audio.setMusicVolume(profile.musicVolume)
+        audio.setSoundVolume(profile.soundVolume)
+        audio.setVoiceVolume(profile.voiceVolume)
     }
 
     // Spielgeschehen hörbar machen. Level und Punktestand gehen mit, damit die
@@ -144,21 +149,32 @@ fun GameScreen(preferences: GamePreferencesRepository) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    // Beim Öffnen der Klang-Einstellungen pausiert die Uhr: Wer die Lautstärke
+    // sucht, soll dafür keine Zeit verlieren.
+    var showSoundSettings by rememberSaveable { mutableStateOf(false) }
+
     GameContent(
         state = state,
         isPreparing = isPreparing,
         bestScore = profile.highScore,
-        musicEnabled = profile.musicEnabled,
-        soundEnabled = profile.soundEnabled,
-        voiceEnabled = profile.voiceEnabled,
+        profile = profile,
+        showSoundSettings = showSoundSettings,
         onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
         onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
         onBegin = { viewModel.onInput(GameInput.Begin) },
         onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
         onRestart = viewModel::restart,
-        onMusicChange = viewModel::setMusicEnabled,
-        onSoundChange = viewModel::setSoundEnabled,
-        onVoiceChange = viewModel::setVoiceEnabled,
+        onOpenSoundSettings = {
+            viewModel.pause()
+            showSoundSettings = true
+        },
+        onCloseSoundSettings = {
+            showSoundSettings = false
+            viewModel.resume()
+        },
+        onMusicChange = viewModel::setMusicVolume,
+        onSoundChange = viewModel::setSoundVolume,
+        onVoiceChange = viewModel::setVoiceVolume,
     )
 }
 
@@ -167,17 +183,18 @@ private fun GameContent(
     state: GameState,
     isPreparing: Boolean,
     bestScore: Int,
-    musicEnabled: Boolean,
-    soundEnabled: Boolean,
-    voiceEnabled: Boolean,
+    profile: PlayerProfile,
+    showSoundSettings: Boolean,
     onTapCell: (Pos) -> Unit,
     onUsePowerUp: (PowerUp) -> Unit,
     onBegin: () -> Unit,
     onNextLevel: () -> Unit,
     onRestart: () -> Unit,
-    onMusicChange: (Boolean) -> Unit,
-    onSoundChange: (Boolean) -> Unit,
-    onVoiceChange: (Boolean) -> Unit,
+    onOpenSoundSettings: () -> Unit,
+    onCloseSoundSettings: () -> Unit,
+    onMusicChange: (Float) -> Unit,
+    onSoundChange: (Float) -> Unit,
+    onVoiceChange: (Float) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -279,13 +296,9 @@ private fun GameContent(
             PowerUpBar(state = state, onUse = onUsePowerUp)
         }
 
-        AudioToggles(
-            musicEnabled = musicEnabled,
-            soundEnabled = soundEnabled,
-            voiceEnabled = voiceEnabled,
-            onMusicChange = onMusicChange,
-            onSoundChange = onSoundChange,
-            onVoiceChange = onVoiceChange,
+        SoundMenuButton(
+            anythingAudible = profile.musicEnabled || profile.soundEnabled || profile.voiceEnabled,
+            onClick = onOpenSoundSettings,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .safeDrawingPadding()
@@ -316,6 +329,20 @@ private fun GameContent(
             )
 
             else -> Unit
+        }
+
+        // Zuletzt und damit zuoberst: Die Einstellungen sollen auch über einem
+        // Pausen- oder Ergebnis-Overlay erreichbar bleiben.
+        if (showSoundSettings) {
+            SoundSettingsOverlay(
+                musicVolume = profile.musicVolume,
+                soundVolume = profile.soundVolume,
+                voiceVolume = profile.voiceVolume,
+                onMusicChange = onMusicChange,
+                onSoundChange = onSoundChange,
+                onVoiceChange = onVoiceChange,
+                onClose = onCloseSoundSettings,
+            )
         }
     }
 }

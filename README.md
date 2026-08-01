@@ -61,8 +61,20 @@ Die **Lobstimme** nutzt die Sprachausgabe des Geräts, nicht aufgenommene Sprach
 Nur so kann das Lob den Spielstand nennen („Level 4 geschafft"). Fehlt eine
 deutsche Stimme, bleibt sie still — das Spiel funktioniert auch ohne.
 
-Musik, Klänge und Stimme lassen sich einzeln über die drei Schalter oben rechts
-abstellen; die Einstellung wird gespeichert.
+### Lautstärke
+
+Das Lautsprecher-Zeichen oben rechts öffnet die Klang-Einstellungen: **Musik,
+Klänge und Feenstimme sind getrennt regelbar**, die Uhr pausiert dabei. Ein
+Regler auf null ist zugleich der Stummschalter — dafür braucht es keinen
+zweiten Bedienweg, und das Zeichen am Rand zeigt an, wenn alles stumm ist.
+
+Musik und Klänge getrennt zu regeln hat einen Grund: Die Musik läuft
+ununterbrochen und stört beim Nachdenken schneller, die Klänge sind Rückmeldung
+auf eigene Züge und dürfen lauter bleiben. Deshalb ist die Musik auch
+voreingestellt leiser (70 % gegen 90 %).
+
+Die Einstellung wird gespeichert. Wer früher die alten Ein/Aus-Schalter benutzt
+hat, dessen „aus" wird beim ersten Start als Lautstärke null übernommen.
 
 ### Klänge anhören, ohne die App zu starten
 
@@ -153,6 +165,7 @@ app/src/main/java/com/fairydoo/game/
     │   ├── FairyArt.kt              Zuordnung Fee → Bildressource
     │   └── FairySpriteCache.kt      Bilder einmal laden und behalten
     ├── components/
+    │   ├── SoundSettingsOverlay.kt  Regler für Musik, Klänge und Stimme
     │   ├── FairydokuBoard.kt        Brett: Moosfelder, Zonenränder, Feen
     │   ├── PowerUpBar.kt            Die drei Fähigkeiten
     │   ├── Overlays.kt              Willkommen, Level up, Spielende
