@@ -96,31 +96,39 @@ class FairyAudio(context: Context) {
     }
 
     /**
-     * Berechnet die Klänge und übergibt sie SoundPool.
+     * Stellt die berechneten Klänge bereit.
      *
-     * Der Umweg über WAV-Dateien im Cache ist nötig, weil SoundPool nur aus
-     * Dateien oder Ressourcen lädt, nicht aus einem Speicherpuffer. Er lohnt
-     * sich: Vorher entstand für **jeden** Ton ein eigener AudioTrack — bei
-     * anhaltendem Tippen kann das an die Grenze gleichzeitiger Audiokanäle
-     * stoßen. SoundPool hält die Klänge dagegen dekodiert vor und mischt sie
-     * über eine feste Zahl von Kanälen.
+     * **Berechnet wird nur beim ersten Mal.** Danach liegen die Klänge als
+     * Dateien im Cache und werden von dort geladen. Ohne das dauerte es auf
+     * einem langsamen Gerät gut eine halbe Minute, bis Musik und Effekte
+     * einsetzten — das Spiel wirkte in dieser Zeit schlicht stumm.
+     *
+     * Der Umweg über Dateien ist ohnehin nötig, weil SoundPool nur aus Dateien
+     * oder Ressourcen lädt, nicht aus einem Speicherpuffer. Die Versionsnummer
+     * im Ordnernamen sorgt dafür, dass eine geänderte Synthese nicht auf alten
+     * Klängen sitzen bleibt.
      */
     private suspend fun prepare() = withContext(Dispatchers.Default) {
-        val sounds = mapOf(
-            KEY_CHEER to FairySounds.cheer(),
-            KEY_SPARKLE to FairySounds.sparkle(),
-            KEY_SHIELD to FairySounds.shield(),
-            KEY_FREEZE to FairySounds.timeFreeze(),
-            KEY_TICK to FairySounds.tick(),
-            KEY_UNDO to FairySounds.undo(),
-            KEY_GAME_OVER to FairySounds.gameOver(),
+        val cacheDir = File(appContext.cacheDir, "sounds-v$SOUND_CACHE_VERSION").apply { mkdirs() }
+
+        // Effekte zuerst: Sie sind billiger als die Musikschleife, und ein
+        // stummer Tastendruck fällt eher auf als fehlende Hintergrundmusik.
+        val builders: Map<String, () -> FloatArray> = mapOf(
+            KEY_TICK to FairySounds::tick,
+            KEY_UNDO to FairySounds::undo,
+            KEY_SPARKLE to FairySounds::sparkle,
+            KEY_SHIELD to FairySounds::shield,
+            KEY_FREEZE to FairySounds::timeFreeze,
+            KEY_CHEER to FairySounds::cheer,
+            KEY_GAME_OVER to FairySounds::gameOver,
         )
 
-        val cacheDir = File(appContext.cacheDir, "sounds").apply { mkdirs() }
-        effects = sounds.mapNotNull { (key, samples) ->
+        effects = builders.mapNotNull { (key, build) ->
             runCatching {
                 val file = File(cacheDir, "$key.wav")
-                file.writeBytes(Synth.toWavBytes(samples))
+                if (!file.exists() || file.length() == 0L) {
+                    file.writeBytes(Synth.toWavBytes(build()))
+                }
                 key to clipPool.load(file.absolutePath, 1)
             }.onFailure { error ->
                 Log.w(TAG, "Klang $key konnte nicht vorbereitet werden", error)
@@ -129,7 +137,43 @@ class FairyAudio(context: Context) {
 
         prepared = true
 
-        if (musicEnabled) startMusic()
+        if (musicEnabled) startMusic(cacheDir)
+    }
+
+    /**
+     * Die Musikschleife als rohes PCM im Cache.
+     *
+     * Kein WAV, weil AudioTrack die Daten als Zahlenfeld erwartet — ein
+     * Container brächte hier nur einen Kopfsatz zum Überspringen.
+     */
+    private fun loadOrBuildMusic(cacheDir: File): ShortArray {
+        val file = File(cacheDir, "ambient.pcm")
+
+        if (file.exists() && file.length() > 0) {
+            runCatching {
+                val bytes = file.readBytes()
+                return ShortArray(bytes.size / 2) { index ->
+                    val low = bytes[index * 2].toInt() and 0xFF
+                    val high = bytes[index * 2 + 1].toInt()
+                    ((high shl 8) or low).toShort()
+                }
+            }.onFailure { error ->
+                Log.w(TAG, "Musik aus dem Zwischenspeicher unbrauchbar", error)
+            }
+        }
+
+        val samples = Synth.toPcm16(FairySounds.ambientLoop())
+        runCatching {
+            val bytes = ByteArray(samples.size * 2)
+            samples.forEachIndexed { index, value ->
+                bytes[index * 2] = (value.toInt() and 0xFF).toByte()
+                bytes[index * 2 + 1] = (value.toInt() shr 8).toByte()
+            }
+            file.writeBytes(bytes)
+        }.onFailure { error ->
+            Log.w(TAG, "Musik konnte nicht zwischengespeichert werden", error)
+        }
+        return samples
     }
 
     /** Spielt, was das Spielgeschehen hergibt. */
@@ -193,7 +237,13 @@ class FairyAudio(context: Context) {
     }
 
     fun setMusicEnabled(enabled: Boolean) {
+        // Nur auf echte Wechsel reagieren: Die Oberfläche reicht die
+        // gespeicherten Einstellungen bei jeder Änderung durch, und ein
+        // erneutes Einschalten würde die laufende Schleife abbrechen und neu
+        // beginnen — hörbar als kurzes Aussetzen.
+        if (musicEnabled == enabled) return
         musicEnabled = enabled
+
         if (enabled) {
             if (prepared) scope.launch { startMusic() }
         } else {
@@ -245,12 +295,12 @@ class FairyAudio(context: Context) {
         }
     }
 
-    private suspend fun startMusic() {
+    private suspend fun startMusic(
+        cacheDir: File = File(appContext.cacheDir, "sounds-v$SOUND_CACHE_VERSION"),
+    ) {
         stopMusic()
         runCatching {
-            val loop = withContext(Dispatchers.Default) {
-                Synth.toPcm16(FairySounds.ambientLoop())
-            }
+            val loop = withContext(Dispatchers.Default) { loadOrBuildMusic(cacheDir) }
             val track = createMusicTrack(loop.size)
             track.write(loop, 0, loop.size)
             // Der ganze Puffer ist die Schleife — dadurch läuft die Musik ohne
@@ -328,5 +378,11 @@ class FairyAudio(context: Context) {
 
         const val PRAISE_DELAY_MILLIS = 900L
         const val GAME_OVER_DELAY_MILLIS = 450L
+
+        /**
+         * Hochzählen, wenn sich die Synthese ändert — sonst spielt die App
+         * weiter die alten Klänge aus dem Zwischenspeicher.
+         */
+        const val SOUND_CACHE_VERSION = 2
     }
 }

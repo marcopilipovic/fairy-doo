@@ -20,6 +20,34 @@ object Synth {
 
     const val SAMPLE_RATE = 44_100
 
+    /**
+     * Sinus-Wertetabelle.
+     *
+     * Ein Klang von 24 Sekunden mit drei Obertönen sind über drei Millionen
+     * Sinus-Aufrufe; für die ganze Klangwelt kommen zweistellige Millionen
+     * zusammen. Auf einem langsamen Gerät dauerte das gut eine halbe Minute,
+     * und so lange blieb das Spiel stumm. Die Tabelle mit linearer
+     * Zwischenwertbildung ist um ein Vielfaches schneller, und ihr Fehler liegt
+     * weit unter der Hörschwelle.
+     */
+    private const val TABLE_BITS = 13
+    private const val TABLE_SIZE = 1 shl TABLE_BITS
+    private const val TABLE_MASK = TABLE_SIZE - 1
+
+    private val sineTable = FloatArray(TABLE_SIZE) { index ->
+        sin(2.0 * PI * index / TABLE_SIZE).toFloat()
+    }
+
+    /** @param turns Phase in Umdrehungen: 1.0 ist eine volle Schwingung. */
+    private fun tableSin(turns: Float): Float {
+        val scaled = turns * TABLE_SIZE
+        val index = scaled.toInt()
+        val fraction = scaled - index
+        val a = sineTable[index and TABLE_MASK]
+        val b = sineTable[index + 1 and TABLE_MASK]
+        return a + (b - a) * fraction
+    }
+
     fun secondsToSamples(seconds: Float): Int = (seconds * SAMPLE_RATE).toInt()
 
     /** Leerer Puffer der angegebenen Länge. */
@@ -46,14 +74,22 @@ object Synth {
     ): FloatArray {
         val length = secondsToSamples(durationSeconds)
         val output = FloatArray(length)
+
+        // Phasen in Umdrehungen statt Radiant und auf 0..1 gehalten: Über
+        // Zehntausende Schwingungen würde ein stetig wachsender Winkel die
+        // Genauigkeit einer Fließkommazahl aufbrauchen und der Ton verstimmte
+        // sich hörbar.
         val phases = FloatArray(harmonics.size)
+        var vibratoPhase = 0f
+        val vibratoStep = vibratoHz / SAMPLE_RATE
 
         for (index in 0 until length) {
             val progress = index.toFloat() / length
-            val time = index.toFloat() / SAMPLE_RATE
 
             val vibrato = if (vibratoHz > 0f) {
-                1f + vibratoDepth * sin(2f * PI.toFloat() * vibratoHz * time)
+                vibratoPhase += vibratoStep
+                if (vibratoPhase >= 1f) vibratoPhase -= 1f
+                1f + vibratoDepth * tableSin(vibratoPhase)
             } else {
                 1f
             }
@@ -61,8 +97,10 @@ object Synth {
 
             var value = 0f
             harmonics.forEachIndexed { harmonicIndex, (multiple, strength) ->
-                phases[harmonicIndex] += 2f * PI.toFloat() * baseFrequency * multiple / SAMPLE_RATE
-                value += strength * sin(phases[harmonicIndex])
+                var phase = phases[harmonicIndex] + baseFrequency * multiple / SAMPLE_RATE
+                if (phase >= 1f) phase -= phase.toInt()
+                phases[harmonicIndex] = phase
+                value += strength * tableSin(phase)
             }
 
             output[index] = value * amplitudeAt(progress)
