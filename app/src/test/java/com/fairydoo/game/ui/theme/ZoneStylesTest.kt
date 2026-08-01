@@ -120,6 +120,30 @@ class ZoneStylesTest {
         }
     }
 
+    @Test
+    fun `die Markierung ist auf jedem Gebiet zu sehen`() {
+        // Die gekreuzten Zweige tragen drei Töne: Rinde, dunkle Kontur und
+        // helles Glanzlicht. Auf hellen Gebieten trägt die Kontur, auf dunklen
+        // das Glanzlicht — gefordert ist deshalb nicht, dass alle drei
+        // auffallen, sondern dass mindestens einer es tut.
+        //
+        // Dieselbe Prüfung wie für die Hecke, und aus demselben Grund: Ein
+        // Zeichen, das auf einem von zehn Gebieten verschwindet, fällt beim
+        // Entwickeln nicht auf, beim Spielen aber sofort.
+        for (style in ZoneStyles) {
+            val bark = contrastRatio(TwigBark, style.fill)
+            val light = contrastRatio(TwigLight, style.fill)
+            val shade = contrastRatio(over(TwigShade, style.fill), style.fill)
+
+            assertTrue(
+                "Die Markierung verschwindet auf ${style.name}: Rinde " +
+                    "${"%.2f".format(bark)}:1, Glanzlicht ${"%.2f".format(light)}:1, " +
+                    "Kontur ${"%.2f".format(shade)}:1",
+                maxOf(bark, light, shade) >= MIN_BORDER_CONTRAST,
+            )
+        }
+    }
+
     /**
      * Die Gebiete in Graustufen — als Tabelle im Testbericht.
      *

@@ -198,6 +198,33 @@ val HedgeShade = Color(0xC7121A10)
 val CellSeam = Color(0x24000000)
 
 /**
+ * Die Rinde der Zweige, mit denen ein Feld als „hier keine Fee" markiert wird.
+ *
+ * Vorher war das ein weißes Kreuz — neben einer gemalten Kachel wirkte es wie
+ * aus einem anderen Spiel. Die Kreuzform bleibt, weil sie ohne Erklärung
+ * verstanden wird; nur das Material ist jetzt Holz.
+ */
+val TwigBark = Color(0xFF7A5433)
+
+/**
+ * Die dunkle Kontur der Zweige.
+ *
+ * Sie trägt das Zeichen auf den hellen Gebieten — auf der Goldenen Lichtung und
+ * der Kristallader wäre Rindenbraun allein zu blass.
+ */
+val TwigShade = Color(0xF22A1C10)
+
+/**
+ * Das Glanzlicht auf der Oberseite der Zweige.
+ *
+ * Es trägt das Zeichen auf den dunklen Gebieten: Auf dem nächtlichen Himmelstor
+ * verschwände die Rinde beinahe, das Glanzlicht bleibt sichtbar. Zusammen mit
+ * der Kontur hat die Markierung dadurch auf allen zehn Flächen dasselbe
+ * Gewicht — dasselbe Prinzip wie bei der Hecke.
+ */
+val TwigLight = Color(0xFFC9A570)
+
+/**
  * Feine Körnung über jeder Zonenfläche.
  *
  * Ohne sie liegen zehn satte Farben als glatte Blöcke nebeneinander, und das

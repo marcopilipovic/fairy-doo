@@ -34,8 +34,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -70,6 +72,9 @@ import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.HedgeGreen
 import com.fairydoo.game.ui.theme.HedgeLight
 import com.fairydoo.game.ui.theme.HedgeShade
+import com.fairydoo.game.ui.theme.TwigBark
+import com.fairydoo.game.ui.theme.TwigLight
+import com.fairydoo.game.ui.theme.TwigShade
 import com.fairydoo.game.ui.theme.ZoneGrain
 import com.fairydoo.game.ui.theme.ZoneStyles
 
@@ -659,6 +664,52 @@ private fun FairyGlyph(
     }
 }
 
+/**
+ * Ein kleiner Ast von einer Ecke zur anderen.
+ *
+ * Drei Striche übereinander: eine dunkle Kontur, die Rinde und darüber ein
+ * schmales Glanzlicht. Das ist nicht Verzierung, sondern das, was das Zeichen
+ * auf allen zehn Gebieten tragfähig macht — auf der cremefarbenen Lichtung
+ * fällt die dunkle Kontur auf, auf dem nächtlichen Himmelstor das Glanzlicht.
+ * Ein einfarbiger Ast wäre auf dem einen oder dem anderen verschwunden.
+ *
+ * [bend] biegt den Ast zur Seite; ohne diese Krümmung wäre es wieder ein
+ * gezeichnetes Kreuz, nur in Braun.
+ */
+private fun DrawScope.twig(from: Offset, to: Offset, bend: Float, thickness: Float) {
+    // Der Kontrollpunkt liegt seitlich neben der Mitte — senkrecht zur
+    // Verbindung, damit die Krümmung unabhängig von der Richtung des Astes ist.
+    val middle = Offset((from.x + to.x) / 2f, (from.y + to.y) / 2f)
+    val along = to - from
+    val length = along.getDistance()
+    val across = if (length == 0f) Offset.Zero else Offset(-along.y / length, along.x / length)
+    val control = middle + across * bend
+
+    fun stroke(color: Color, width: Float, shift: Offset = Offset.Zero) {
+        val path = Path().apply {
+            moveTo(from.x + shift.x, from.y + shift.y)
+            quadraticBezierTo(
+                control.x + shift.x,
+                control.y + shift.y,
+                to.x + shift.x,
+                to.y + shift.y,
+            )
+        }
+        drawPath(path, color, style = Stroke(width = width, cap = StrokeCap.Round))
+    }
+
+    stroke(TwigShade, thickness * 1.55f)
+    stroke(TwigBark, thickness)
+    // Das Glanzlicht sitzt leicht nach oben versetzt, als fiele das Licht von
+    // vorn — dieselbe Richtung wie beim Schein der Feen.
+    stroke(TwigLight, thickness * 0.34f, Offset(0f, -thickness * 0.24f))
+
+    // Zwei Astansätze, damit es ein Zweig ist und kein gebogener Strich.
+    val knotAt = from + along * 0.34f
+    drawCircle(TwigBark, thickness * 0.42f, knotAt)
+    drawCircle(TwigShade, thickness * 0.20f, knotAt + across * thickness * 0.3f)
+}
+
 /** Anteil der Zelle, den eine Fee einnimmt. */
 private const val SPRITE_FILL = 0.86f
 
@@ -689,37 +740,29 @@ private fun WardMark(cellSize: Dp, pos: Pos) {
                 scaleY = 0.85f + appear.value * 0.15f
             }
             .drawBehind {
-                val arm = size.minDimension * 0.17f
                 val center = Offset(size.width / 2f, size.height / 2f)
-                val stroke = size.minDimension * 0.055f
-                val depth = stroke * 0.55f
+                val arm = size.minDimension * 0.21f
+                val thickness = size.minDimension * 0.052f
 
-                fun cross(offset: Offset, color: Color, width: Float) {
-                    drawLine(
-                        color = color,
-                        start = Offset(center.x - arm + offset.x, center.y - arm + offset.y),
-                        end = Offset(center.x + arm + offset.x, center.y + arm + offset.y),
-                        strokeWidth = width,
-                        cap = StrokeCap.Round,
-                    )
-                    drawLine(
-                        color = color,
-                        start = Offset(center.x + arm + offset.x, center.y - arm + offset.y),
-                        end = Offset(center.x - arm + offset.x, center.y + arm + offset.y),
-                        strokeWidth = width,
-                        cap = StrokeCap.Round,
-                    )
-                }
-
-                // Dunkler Umriss rundum, dann die eingeritzte Tiefe, dann das
-                // helle Zeichen. Der Umriss ist nicht Zierrat: Ohne ihn steht
-                // ein helles Kreuz auf der cremefarbenen Hellen Wiese praktisch
-                // unsichtbar da — auf der dunklen Kristallhöhle daneben aber
-                // klar. Das Zeichen muss auf allen zehn Gebieten dasselbe
-                // Gewicht haben.
-                cross(Offset.Zero, Color(0xB3121008), stroke * 1.7f)
-                cross(Offset(0f, depth), Color(0x59000000), stroke)
-                cross(Offset.Zero, Color(0xF2F4F1FF), stroke * 0.85f)
+                // Zwei Äste, übereinandergelegt. Die Kreuzform bleibt — sie
+                // heißt überall „nicht hier" und wird ohne Erklärung verstanden;
+                // nur das Material ist jetzt Holz statt weißer Farbe.
+                //
+                // Die Krümmung geht in unterschiedliche Richtungen: Zwei exakt
+                // gleiche Bögen sähen aus wie ein gedrucktes Zeichen, zwei
+                // verschiedene wie zwei aufgelesene Äste.
+                twig(
+                    from = center + Offset(-arm, -arm),
+                    to = center + Offset(arm, arm),
+                    bend = arm * 0.22f,
+                    thickness = thickness,
+                )
+                twig(
+                    from = center + Offset(arm, -arm),
+                    to = center + Offset(-arm, arm),
+                    bend = -arm * 0.16f,
+                    thickness = thickness * 0.92f,
+                )
             },
     )
 }
