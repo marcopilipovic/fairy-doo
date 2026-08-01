@@ -85,7 +85,7 @@ object SoundEvents {
                     // dieselbe Fee nicht bei jedem Zug identisch klingt.
                     else -> SoundEvent.FairyPlaced(
                         variant = (pos.row * 3 + pos.col + next.placedFairies) %
-                            FairySounds.GIGGLE_VARIANTS,
+                            FairyClips.GIGGLE_COUNT,
                     )
                 }
 

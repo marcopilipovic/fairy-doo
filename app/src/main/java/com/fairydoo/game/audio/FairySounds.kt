@@ -5,99 +5,18 @@ import kotlin.math.pow
 import kotlin.random.Random
 
 /**
- * Die Klangwelt des Feenwalds — alles zur Laufzeit berechnet.
+ * Die berechnete Klangwelt des Feenwalds.
  *
- * Die Stimmen sind bewusst schmal und hoch gehalten: Feen sollen klein und
- * luftig klingen, nicht wie ein Chor. Tiefe Anteile würden im Nachtwald-Ambiente
- * außerdem mit der Musik kollidieren.
+ * Die Feenstimmen selbst — Kichern und Aufschrei — sind **keine** Synthese
+ * mehr, sondern echte Aufnahmen aus `res/raw` (siehe [FairyClips]). Berechnet
+ * wird hier alles Übrige: Jubel, Fähigkeiten, Ticks und die Musik. Für
+ * Instrumente und Ambiente ist Synthese ideal, für eine Stimme nicht — deren
+ * Klangfarbe lässt sich aus Sinustönen nicht überzeugend bauen.
  */
 object FairySounds {
 
     /** Die Töne der Pentatonik, in der alles klingt (A-Dur-Pentatonik). */
     private val scale = listOf(440f, 495f, 554f, 660f, 740f, 880f, 990f, 1108f)
-
-    /**
-     * Ein Kichern.
-     *
-     * Aufgebaut aus mehreren kurzen Silben mit leicht steigender Tonhöhe — das
-     * „hi-hi-hi"-Muster trägt den Eindruck, nicht der einzelne Ton. Jede
-     * [variant] klingt etwas anders, damit wiederholtes Setzen nicht mechanisch
-     * wirkt.
-     */
-    fun giggle(variant: Int): FloatArray {
-        val random = Random(variant * 7919L)
-        val syllables = 4 + variant % 3
-        val basePitch = scale[variant % scale.size] * random.between(0.95f, 1.12f)
-        val step = random.between(1.04f, 1.12f)
-
-        val layers = mutableListOf<Pair<Float, FloatArray>>()
-        var offset = 0f
-
-        repeat(syllables) { index ->
-            val pitch = basePitch * step.pow(index)
-            val duration = random.between(0.070f, 0.105f)
-
-            // Innerhalb einer Silbe steigt die Tonhöhe kurz an und fällt wieder —
-            // das gibt dem Ton den lachenden „Knick".
-            val syllable = Synth.tone(
-                durationSeconds = duration,
-                frequencyAt = { progress ->
-                    pitch * (1f + 0.16f * kotlin.math.sin(progress * Math.PI.toFloat()))
-                },
-                amplitudeAt = Synth.pluck(decay = 7f, peak = 0.55f),
-                harmonics = listOf(1f to 1f, 2f to 0.35f, 3f to 0.12f),
-                vibratoHz = 32f,
-                vibratoDepth = 0.02f,
-            )
-            layers += offset to syllable
-            offset += duration + random.between(0.028f, 0.052f)
-        }
-
-        // Ein Funkeln obendrauf, damit es nach Fee klingt und nicht nach Vogel.
-        layers += 0.02f to Synth.tone(
-            durationSeconds = 0.5f,
-            frequencyAt = { progress -> 2400f + 900f * progress },
-            amplitudeAt = Synth.pluck(decay = 9f, peak = 0.10f),
-        )
-
-        return Synth.normalize(Synth.mix(*layers.toTypedArray()), target = 0.7f)
-    }
-
-    /** Wie viele verschiedene Kicher-Varianten es gibt. */
-    const val GIGGLE_VARIANTS = 6
-
-    /**
-     * Der erschrockene Aufschrei, wenn eine Fee falsch gesetzt wird.
-     *
-     * Steil abfallende Tonhöhe mit kräftigem Vibrato — das ist das Muster, das
-     * wir als Erschrecken hören. Die Obertöne machen ihn schneidend genug, um
-     * sich vom freundlichen Rest abzuheben.
-     */
-    fun yelp(): FloatArray {
-        val cry = Synth.tone(
-            durationSeconds = 0.55f,
-            frequencyAt = { progress -> 1150f * (1f - 0.68f * progress.pow(0.7f)) },
-            amplitudeAt = { progress ->
-                when {
-                    progress < 0.02f -> progress / 0.02f
-                    else -> (1f - progress).pow(1.4f) * 0.75f
-                }
-            },
-            harmonics = listOf(1f to 1f, 2f to 0.5f, 3f to 0.28f, 4f to 0.12f),
-            vibratoHz = 26f,
-            vibratoDepth = 0.07f,
-        )
-
-        // Ein kurzer, tiefer Schreck darunter gibt dem Aufschrei Gewicht.
-        val thud = Synth.tone(
-            durationSeconds = 0.3f,
-            frequencyAt = { progress -> 180f * (1f - 0.4f * progress) },
-            amplitudeAt = Synth.pluck(decay = 9f, peak = 0.35f),
-            harmonics = listOf(1f to 1f, 2f to 0.2f),
-        )
-
-        return Synth.normalize(Synth.mix(0f to cry, 0.01f to thud), target = 0.8f)
-    }
 
     /**
      * Der Jubel am Levelende: eine aufsteigende Glockenfigur mit Nachklang.

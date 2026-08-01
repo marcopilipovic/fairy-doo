@@ -35,22 +35,27 @@ jedes zweite Level.
 
 ## Klang
 
-Der Wald klingt — und bringt dafür **keine einzige Audiodatei** mit. Alle Töne
-werden beim Start berechnet (`audio/Synth.kt`, `audio/FairySounds.kt`):
+| Ereignis | Klang | Herkunft |
+| --- | --- | --- |
+| Fee richtig gesetzt | Kichern in sechs Varianten | Aufnahme |
+| Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
+| Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern | berechnet |
+| Fähigkeit eingesetzt | Funkenkaskade, Schild-Zweiklang, schwebender Ton | berechnet |
+| Rätsel gelöst | Glockenjubel und eine lobende Feenstimme | berechnet + Sprachausgabe |
+| Spielende | absteigende Molltonfolge | berechnet |
+| Hintergrund | Ambient-Schleife aus vier Akkorden mit Glockentönen | berechnet |
 
-| Ereignis | Klang |
-| --- | --- |
-| Fee richtig gesetzt | Kichern in sechs Varianten |
-| Fee falsch gesetzt | erschrockener Aufschrei |
-| Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern |
-| Fähigkeit eingesetzt | Funkenkaskade, Schild-Zweiklang, schwebender Ton |
-| Rätsel gelöst | Glockenjubel und eine lobende Feenstimme |
-| Spielende | absteigende Molltonfolge |
-| Hintergrund | Ambient-Schleife aus vier Akkorden mit Glockentönen |
+**Die Feenstimmen sind echte Aufnahmen** (`res/raw/fairy_giggle_1..6.mp3`,
+`fairy_startled.mp3`), abgespielt über `SoundPool` — es dekodiert MP3 selbst,
+hält die Clips im Speicher und mischt mehrere gleichzeitig, sodass sich beim
+schnellen Setzen mehrerer Feen die Stimmen überlagern statt abzuschneiden. Die
+Originale liegen unter `Audio/`.
 
-Das hält die App klein (Release-APK ~1 MB), macht jede Stimmlage über eine Zahl
-statt über eine neue Aufnahme änderbar und erspart die Lizenzklärung für fremde
-Samples.
+**Alles andere wird beim Start berechnet** (`audio/Synth.kt`,
+`audio/FairySounds.kt`). Für Instrumente und Ambiente ist Synthese ideal: Sie
+kostet keinen Speicherplatz und jede Tonhöhe ist über eine Zahl änderbar. Für
+eine Stimme ist sie es nicht — deren Klangfarbe lässt sich aus Sinustönen nicht
+überzeugend bauen, und genau deshalb sind Kichern und Aufschrei Aufnahmen.
 
 Die **Lobstimme** nutzt die Sprachausgabe des Geräts, nicht aufgenommene Sprache:
 Nur so kann das Lob den Spielstand nennen („Level 4 geschafft"). Fehlt eine
@@ -65,10 +70,11 @@ abstellen; die Einstellung wird gespeichert.
 .\gradlew.bat testDebugUnitTest --tests "*SoundRenderTest*"
 ```
 
-Schreibt alle Klänge als WAV nach `app/build/sounds/`. Der schnellste Weg, eine
-Änderung an der Synthese zu beurteilen. Dieselben Tests prüfen auch, dass kein
-Klang stumm ist, keiner übersteuert und die Musikschleife ohne hörbaren Sprung
-schließt.
+Schreibt alle **berechneten** Klänge als WAV nach `app/build/sounds/`. Der
+schnellste Weg, eine Änderung an der Synthese zu beurteilen. Dieselben Tests
+prüfen auch, dass kein Klang stumm ist, keiner übersteuert und die Musikschleife
+ohne hörbaren Sprung schließt. Die aufgenommenen Feenstimmen sind davon nicht
+betroffen — die liegen als MP3 vor und lassen sich direkt anhören.
 
 ## Bauen und starten
 
@@ -158,11 +164,10 @@ Bretts hängt an den Zonenfarben.
 - **Schriftbild des Titels.** Cinzel Decorative enthält nur Versalien, „Fairydoku"
   erscheint daher als „FAIRYDOKU".
 - Hintergrund-Illustration fehlt noch.
-- **Der Klang ist synthetisch.** Kichern und Aufschrei sind aus Tönen gebaut,
-  keine Stimmaufnahmen — sie treffen das Muster (steigende Silbenfolge,
-  abstürzende Tonhöhe), nicht die Klangfarbe einer echten Stimme. Wer den
-  Feenwald hörbar warm haben will, ersetzt später `FairySounds` durch echte
-  Samples; die Schnittstelle dafür ist [SoundEvent] und bleibt gleich.
+- **Jubel und Fähigkeiten sind noch synthetisch.** Die Feenstimmen sind
+  inzwischen Aufnahmen; wer auch den Rest aufgenommen haben will, ersetzt die
+  entsprechenden Zweige in `FairyAudio` durch weitere Clips — die Schnittstelle
+  dafür ist `SoundEvent` und bleibt gleich.
 
 ## Balance an einem Ort
 

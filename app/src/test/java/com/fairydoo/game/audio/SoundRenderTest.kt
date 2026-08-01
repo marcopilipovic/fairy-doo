@@ -1,5 +1,6 @@
 package com.fairydoo.game.audio
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -25,11 +26,9 @@ class SoundRenderTest {
 
     @Test
     fun `alle Klaenge sind hoerbar und uebersteuern nicht`() {
+        // Kichern und Aufschrei sind Aufnahmen und daher nicht Teil dieser
+        // Prüfung — hier geht es nur um die berechneten Klänge.
         val sounds = buildMap {
-            repeat(FairySounds.GIGGLE_VARIANTS) { variant ->
-                put("kichern-$variant", FairySounds.giggle(variant))
-            }
-            put("schreck", FairySounds.yelp())
             put("jubel", FairySounds.cheer())
             put("feenstaub", FairySounds.sparkle())
             put("natur-schild", FairySounds.shield())
@@ -68,13 +67,10 @@ class SoundRenderTest {
     }
 
     @Test
-    fun `die Kicher-Varianten unterscheiden sich`() {
-        val lengths = (0 until FairySounds.GIGGLE_VARIANTS).map { FairySounds.giggle(it).size }
-
-        assertTrue(
-            "Alle Varianten sind gleich lang — dann klingen sie vermutlich gleich",
-            lengths.toSet().size > 1,
-        )
+    fun `fuer jede Kicher-Variante gibt es eine Aufnahme`() {
+        // Die Ereignis-Zuordnung rechnet modulo dieser Zahl; stimmt sie nicht
+        // mit der Zahl der Dateien überein, bliebe eine Fee stumm.
+        assertEquals(FairyClips.GIGGLE_COUNT, FairyClips.giggles.size)
     }
 
     /** Schreibt 16-Bit-Mono-PCM als WAV. */

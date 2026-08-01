@@ -57,9 +57,10 @@ class SoundEventsTest {
         }
 
         assertTrue("Keine Varianten erzeugt", variants.isNotEmpty())
+        // Jede Variante muss auf eine vorhandene Aufnahme zeigen.
         assertTrue(
             "Variante außerhalb des Bereichs: $variants",
-            variants.all { it in 0 until FairySounds.GIGGLE_VARIANTS },
+            variants.all { it in 0 until FairyClips.GIGGLE_COUNT },
         )
     }
 

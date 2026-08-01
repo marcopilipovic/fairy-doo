@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.SoundPool
 import android.util.Log
 import com.fairydoo.game.game.PowerUp
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,30 @@ class FairyAudio(context: Context) {
     private var effects: Map<String, ShortArray> = emptyMap()
     private var music: AudioTrack? = null
 
+    /**
+     * Für die aufgenommenen Feenstimmen.
+     *
+     * SoundPool statt AudioTrack, weil es MP3 selbst dekodiert, die Clips im
+     * Speicher hält und mehrere gleichzeitig mischen kann — beim schnellen
+     * Setzen mehrerer Feen überlappen die Stimmen dadurch, statt sich
+     * abzuschneiden.
+     */
+    private val clipPool: SoundPool = SoundPool.Builder()
+        .setMaxStreams(MAX_CLIP_STREAMS)
+        .setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build(),
+        )
+        .build()
+
+    private val giggleIds = mutableListOf<Int>()
+    private var startledId = 0
+
+    /** Geladene Clips; vorher abgespielt liefert SoundPool nur Stille. */
+    private val loadedClips = mutableSetOf<Int>()
+
     /** Erst wenn die Klänge fertig berechnet sind, gibt es etwas zu hören. */
     @Volatile
     private var prepared = false
@@ -48,15 +73,28 @@ class FairyAudio(context: Context) {
         private set
 
     init {
+        loadClips()
         scope.launch { prepare() }
+    }
+
+    /** Lädt die aufgenommenen Stimmen; das Dekodieren übernimmt SoundPool. */
+    private fun loadClips() {
+        clipPool.setOnLoadCompleteListener { _, sampleId, status ->
+            if (status == 0) {
+                loadedClips += sampleId
+            } else {
+                Log.w(TAG, "Feenstimme $sampleId konnte nicht geladen werden (Status $status)")
+            }
+        }
+
+        FairyClips.giggles.forEach { resId ->
+            giggleIds += clipPool.load(appContext, resId, 1)
+        }
+        startledId = clipPool.load(appContext, FairyClips.startled, 1)
     }
 
     private suspend fun prepare() = withContext(Dispatchers.Default) {
         val built = buildMap {
-            repeat(FairySounds.GIGGLE_VARIANTS) { variant ->
-                put(giggleKey(variant), Synth.toPcm16(FairySounds.giggle(variant)))
-            }
-            put(KEY_YELP, Synth.toPcm16(FairySounds.yelp()))
             put(KEY_CHEER, Synth.toPcm16(FairySounds.cheer()))
             put(KEY_SPARKLE, Synth.toPcm16(FairySounds.sparkle()))
             put(KEY_SHIELD, Synth.toPcm16(FairySounds.shield()))
@@ -73,11 +111,21 @@ class FairyAudio(context: Context) {
 
     /** Spielt, was das Spielgeschehen hergibt. */
     fun play(event: SoundEvent, level: Int = 1, score: Int = 0) {
+        // Die Stimmen liegen im SoundPool und sind unabhängig von den
+        // berechneten Klängen spielbereit — deshalb wird hier nicht auf
+        // `prepared` gewartet.
+        when (event) {
+            is SoundEvent.FairyPlaced -> playClip(
+                giggleIds.getOrNull(event.variant % giggleIds.size.coerceAtLeast(1)),
+            )
+            SoundEvent.FairyStartled -> playClip(startledId)
+            else -> Unit
+        }
+
         if (!prepared) return
 
         when (event) {
-            is SoundEvent.FairyPlaced -> playEffect(giggleKey(event.variant))
-            SoundEvent.FairyStartled -> playEffect(KEY_YELP)
+            is SoundEvent.FairyPlaced, SoundEvent.FairyStartled -> Unit
             SoundEvent.ShieldSaved -> playEffect(KEY_SHIELD)
             SoundEvent.Ward -> playEffect(KEY_TICK)
             SoundEvent.Undo -> playEffect(KEY_UNDO)
@@ -142,8 +190,24 @@ class FairyAudio(context: Context) {
 
     fun release() {
         stopMusic()
+        runCatching { clipPool.release() }
         voice.release()
         scope.cancel()
+    }
+
+    /** Spielt eine aufgenommene Feenstimme. */
+    private fun playClip(sampleId: Int?) {
+        if (!soundEnabled) return
+        if (sampleId == null || sampleId == 0) return
+        // Ein noch nicht fertig dekodierter Clip würde stumm bleiben und den
+        // Stream trotzdem belegen.
+        if (sampleId !in loadedClips) return
+
+        runCatching {
+            clipPool.play(sampleId, CLIP_VOLUME, CLIP_VOLUME, 1, 0, 1f)
+        }.onFailure { error ->
+            Log.w(TAG, "Feenstimme $sampleId konnte nicht abgespielt werden", error)
+        }
     }
 
     private fun playEffect(key: String) {
@@ -225,13 +289,10 @@ class FairyAudio(context: Context) {
             .also { it.setVolume(if (looping) MUSIC_VOLUME else EFFECT_VOLUME) }
     }
 
-    private fun giggleKey(variant: Int) = "giggle-$variant"
-
     private companion object {
         const val TAG = "FairyAudio"
         const val BYTES_PER_SAMPLE = 2
 
-        const val KEY_YELP = "yelp"
         const val KEY_CHEER = "cheer"
         const val KEY_SPARKLE = "sparkle"
         const val KEY_SHIELD = "shield"
@@ -242,6 +303,10 @@ class FairyAudio(context: Context) {
 
         const val MUSIC_VOLUME = 0.5f
         const val EFFECT_VOLUME = 0.9f
+        const val CLIP_VOLUME = 1.0f
+
+        /** Genug, damit sich mehrere Feenstimmen überlagern können. */
+        const val MAX_CLIP_STREAMS = 8
 
         const val PRAISE_DELAY_MILLIS = 900L
         const val GAME_OVER_DELAY_MILLIS = 450L
