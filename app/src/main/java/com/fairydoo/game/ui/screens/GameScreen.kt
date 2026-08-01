@@ -227,6 +227,7 @@ fun GameScreen(preferences: GamePreferencesRepository) {
             profile = profile,
             showSoundSettings = showSoundSettings,
             onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
+            onDoubleTapCell = { viewModel.onInput(GameInput.DoubleTapCell(it)) },
             onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
             onBegin = { viewModel.onInput(GameInput.Begin) },
             onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
@@ -254,6 +255,7 @@ private fun GameContent(
     profile: PlayerProfile,
     showSoundSettings: Boolean,
     onTapCell: (Pos) -> Unit,
+    onDoubleTapCell: (Pos) -> Unit,
     onUsePowerUp: (PowerUp) -> Unit,
     onBegin: () -> Unit,
     onNextLevel: () -> Unit,
@@ -305,6 +307,7 @@ private fun GameContent(
                             state = state,
                             cellSize = cell,
                             onTapCell = onTapCell,
+                            onDoubleTapCell = onDoubleTapCell,
                         )
                     }
                 }

@@ -11,8 +11,7 @@ import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,8 +35,13 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -79,6 +83,7 @@ fun FairydokuBoard(
     state: GameState,
     cellSize: Dp,
     onTapCell: (Pos) -> Unit,
+    onDoubleTapCell: (Pos) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val puzzle = state.puzzle ?: return
@@ -110,6 +115,7 @@ fun FairydokuBoard(
                             pos = pos,
                             cellSize = cellSize,
                             onTap = { onTapCell(pos) },
+                            onDoubleTap = { onDoubleTapCell(pos) },
                         )
                     }
                 }
@@ -124,6 +130,7 @@ private fun BoardCell(
     pos: Pos,
     cellSize: Dp,
     onTap: () -> Unit,
+    onDoubleTap: () -> Unit,
 ) {
     val puzzle = state.puzzle ?: return
     val region = puzzle.regionAt(pos)
@@ -179,11 +186,24 @@ private fun BoardCell(
                     )
                 }
             }
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onTap,
-            ),
+            // Nicht `clickable`: Das kennt keinen Doppeltipp. Der einfache Tipp
+            // meldet sich deshalb erst, wenn feststeht, dass kein zweiter folgt
+            // — anders ließen sich die beiden Gesten nicht auseinanderhalten.
+            .pointerInput(pos) {
+                detectTapGestures(
+                    onTap = { onTap() },
+                    onDoubleTap = { onDoubleTap() },
+                )
+            }
+            // Die Gestenerkennung ersetzt `clickable` und damit auch dessen
+            // Barrierefreiheit; für die Sprachausgabe bleibt der einfache Tipp.
+            .semantics {
+                role = Role.Button
+                onClick {
+                    onTap()
+                    true
+                }
+            },
         contentAlignment = Alignment.Center,
     ) {
         when (mark) {

@@ -26,8 +26,11 @@ interface GameEngine {
 
 /** Spielereingaben. Die UI übersetzt Gesten in diese Ereignisse. */
 sealed interface GameInput {
-    /** Tippen auf ein Feld — schaltet leer → Merkzeichen → Fee → leer. */
+    /** Einmal tippen — setzt oder entfernt das Merkzeichen, nimmt eine Fee weg. */
     data class TapCell(val pos: Pos) : GameInput
+
+    /** Zweimal kurz hintereinander tippen — setzt die Fee, oder nimmt sie weg. */
+    data class DoubleTapCell(val pos: Pos) : GameInput
 
     /** Eine Magie-Fähigkeit einsetzen. */
     data class UsePowerUp(val powerUp: PowerUp) : GameInput
@@ -83,6 +86,7 @@ class FairydokuEngine(
 
     override fun onInput(state: GameState, input: GameInput): GameState = when (input) {
         is GameInput.TapCell -> onTapCell(state, input.pos)
+        is GameInput.DoubleTapCell -> onDoubleTapCell(state, input.pos)
         is GameInput.UsePowerUp -> onUsePowerUp(state, input.powerUp)
         GameInput.Begin -> onBegin(state)
         GameInput.NextLevel -> onNextLevel(state)
@@ -96,25 +100,60 @@ class FairydokuEngine(
         }
 
     /**
-     * Schaltet ein Feld weiter: leer → Merkzeichen → Fee → leer.
+     * Einmal tippen: Merkzeichen setzen oder wieder wegnehmen.
      *
-     * Das Merkzeichen kommt vor der Fee, weil es der häufigere Zug ist: Beim
-     * Ausschließen von Feldern arbeitet man sich durch viele Merkzeichen, bevor
-     * eine Fee gesetzt wird.
+     * Das Merkzeichen liegt auf der einfachen Geste, weil es der weitaus
+     * häufigere Zug ist — beim Ausschließen arbeitet man sich durch viele
+     * Felder, bevor überhaupt eine Fee gesetzt wird.
+     *
+     * Auf einer Fee räumt der einfache Tipp ebenfalls ab. Sie kehrt damit nicht
+     * zum Merkzeichen zurück, sondern zum leeren Feld: Wer eine Fee wegnimmt,
+     * hat sich in aller Regel geirrt und will das Feld neu beurteilen.
      */
-    private fun onTapCell(state: GameState, pos: Pos): GameState {
+    private fun onTapCell(state: GameState, pos: Pos): GameState =
+        setMark(state, pos) { current ->
+            when (current) {
+                CellMark.Empty -> CellMark.Warded
+                CellMark.Warded, CellMark.Fairy -> CellMark.Empty
+            }
+        }
+
+    /**
+     * Doppelt tippen: die Fee setzen — oder wieder wegnehmen, wenn sie da ist.
+     *
+     * Auf einer Fee tut der Doppeltipp damit dasselbe wie der einfache. Das ist
+     * Absicht: Wer zweimal auf eine Fee tippt, will sie loswerden, und ein
+     * Wiedersetzen an derselben Stelle wäre nur verwirrend.
+     */
+    private fun onDoubleTapCell(state: GameState, pos: Pos): GameState =
+        setMark(state, pos) { current ->
+            if (current == CellMark.Fairy) CellMark.Empty else CellMark.Fairy
+        }
+
+    /**
+     * Setzt ein Feld auf den Wert, den [next] bestimmt, und zieht die Folgen.
+     *
+     * Beide Gesten unterscheiden sich nur in dieser einen Entscheidung —
+     * Konflikte, Fehler, Schild und Siegprüfung sind für sie gleich und stehen
+     * deshalb nur hier.
+     */
+    private fun setMark(
+        state: GameState,
+        pos: Pos,
+        next: (CellMark) -> CellMark,
+    ): GameState {
         val puzzle = state.puzzle ?: return state
         if (state.status != GameStatus.Running) return state
         if (!puzzle.contains(pos)) return state
 
-        val marks = state.marks.toMutableMap()
-        val wasFairy = state.markAt(pos) == CellMark.Fairy
+        val current = state.markAt(pos)
+        val target = next(current)
+        if (target == current) return state
 
-        when (state.markAt(pos)) {
-            CellMark.Empty -> marks[pos] = CellMark.Warded
-            CellMark.Warded -> marks[pos] = CellMark.Fairy
-            CellMark.Fairy -> marks.remove(pos)
-        }
+        val marks = state.marks.toMutableMap()
+        val wasFairy = current == CellMark.Fairy
+
+        if (target == CellMark.Empty) marks.remove(pos) else marks[pos] = target
 
         val fairies = marks.filterValues { it == CellMark.Fairy }.keys
         val conflicts = FairydokuRules.conflicts(puzzle, fairies)

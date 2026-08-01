@@ -22,9 +22,9 @@ class FairydokuEngineTest {
     private fun startedGame(level: Int = 1): GameState =
         engine.onInput(engine.newGame(level), GameInput.Begin)
 
-    /** Setzt eine Fee auf [pos] — zwei Tipps, weil erst das Merkzeichen kommt. */
+    /** Setzt eine Fee auf [pos] — der Doppeltipp ist ihre Geste. */
     private fun placeFairy(state: GameState, pos: Pos): GameState =
-        engine.onInput(engine.onInput(state, GameInput.TapCell(pos)), GameInput.TapCell(pos))
+        engine.onInput(state, GameInput.DoubleTapCell(pos))
 
     /** Setzt alle Feen der hinterlegten Lösung. */
     private fun solve(state: GameState): GameState {
@@ -58,7 +58,7 @@ class FairydokuEngineTest {
     }
 
     @Test
-    fun `Tippen schaltet leer zu Merkzeichen zu Fee zu leer`() {
+    fun `einmal Tippen setzt und entfernt das Merkzeichen`() {
         var state = startedGame()
         val pos = requireNotNull(state.puzzle).solution.first()
 
@@ -66,10 +66,40 @@ class FairydokuEngineTest {
         assertEquals(CellMark.Warded, state.markAt(pos))
 
         state = engine.onInput(state, GameInput.TapCell(pos))
-        assertEquals(CellMark.Fairy, state.markAt(pos))
-
-        state = engine.onInput(state, GameInput.TapCell(pos))
         assertEquals(CellMark.Empty, state.markAt(pos))
+    }
+
+    @Test
+    fun `doppelt Tippen setzt die Fee - aus dem Leeren wie aus dem Merkzeichen`() {
+        var state = startedGame()
+        val puzzle = requireNotNull(state.puzzle)
+        val fromEmpty = puzzle.solution.first()
+        // Zweites Feld derselben Lösung: kollidiert nicht mit dem ersten.
+        val fromWarded = puzzle.solution.last()
+
+        state = engine.onInput(state, GameInput.DoubleTapCell(fromEmpty))
+        assertEquals(CellMark.Fairy, state.markAt(fromEmpty))
+
+        state = engine.onInput(state, GameInput.TapCell(fromWarded))
+        assertEquals(CellMark.Warded, state.markAt(fromWarded))
+        state = engine.onInput(state, GameInput.DoubleTapCell(fromWarded))
+        assertEquals(CellMark.Fairy, state.markAt(fromWarded))
+    }
+
+    @Test
+    fun `auf einer Fee raeumen beide Gesten das Feld`() {
+        val started = startedGame()
+        val pos = requireNotNull(started.puzzle).solution.first()
+        val withFairy = engine.onInput(started, GameInput.DoubleTapCell(pos))
+
+        assertEquals(
+            CellMark.Empty,
+            engine.onInput(withFairy, GameInput.TapCell(pos)).markAt(pos),
+        )
+        assertEquals(
+            CellMark.Empty,
+            engine.onInput(withFairy, GameInput.DoubleTapCell(pos)).markAt(pos),
+        )
     }
 
     @Test

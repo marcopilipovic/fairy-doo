@@ -22,6 +22,10 @@ class SoundEventsTest {
 
     private fun tap(state: GameState, pos: Pos) = engine.onInput(state, GameInput.TapCell(pos))
 
+    /** Der Doppeltipp setzt die Fee — aus dem Leeren wie aus dem Merkzeichen. */
+    private fun place(state: GameState, pos: Pos) =
+        engine.onInput(state, GameInput.DoubleTapCell(pos))
+
     @Test
     fun `ein Merkzeichen macht Tick`() {
         val before = startedGame()
@@ -37,7 +41,7 @@ class SoundEventsTest {
         val warded = tap(startedGame(), requireNotNull(startedGame().puzzle).solution.first())
         val pos = requireNotNull(warded.puzzle).solution.first()
 
-        val events = SoundEvents.diff(warded, tap(warded, pos))
+        val events = SoundEvents.diff(warded, place(warded, pos))
 
         assertTrue("Erwartet wurde ein Kichern, war: $events", events.single() is SoundEvent.FairyPlaced)
     }
@@ -49,7 +53,7 @@ class SoundEventsTest {
 
         for (pos in requireNotNull(state.puzzle).solution) {
             val warded = tap(state, pos)
-            val placed = tap(warded, pos)
+            val placed = place(warded, pos)
             SoundEvents.diff(warded, placed)
                 .filterIsInstance<SoundEvent.FairyPlaced>()
                 .forEach { variants += it.variant }
@@ -69,12 +73,12 @@ class SoundEventsTest {
         var state = startedGame()
         val puzzle = requireNotNull(state.puzzle)
         val anchor = puzzle.solution.first()
-        state = tap(tap(state, anchor), anchor)
+        state = place(state, anchor)
 
         val clashing = puzzle.allPositions.first { it.row == anchor.row && it != anchor }
         val warded = tap(state, clashing)
 
-        val events = SoundEvents.diff(warded, tap(warded, clashing))
+        val events = SoundEvents.diff(warded, place(warded, clashing))
 
         assertEquals(listOf(SoundEvent.FairyStartled), events)
     }
@@ -84,12 +88,12 @@ class SoundEventsTest {
         var state = engine.onInput(startedGame(), GameInput.UsePowerUp(PowerUp.NatureShield))
         val puzzle = requireNotNull(state.puzzle)
         val anchor = puzzle.solution.first()
-        state = tap(tap(state, anchor), anchor)
+        state = place(state, anchor)
 
         val clashing = puzzle.allPositions.first { it.row == anchor.row && it != anchor }
         val warded = tap(state, clashing)
 
-        val events = SoundEvents.diff(warded, tap(warded, clashing))
+        val events = SoundEvents.diff(warded, place(warded, clashing))
 
         assertEquals(listOf(SoundEvent.ShieldSaved), events)
     }
@@ -98,7 +102,7 @@ class SoundEventsTest {
     fun `das Wegnehmen einer Fee klingt nach Ruecknahme`() {
         var state = startedGame()
         val pos = requireNotNull(state.puzzle).solution.first()
-        state = tap(tap(state, pos), pos)
+        state = place(state, pos)
 
         val events = SoundEvents.diff(state, tap(state, pos))
 
@@ -141,12 +145,12 @@ class SoundEventsTest {
 
         // Alle bis auf die letzte Fee setzen.
         for (pos in solution.dropLast(1)) {
-            state = tap(tap(state, pos), pos)
+            state = place(state, pos)
         }
 
         val last = solution.last()
         val warded = tap(state, last)
-        val events = SoundEvents.diff(warded, tap(warded, last))
+        val events = SoundEvents.diff(warded, place(warded, last))
 
         assertEquals(listOf(SoundEvent.LevelComplete), events)
     }
@@ -156,17 +160,17 @@ class SoundEventsTest {
         var state = startedGame()
         val puzzle = requireNotNull(state.puzzle)
         val anchor = puzzle.solution.first()
-        state = tap(tap(state, anchor), anchor)
+        state = place(state, anchor)
 
         val clashing = puzzle.allPositions.filter { it.row == anchor.row && it != anchor }
         // Zwei Fehler vorweg, der dritte beendet die Partie.
         for (pos in clashing.take(GameState.MAX_LIVES - 1)) {
-            state = tap(tap(state, pos), pos)
+            state = place(state, pos)
         }
 
         val lastMistake = clashing[GameState.MAX_LIVES - 1]
         val warded = tap(state, lastMistake)
-        val events = SoundEvents.diff(warded, tap(warded, lastMistake))
+        val events = SoundEvents.diff(warded, place(warded, lastMistake))
 
         assertTrue("Der Schreck fehlt: $events", SoundEvent.FairyStartled in events)
         assertTrue("Das Spielende fehlt: $events", SoundEvent.GameOver in events)

@@ -16,8 +16,13 @@ Die Oberfläche folgt dem Design-Handoff „Fairydoku – Feen-Logikpuzzle"
 - genau **eine Fee je Waldzone** (die farbig umrandeten Bereiche),
 - **keine zwei Feen berühren sich** — auch nicht diagonal.
 
-Ein Tipp auf ein Feld schaltet weiter: leer → ✕ (Merkzeichen „hier keine Fee")
-→ 🧚 Fee → leer. Das Merkzeichen kommt zuerst, weil es der häufigere Zug ist.
+**Einmal tippen** setzt ✕ (Merkzeichen „hier keine Fee") und nimmt es wieder weg.
+**Zweimal kurz hintereinander tippen** setzt die Fee — aus dem leeren Feld wie aus
+dem Merkzeichen. Auf einer Fee räumen beide Gesten das Feld.
+
+Das Merkzeichen liegt auf der einfachen Geste, weil es der weitaus häufigere Zug
+ist: Beim Ausschließen arbeitet man sich durch viele Felder, bevor überhaupt eine
+Fee gesetzt wird.
 
 Eine Fee, die beim Setzen kollidiert, kostet ein Leben. Drei Leben, dann ist der
 Lauf vorbei — ebenso, wenn die Zeit abläuft.
