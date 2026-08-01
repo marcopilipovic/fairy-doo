@@ -73,14 +73,17 @@ class FairydokuEngineTest {
     }
 
     @Test
-    fun `jedes Tippen meldet die Zone des Feldes`() {
+    fun `jedes Tippen meldet die Zone des Feldes und ihre Bewohnerin`() {
         val state = startedGame()
         val pos = Pos(0, 0)
         val expected = requireNotNull(state.puzzle).regionAt(pos)
 
         val tapped = engine.onInput(state, GameInput.TapCell(pos))
 
-        assertEquals(StatusMessage.Zone(expected), tapped.statusMessage)
+        assertEquals(
+            StatusMessage.Zone(expected, GameState.speciesForZone(state.level, expected)),
+            tapped.statusMessage,
+        )
     }
 
     @Test
@@ -297,15 +300,6 @@ class FairydokuEngineTest {
         assertEquals(5, GameState.sizeForLevel(3))
         assertEquals(6, GameState.sizeForLevel(5))
         assertEquals("Größer als 8x8 wird es nicht", 8, GameState.sizeForLevel(50))
-    }
-
-    @Test
-    fun `die Feen-Art wechselt mit jedem Level`() {
-        assertEquals(FairySpecies.Blossom, GameState.speciesForLevel(1))
-        assertEquals(FairySpecies.Water, GameState.speciesForLevel(2))
-        assertEquals(FairySpecies.Fire, GameState.speciesForLevel(3))
-        assertEquals(FairySpecies.Star, GameState.speciesForLevel(4))
-        assertEquals("Nach vier Arten beginnt die Reihe von vorn", FairySpecies.Blossom, GameState.speciesForLevel(5))
     }
 
     @Test

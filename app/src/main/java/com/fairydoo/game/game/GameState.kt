@@ -35,17 +35,6 @@ enum class PowerUp {
     TimeBlossom,
 }
 
-/**
- * Die Feen-Arten wechseln mit jedem Level durch. Sie ändern nichts an den
- * Regeln — sie geben dem Fortschritt ein Gesicht.
- */
-enum class FairySpecies(val displayName: String) {
-    Blossom("Blütenfeen"),
-    Water("Wasserfeen"),
-    Fire("Feuerfeen"),
-    Star("Sternenfeen"),
-}
-
 /** Warum die Partie endete. */
 enum class GameOverReason {
     TimeUp,
@@ -64,8 +53,8 @@ sealed interface StatusMessage {
     /** Voreinstellung: die Bedienhilfe. */
     data object Hint : StatusMessage
 
-    /** Nach jedem Tippen: der Name der berührten Zone. */
-    data class Zone(val regionIndex: Int) : StatusMessage
+    /** Nach jedem Tippen: die berührte Zone und die Fee, die dort lebt. */
+    data class Zone(val regionIndex: Int, val species: FairySpecies) : StatusMessage
 
     data object MistakeMade : StatusMessage
     data object ShieldSaved : StatusMessage
@@ -110,7 +99,9 @@ data class GameState(
 
     val remainingSeconds: Int get() = (remainingMillis / 1000).toInt()
 
-    val species: FairySpecies get() = speciesForLevel(level)
+    /** Die Fee, die auf diesem Feld erscheint — die ihrer Waldzone. */
+    fun speciesAt(pos: Pos): FairySpecies? =
+        puzzle?.let { speciesForZone(level, it.regionAt(pos)) }
 
     /** Alle vom Spieler gesetzten Feen. */
     val fairies: Set<Pos>
@@ -155,8 +146,32 @@ data class GameState(
         fun durationForLevel(level: Int): Long =
             (BASE_SECONDS + sizeForLevel(level) * SECONDS_PER_CELL) * 1000L
 
-        fun speciesForLevel(level: Int): FairySpecies =
-            FairySpecies.entries[(level - 1).coerceAtLeast(0) % FairySpecies.entries.size]
+        /**
+         * Welche Fee in einer Waldzone lebt.
+         *
+         * Zehn Feen, aber höchstens acht Zonen: Wäre die Zuordnung fest,
+         * blieben zwei Feen für immer unsichtbar — auf den 4×4-Brettern der
+         * ersten Level sogar sechs. Deshalb dreht sich der Reigen mit jedem
+         * Level um einen Platz weiter.
+         *
+         * [ZONE_STRIDE] ist teilerfremd zur Zahl der Feen. Daran hängen beide
+         * Zusagen: Auf einem Brett trägt keine Zone dieselbe Fee wie eine
+         * andere, und über zehn Level kommt in jeder Zone jede Fee genau einmal
+         * vor. Der Schritt von drei sorgt zusätzlich dafür, dass benachbarte
+         * Zonennummern weit auseinanderliegende — also gut unterscheidbare —
+         * Feen bekommen.
+         */
+        fun speciesForZone(level: Int, regionIndex: Int): FairySpecies =
+            FairySpecies.entries[
+                (regionIndex * ZONE_STRIDE + (level - 1)).mod(FairySpecies.entries.size),
+            ]
+
+        /** Die Feen, die auf dem Brett dieses Levels zu sehen sind. */
+        fun speciesOnBoard(level: Int): List<FairySpecies> =
+            (0 until sizeForLevel(level)).map { speciesForZone(level, it) }
+
+        /** Teilerfremd zur Zahl der Feen — siehe [speciesForZone]. */
+        const val ZONE_STRIDE = 3
 
         const val MAX_SIZE = 8
         private const val BASE_SECONDS = 60L

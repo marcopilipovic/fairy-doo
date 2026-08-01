@@ -1,5 +1,6 @@
 package com.fairydoo.game.ui
 
+import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameOverReason
 import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.StatusMessage
@@ -29,7 +30,8 @@ object GameCopy {
 
     fun statusText(message: StatusMessage): String = when (message) {
         StatusMessage.Hint -> "Tippe ein Feld: leer → ✕ → 🧚"
-        is StatusMessage.Zone -> "Zone: ${zoneName(message.regionIndex)}"
+        is StatusMessage.Zone ->
+            "Zone: ${zoneName(message.regionIndex)} · hier lebt ${fairyIntroduction(message.species)}"
         StatusMessage.MistakeMade -> "⚡ Die Zauberkräfte stören sich! (−1 Leben)"
         StatusMessage.ShieldSaved -> "🍃 Der Natur-Schild hat dich beschützt!"
         StatusMessage.ShieldActivated -> "🍃 Natur-Schild aktiviert!"
@@ -49,9 +51,54 @@ object GameCopy {
         null -> ""
     }
 
-    /** „Der Wald wird dichter: 5×5-Gitter mit Wasserfeen erwartet dich…" */
-    fun nextLevelTeaser(nextSize: Int, nextSpecies: String): String =
-        "Der Wald wird dichter: $nextSize×$nextSize-Gitter mit $nextSpecies erwartet dich…"
+    /** Die Wesensart jeder Fee — Beiname, nicht Eigenname. */
+    fun fairyTitle(species: FairySpecies): String = when (species) {
+        FairySpecies.Flora -> "Waldfee"
+        FairySpecies.Nebula -> "Staubfee"
+        FairySpecies.Salta -> "Hüpffee"
+        FairySpecies.Aura -> "Strahlfee"
+        FairySpecies.Nixie -> "Frostfee"
+        FairySpecies.Zephyr -> "Windfee"
+        FairySpecies.Ignis -> "Funkenfee"
+        FairySpecies.Terra -> "Kristallfee"
+        FairySpecies.Chrono -> "Pendelfee"
+        FairySpecies.Trixie -> "Chaosfee"
+    }
+
+    /** „Nixie, die Frostfee" */
+    fun fairyIntroduction(species: FairySpecies): String =
+        "${species.displayName}, die ${fairyTitle(species)}"
+
+    /** „3 / 5 Feen platziert" */
+    fun progressText(placed: Int, total: Int): String = "$placed / $total Feen platziert"
+
+    /**
+     * „Der Wald wird dichter: 5×5-Gitter — Nixie und Salta warten schon…"
+     *
+     * Kündigt die Neuzugänge an statt einer Feen-Art: Seit in jeder Zone eine
+     * andere Fee lebt, ist das die Information, auf die man sich freut.
+     */
+    fun nextLevelTeaser(nextSize: Int, newcomers: List<FairySpecies>): String {
+        val grid = "$nextSize×$nextSize-Gitter"
+        if (newcomers.isEmpty()) {
+            return "Der Wald wird dichter: ein neues $grid erwartet dich…"
+        }
+
+        val shown = newcomers.take(MAX_TEASER_NAMES).map { it.displayName }
+        val hidden = newcomers.size - shown.size
+        val names = enumerate(if (hidden > 0) shown + "$hidden weitere" else shown)
+        val verb = if (newcomers.size == 1) "wartet" else "warten"
+        return "Der Wald wird dichter: $grid — $names $verb schon…"
+    }
+
+    /** „Flora" · „Flora und Nixie" · „Flora, Nixie und Chrono" */
+    private fun enumerate(names: List<String>): String = when (names.size) {
+        0 -> ""
+        1 -> names.first()
+        else -> names.dropLast(1).joinToString(", ") + " und " + names.last()
+    }
+
+    private const val MAX_TEASER_NAMES = 3
 
     /** Formatiert die Restzeit als m:ss. */
     fun formatTime(totalSeconds: Int): String {

@@ -299,7 +299,10 @@ private fun GameContent(
                 gained = state.gained,
                 teaser = GameCopy.nextLevelTeaser(
                     nextSize = GameState.sizeForLevel(state.level + 1),
-                    nextSpecies = GameState.speciesForLevel(state.level + 1).displayName,
+                    // Wer im nächsten Level dazukommt: die Feen des neuen
+                    // Bretts ohne die des jetzigen.
+                    newcomers = GameState.speciesOnBoard(state.level + 1) -
+                        GameState.speciesOnBoard(state.level).toSet(),
                 ),
                 onContinue = onNextLevel,
             )
@@ -449,8 +452,9 @@ private fun LevelProgress(state: GameState) {
         }
 
         Text(
-            text = "${state.placedFairies} / ${state.boardSize} " +
-                "${state.species.displayName} platziert",
+            // Ohne Artnamen: In jeder Zone lebt inzwischen eine andere Fee,
+            // eine gemeinsame Bezeichnung gibt es nicht mehr.
+            text = GameCopy.progressText(state.placedFairies, state.boardSize),
             style = MaterialTheme.typography.labelSmall,
             color = TextPrimary.copy(alpha = 0.75f),
         )

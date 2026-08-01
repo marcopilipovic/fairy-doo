@@ -1,8 +1,10 @@
 package com.fairydoo.game.ui.components
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.StartOffsetType
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
@@ -30,18 +32,27 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
+import com.fairydoo.game.art.SPRITE_SIZE
+import com.fairydoo.game.art.glowArgb
+import com.fairydoo.game.art.sprite
 import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.model.CellMark
 import com.fairydoo.game.game.model.Pos
+import com.fairydoo.game.ui.sprites.FairySpriteCache
 import com.fairydoo.game.ui.theme.ConflictRed
 import com.fairydoo.game.ui.theme.FaintBorder
 import com.fairydoo.game.ui.theme.Gold
@@ -51,13 +62,8 @@ import com.fairydoo.game.ui.theme.MossLightA
 import com.fairydoo.game.ui.theme.MossLightB
 import com.fairydoo.game.ui.theme.RegionColors
 
-/** Der Schein, den eine Feen-Art um sich verbreitet. */
-fun FairySpecies.glowColor(): Color = when (this) {
-    FairySpecies.Blossom -> Color(0xE6FF9ECF)
-    FairySpecies.Water -> Color(0xE65BC8FF)
-    FairySpecies.Fire -> Color(0xE6FF9A5B)
-    FairySpecies.Star -> Color(0xE6FFE66B)
-}
+/** Der Eigenton, den eine Fee um sich verbreitet. */
+fun FairySpecies.glowColor(): Color = Color(glowArgb)
 
 /**
  * Das Spielbrett: moosige Steinfelder, von leuchtenden Zonengrenzen durchzogen.
@@ -182,8 +188,10 @@ private fun BoardCell(
         contentAlignment = Alignment.Center,
     ) {
         when (mark) {
+            // Welche Fee erscheint, entscheidet die Zone des Feldes.
             CellMark.Fairy -> FairyGlyph(
-                species = state.species,
+                species = GameState.speciesForZone(state.level, region),
+                zoneColor = regionColor,
                 cellSize = cellSize,
                 pulsing = state.hintCell == pos,
                 phaseOffset = (pos.row * 3 + pos.col) * 260,
@@ -379,6 +387,7 @@ private fun DrawScope.drawZoneBorders(
 @Composable
 private fun FairyGlyph(
     species: FairySpecies,
+    zoneColor: Color,
     cellSize: Dp,
     pulsing: Boolean,
     phaseOffset: Int,
@@ -399,8 +408,11 @@ private fun FairyGlyph(
 
     val transition = rememberInfiniteTransition(label = "fairy")
 
-    // Jede Fee schwebt in eigenem Takt — gleichzeitiges Wippen sähe mechanisch aus.
-    val hover by transition.animateFloat(
+    // Bewusst ohne `by`-Delegat: Die Werte werden erst in den Layer- und
+    // Zeichen-Lambdas gelesen. Läse man sie hier im Rumpf, würde jede Fee
+    // sechzigmal pro Sekunde neu komponiert — bei acht Feen auf dem Brett
+    // rechnet dann das halbe Spielfeld ständig neu.
+    val hover = transition.animateFloat(
         initialValue = 0f,
         targetValue = -1f,
         animationSpec = infiniteRepeatable(
@@ -412,7 +424,7 @@ private fun FairyGlyph(
     )
 
     // Ein per Feenstaub aufgedecktes Feld leuchtet zwei Sekunden lang nach.
-    val pulse by transition.animateFloat(
+    val pulse = transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -422,9 +434,35 @@ private fun FairyGlyph(
         label = "pulse",
     )
 
-    val glow = if (pulsing) Gold else species.glowColor()
-    val glowStrength = if (pulsing) 0.55f + pulse * 0.35f else 0.42f
-    val hoverPx = hover * cellSize.value * 0.05f
+    val sprite = species.sprite
+    val bitmaps = remember(species) { FairySpriteCache.framesOf(species) }
+    val frameCount = bitmaps.size
+    val cycleMillis = sprite.frameMillis * frameCount
+
+    val frame = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = frameCount.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(cycleMillis, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+            // FastForward: Die Fee startet mitten in ihrem Takt. Sonst zappeln
+            // beim Levelstart alle im Gleichschritt los.
+            initialStartOffset = StartOffset(phaseOffset % cycleMillis, StartOffsetType.FastForward),
+        ),
+        label = "spriteFrame",
+    )
+
+    val ownGlow = if (pulsing) Gold else species.glowColor()
+
+    // Ganzzahlige Vergrößerung, damit die Pixelkanten nicht wabern: Bei
+    // gebrochenem Faktor wird jede zweite Pixelreihe einen Bildpunkt breiter
+    // als ihre Nachbarn.
+    val density = LocalDensity.current
+    val spriteSide = remember(cellSize, density) {
+        val target = with(density) { cellSize.toPx() } * SPRITE_FILL
+        (target / SPRITE_SIZE).roundToInt().coerceAtLeast(1) * SPRITE_SIZE
+    }
+    val pixelScale = spriteSide / SPRITE_SIZE
 
     Box(
         modifier = Modifier.size(cellSize),
@@ -436,8 +474,9 @@ private fun FairyGlyph(
                 .graphicsLayer { alpha = scale.value.coerceIn(0f, 1f) }
                 .drawBehind {
                     val center = Offset(size.width / 2f, size.height / 2f)
+                    val strength = if (pulsing) 0.55f + pulse.value * 0.35f else 0.42f
 
-                    // Schatten auf dem Stein — wandert mit dem Schweben.
+                    // Schatten auf dem Stein.
                     drawOval(
                         brush = Brush.radialGradient(
                             colors = listOf(Color(0x66000000), Color.Transparent),
@@ -448,20 +487,25 @@ private fun FairyGlyph(
                         size = Size(size.width * 0.52f, size.height * 0.18f),
                     )
 
-                    // Weiter, weicher Hof …
+                    // Der weite Hof trägt die **Zonenfarbe**: An ihr hängt die
+                    // Lesbarkeit des Rätsels, und besetzte Felder verstärken sie
+                    // dadurch, statt sie zu verdünnen.
                     drawCircle(
                         brush = Brush.radialGradient(
-                            colors = listOf(glow.copy(alpha = glowStrength * 0.55f), Color.Transparent),
+                            colors = listOf(
+                                zoneColor.copy(alpha = strength * 0.55f),
+                                Color.Transparent,
+                            ),
                             center = center,
                             radius = size.minDimension * 0.62f,
                         ),
                         radius = size.minDimension * 0.62f,
                         center = center,
                     )
-                    // … und ein heller Kern direkt um die Figur.
+                    // Der Kern trägt den Eigenton der Fee.
                     drawCircle(
                         brush = Brush.radialGradient(
-                            colors = listOf(glow.copy(alpha = glowStrength), Color.Transparent),
+                            colors = listOf(ownGlow.copy(alpha = strength), Color.Transparent),
                             center = center,
                             radius = size.minDimension * 0.32f,
                         ),
@@ -471,17 +515,41 @@ private fun FairyGlyph(
                 },
         )
 
-        Text(
-            text = "🧚",
-            style = TextStyle(fontSize = (cellSize.value * 0.54f).sp, textAlign = TextAlign.Center),
-            modifier = Modifier.graphicsLayer {
-                scaleX = scale.value
-                scaleY = scale.value
-                translationY = hoverPx
-            },
+        Box(
+            modifier = Modifier
+                .size(cellSize)
+                .graphicsLayer {
+                    scaleX = scale.value
+                    scaleY = scale.value
+                    // Das Schweben rastet auf ganze Sprite-Pixel ein — sonst
+                    // wandert die Fee in Zwischenschritten und die Kanten
+                    // flimmern.
+                    val amplitude = cellSize.toPx() * 0.05f
+                    translationY =
+                        (hover.value * amplitude / pixelScale).roundToInt() * pixelScale.toFloat()
+                }
+                .drawBehind {
+                    val index = frame.value.toInt().coerceIn(0, bitmaps.lastIndex)
+                    val left = ((size.width - spriteSide) / 2f).roundToInt()
+                    val top = ((size.height - spriteSide) / 2f).roundToInt()
+
+                    drawImage(
+                        image = bitmaps[index],
+                        srcOffset = IntOffset.Zero,
+                        srcSize = IntSize(SPRITE_SIZE, SPRITE_SIZE),
+                        dstOffset = IntOffset(left, top),
+                        dstSize = IntSize(spriteSide, spriteSide),
+                        // Ohne das interpoliert Skia und aus Pixelkunst wird
+                        // Aquarell.
+                        filterQuality = FilterQuality.None,
+                    )
+                },
         )
     }
 }
+
+/** Anteil der Zelle, den eine Fee einnimmt. */
+private const val SPRITE_FILL = 0.86f
 
 /**
  * Das Merkzeichen „hier sitzt sicher keine Fee".

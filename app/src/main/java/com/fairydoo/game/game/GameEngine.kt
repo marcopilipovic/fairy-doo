@@ -121,7 +121,10 @@ class FairydokuEngine(
         var next = state.copy(
             marks = marks,
             conflicts = conflicts,
-            statusMessage = StatusMessage.Zone(puzzle.regionAt(pos)),
+            statusMessage = StatusMessage.Zone(
+                regionIndex = puzzle.regionAt(pos),
+                species = GameState.speciesForZone(state.level, puzzle.regionAt(pos)),
+            ),
         )
 
         // Ein Fehler entsteht nur beim *Setzen* einer Fee, die sofort mit einer

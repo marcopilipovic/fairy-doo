@@ -76,6 +76,44 @@ prüfen auch, dass kein Klang stumm ist, keiner übersteuert und die Musikschlei
 ohne hörbaren Sprung schließt. Die aufgenommenen Feenstimmen sind davon nicht
 betroffen — die liegen als MP3 vor und lassen sich direkt anhören.
 
+## Die Feen
+
+In jeder Waldzone lebt eine eigene Fee — auf einem Brett sind also bis zu acht
+verschiedene gleichzeitig zu sehen, und die Zonen sind auf einen Blick
+auseinanderzuhalten.
+
+| | | | | |
+| --- | --- | --- | --- | --- |
+| Flora, die Waldfee | Nebula, die Staubfee | Salta, die Hüpffee | Aura, die Strahlfee | Nixie, die Frostfee |
+| Zephyr, die Windfee | Ignis, die Funkenfee | Terra, die Kristallfee | Chrono, die Pendelfee | Trixie, die Chaosfee |
+
+Zehn Feen, aber höchstens acht Zonen: Wäre die Zuordnung fest, blieben zwei Feen
+für immer unsichtbar — auf den 4×4-Brettern der ersten Level sogar sechs. Deshalb
+dreht sich der Reigen mit jedem Level um einen Platz weiter
+(`GameState.speciesForZone`). Der Schritt ist teilerfremd zur Zahl der Feen, und
+daran hängen beide Zusagen: Auf einem Brett trägt keine Zone dieselbe Fee wie eine
+andere, und über zehn Level kommt in jeder Zone jede Fee genau einmal vor.
+
+**Die Sprites stehen im Code**, nicht als Bilddateien: 32×32-Raster aus
+Zeichenketten plus Farbpalette (`art/`). Das hält den Versionsverlauf lesbar und
+macht jedes einzelne Pixel nachträglich änderbar.
+
+Damit sich Fee und Zonenfarbe nicht beißen, tragen die zwei Ringe des Scheins
+verschiedene Rollen: der **äußere Hof die Zonenfarbe** — an ihr hängt die
+Lesbarkeit des Rätsels —, der **innere Kern den Eigenton der Fee**. Die Harmonie
+entsteht durch Rahmung statt durch Übereinstimmung.
+
+### Sprites anschauen, ohne die App zu starten
+
+```powershell
+.\gradlew.bat testDebugUnitTest --tests "*SpriteRenderTest*"
+```
+
+Schreibt nach `app/build/sprites/`: jede Fee einzeln, einen Filmstreifen ihrer
+Einzelbilder, einen Kontaktbogen aller zehn und Brett-Ansichten der Level 1–3 mit
+echten Rätseln. Dieselben Tests prüfen Rasterformat, Sichtbarkeit, Bewegung,
+Randabstand und den Kontrast zum Moosgrund.
+
 ## Bauen und starten
 
 ```powershell
@@ -98,6 +136,10 @@ app/src/main/java/com/fairydoo/game/
 │   ├── GameState.kt                 Unveränderlicher Partie-Zustand
 │   ├── GameEngine.kt                FairydokuEngine: Züge, Fähigkeiten, Punkte
 │   └── GameViewModel.kt             Spieluhr, Zustandsverwaltung, Persistenz
+├── art/
+│   ├── PixelSprite.kt               Sprite-Format, Palette, Prüfung
+│   ├── FloraSprite.kt               Die Raster je Fee, eine Datei pro Charakter
+│   └── FairySprites.kt              Zuordnung Fee → Gestalt und Eigenton
 ├── audio/
 │   ├── Synth.kt                     Tonerzeugung (reines Kotlin, testbar)
 │   ├── FairySounds.kt               Die Klänge des Waldes
