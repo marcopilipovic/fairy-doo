@@ -11,6 +11,7 @@ import com.fairydoo.game.data.PlayerProfile
 import com.fairydoo.game.game.PowerUp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -34,7 +35,12 @@ class FairyAudio(context: Context) {
 
     /** SoundPool-Kennungen der berechneten Klänge. */
     private var effects: Map<String, Int> = emptyMap()
+
+    @Volatile
     private var music: AudioTrack? = null
+
+    /** Läuft, solange die Musikspur aufgebaut wird. */
+    private var musicJob: Job? = null
 
     /**
      * Für die aufgenommenen Feenstimmen.
@@ -83,7 +89,7 @@ class FairyAudio(context: Context) {
         // sich Klangberechnung und Musik-Dekodierung, und bis beides fertig war,
         // blieb das Spiel stumm. Sie hängen nicht voneinander ab.
         scope.launch { prepare() }
-        scope.launch { if (musicEnabled) startMusic() }
+        if (musicEnabled) musicJob = scope.launch { startMusic() }
     }
 
     /** Lädt die aufgenommenen Stimmen; das Dekodieren übernimmt SoundPool. */
@@ -256,17 +262,32 @@ class FairyAudio(context: Context) {
      * Ein laufender Ton lässt sich in der Lautstärke verändern; nur der
      * Übergang von stumm auf hörbar braucht einen Start. Andernfalls setzte die
      * Schleife bei jeder Reglerbewegung neu ein.
+     *
+     * Ein Reglerzug erzeugt Dutzende Aufrufe in schneller Folge, und der Start
+     * dauert, weil erst die Abtastwerte geladen werden. Deshalb merkt sich
+     * [musicJob], dass bereits gestartet wird: Ohne das setzten die
+     * nachfolgenden Werte die Lautstärke auf einer Spur, die es noch gar nicht
+     * gab — und die Musik blieb nach dem Hochziehen aus der Stille stumm.
      */
     fun setMusicVolume(volume: Float) {
         val next = volume.coerceIn(0f, 1f)
-        val wasSilent = musicVolume == 0f
         musicVolume = next
 
-        when {
-            next == 0f -> stopMusic()
-            wasSilent -> scope.launch { startMusic() }
-            else -> runCatching { music?.setVolume(next) }
+        if (next == 0f) {
+            musicJob?.cancel()
+            musicJob = null
+            stopMusic()
+            return
         }
+
+        val running = music
+        if (running != null) {
+            runCatching { running.setVolume(next) }
+            return
+        }
+
+        if (musicJob?.isActive == true) return
+        musicJob = scope.launch { startMusic() }
     }
 
     /** Beim Verlassen des Spiels: Musik anhalten, Stimme verstummen lassen. */
