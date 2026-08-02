@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
@@ -80,6 +81,7 @@ import com.fairydoo.game.ui.components.LevelUpOverlay
 import com.fairydoo.game.ui.components.PowerUpBar
 import com.fairydoo.game.ui.components.SoundMenuButton
 import com.fairydoo.game.ui.components.SoundSettingsOverlay
+import com.fairydoo.game.ui.components.TutorialOverlay
 import com.fairydoo.game.ui.theme.BlossomPink
 import com.fairydoo.game.ui.theme.DangerPink
 import com.fairydoo.game.ui.theme.GlowBlue
@@ -254,6 +256,8 @@ fun GameScreen(preferences: GamePreferencesRepository) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val globalLives by viewModel.globalLives.collectAsStateWithLifecycle()
     val showLevelSelect by viewModel.showLevelSelect.collectAsStateWithLifecycle()
+    val tutorialOpen by viewModel.tutorialOpen.collectAsStateWithLifecycle()
+    val tutorialStep by viewModel.tutorialStep.collectAsStateWithLifecycle()
 
     // Die Klangwelt lebt so lange wie der Bildschirm; beim Verlassen wird sie
     // freigegeben, sonst liefen Musikspur und Sprachausgabe weiter.
@@ -289,8 +293,9 @@ fun GameScreen(preferences: GamePreferencesRepository) {
                     audio.pause()
                 }
                 Lifecycle.Event.ON_START -> {
-                    // Steht die Levelkarte offen, bleibt das Spiel pausiert.
-                    if (!showLevelSelect) viewModel.resume()
+                    // Steht die Levelkarte oder die Anleitung offen, bleibt
+                    // das Spiel pausiert.
+                    if (!showLevelSelect && !tutorialOpen) viewModel.resume()
                     audio.resume()
                 }
                 else -> Unit
@@ -304,43 +309,56 @@ fun GameScreen(preferences: GamePreferencesRepository) {
     // sucht, soll dafür keine Zeit verlieren.
     var showSoundSettings by rememberSaveable { mutableStateOf(false) }
 
-    if (showLevelSelect) {
-        LevelSelectScreen(
-            highestLevelUnlocked = profile.highestLevelUnlocked,
-            score = state.score,
-            globalLives = globalLives,
-            // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man
-            // zurückkönnte — nicht beim allerersten Start der App.
-            onClose = if (state.puzzle != null) viewModel::closeLevelSelect else null,
-            onSelectLevel = viewModel::startLevel,
-        )
-    } else {
-        GameContent(
-            state = state,
-            isPreparing = isPreparing,
-            bestScore = profile.highScore,
-            profile = profile,
-            showSoundSettings = showSoundSettings,
-            onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
-            onHoldCell = { viewModel.onInput(GameInput.HoldCell(it)) },
-            onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
-            onBegin = { viewModel.onInput(GameInput.Begin) },
-            onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
-            onOpenLevelSelect = viewModel::openLevelSelect,
-            onRetryLevel = viewModel::startLevel,
-            globalLives = globalLives,
-            onOpenSoundSettings = {
-                viewModel.pause()
-                showSoundSettings = true
-            },
-            onCloseSoundSettings = {
-                showSoundSettings = false
-                viewModel.resume()
-            },
-            onMusicChange = viewModel::setMusicVolume,
-            onSoundChange = viewModel::setSoundVolume,
-            onVoiceChange = viewModel::setVoiceVolume,
-        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (showLevelSelect) {
+            LevelSelectScreen(
+                highestLevelUnlocked = profile.highestLevelUnlocked,
+                score = state.score,
+                globalLives = globalLives,
+                // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man
+                // zurückkönnte — nicht beim allerersten Start der App.
+                onClose = if (state.puzzle != null) viewModel::closeLevelSelect else null,
+                onSelectLevel = viewModel::startLevel,
+                onOpenTutorial = viewModel::openTutorial,
+            )
+        } else {
+            GameContent(
+                state = state,
+                isPreparing = isPreparing,
+                bestScore = profile.highScore,
+                profile = profile,
+                showSoundSettings = showSoundSettings,
+                onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
+                onHoldCell = { viewModel.onInput(GameInput.HoldCell(it)) },
+                onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
+                onBegin = { viewModel.onInput(GameInput.Begin) },
+                onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
+                onOpenLevelSelect = viewModel::openLevelSelect,
+                onRetryLevel = viewModel::startLevel,
+                globalLives = globalLives,
+                onOpenSoundSettings = {
+                    viewModel.pause()
+                    showSoundSettings = true
+                },
+                onCloseSoundSettings = {
+                    showSoundSettings = false
+                    viewModel.resume()
+                },
+                onMusicChange = viewModel::setMusicVolume,
+                onSoundChange = viewModel::setSoundVolume,
+                onVoiceChange = viewModel::setVoiceVolume,
+                onOpenTutorial = viewModel::openTutorial,
+            )
+        }
+
+        if (tutorialOpen) {
+            TutorialOverlay(
+                step = tutorialStep,
+                totalSteps = GameViewModel.TUTORIAL_STEP_COUNT,
+                onNext = viewModel::tutorialNext,
+                onSkip = viewModel::skipTutorial,
+            )
+        }
     }
 }
 
@@ -364,6 +382,7 @@ private fun GameContent(
     onMusicChange: (Float) -> Unit,
     onSoundChange: (Float) -> Unit,
     onVoiceChange: (Float) -> Unit,
+    onOpenTutorial: () -> Unit,
 ) {
     NightBackdrop {
         Column(
@@ -419,14 +438,19 @@ private fun GameContent(
             PowerUpBar(state = state, onUse = onUsePowerUp)
         }
 
-        SoundMenuButton(
-            anythingAudible = profile.musicEnabled || profile.soundEnabled || profile.voiceEnabled,
-            onClick = onOpenSoundSettings,
+        Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .safeDrawingPadding()
                 .padding(end = 6.dp, top = 2.dp),
-        )
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            HelpButton(onClick = onOpenTutorial)
+            SoundMenuButton(
+                anythingAudible = profile.musicEnabled || profile.soundEnabled || profile.voiceEnabled,
+                onClick = onOpenSoundSettings,
+            )
+        }
 
         MapButton(
             onClick = onOpenLevelSelect,
@@ -538,6 +562,32 @@ private fun MapButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center,
     ) {
         Text(text = "🗺️", fontSize = 18.sp)
+    }
+}
+
+/**
+ * Rundknopf mit ❔ — öffnet die Anleitung von vorn.
+ *
+ * `internal`, damit die Levelkarte denselben Knopf verwenden kann: Die
+ * Anleitung soll von beiden Orten aus gleich aussehen und gleich erreichbar
+ * sein, nicht nur vom Spielbildschirm aus.
+ */
+@Composable
+internal fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
+            .border(1.dp, Gold.copy(alpha = 0.4f), CircleShape)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text = "❔", fontSize = 18.sp)
     }
 }
 

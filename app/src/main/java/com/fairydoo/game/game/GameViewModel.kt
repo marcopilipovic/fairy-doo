@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
@@ -73,6 +74,53 @@ class GameViewModel(
     /** Steuert, ob die Levelkarte statt des Spiels gezeigt wird. Start: die Karte. */
     private val _showLevelSelect = MutableStateFlow(true)
     val showLevelSelect: StateFlow<Boolean> = _showLevelSelect.asStateFlow()
+
+    private val _tutorialOpen = MutableStateFlow(false)
+    val tutorialOpen: StateFlow<Boolean> = _tutorialOpen.asStateFlow()
+
+    private val _tutorialStep = MutableStateFlow(0)
+    val tutorialStep: StateFlow<Int> = _tutorialStep.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            // Ein einmaliger, echter Blick auf den gespeicherten Stand — nicht
+            // auf den Platzhalter, den [profile] vor dem ersten Laden liefert.
+            // So blitzt die Anleitung bei wiederkehrenden Spieler:innen nicht
+            // kurz auf, nur um sofort wieder zuzuklappen.
+            if (!preferences.profile.first().hasSeenTutorial) {
+                _tutorialOpen.value = true
+            }
+        }
+    }
+
+    /**
+     * Öffnet die Anleitung von vorn — über den ❔-Knopf, jederzeit erreichbar.
+     * Pausiert ein laufendes Spiel dabei, wie die Levelkarte es auch tut: Wer
+     * die Regeln nachliest, soll dafür keine Zeit verlieren.
+     */
+    fun openTutorial() {
+        pause()
+        _tutorialStep.value = 0
+        _tutorialOpen.value = true
+    }
+
+    /** „Weiter" — beim letzten Schritt schließt es die Anleitung stattdessen. */
+    fun tutorialNext() {
+        val step = _tutorialStep.value
+        if (step < TUTORIAL_STEP_COUNT - 1) {
+            _tutorialStep.value = step + 1
+        } else {
+            closeTutorial()
+        }
+    }
+
+    fun skipTutorial() = closeTutorial()
+
+    private fun closeTutorial() {
+        _tutorialOpen.value = false
+        resume()
+        viewModelScope.launch { preferences.markTutorialSeen() }
+    }
 
     /**
      * Klangereignisse zum Spielgeschehen.
@@ -239,6 +287,9 @@ class GameViewModel(
     companion object {
         private const val TICK_MILLIS = 16L
         private const val MAX_FRAME_MILLIS = 250L
+
+        /** Willkommen, Berührungsregel, Antippen&Halten, Zauberhilfen, Leben. */
+        const val TUTORIAL_STEP_COUNT = 5
 
         /** Für `viewModel(factory = GameViewModel.factory(repository))`. */
         fun factory(preferences: GamePreferencesRepository): ViewModelProvider.Factory =

@@ -104,6 +104,7 @@ fun LevelSelectScreen(
     globalLives: GlobalLivesState,
     onClose: (() -> Unit)?,
     onSelectLevel: (Int) -> Unit,
+    onOpenTutorial: () -> Unit,
 ) {
     NightBackdrop {
         Column(
@@ -179,6 +180,14 @@ fun LevelSelectScreen(
                 )
             }
         }
+
+        HelpButton(
+            onClick = onOpenTutorial,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .safeDrawingPadding()
+                .padding(end = 6.dp, top = 2.dp),
+        )
     }
 }
 
