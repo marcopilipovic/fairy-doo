@@ -71,6 +71,7 @@ import com.fairydoo.game.game.GameViewModel
 import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.model.Pos
 import com.fairydoo.game.ui.GameCopy
+import com.fairydoo.game.ui.components.BoardFrameInsets
 import com.fairydoo.game.ui.components.FairydokuBoard
 import com.fairydoo.game.ui.components.FireflyLayer
 import com.fairydoo.game.ui.components.GameOverOverlay
@@ -393,8 +394,10 @@ private fun GameContent(
                         modifier = Modifier.widthIn(max = BOARD_MAX_WIDTH),
                     ) {
                         // Zellgröße abgerundet, damit das Gitter exakt aufgeht
-                        // und rechts kein halbes Feld übrig bleibt.
-                        val available = maxWidth - 8.dp
+                        // und rechts kein halbes Feld übrig bleibt. Was die
+                        // Moos-Matte an Breite verbraucht, weiß das Brett
+                        // selbst — hier wird es nur abgezogen.
+                        val available = maxWidth - BoardFrameInsets
                         val cell = (available.value / state.boardSize).toInt().dp
 
                         FairydokuBoard(

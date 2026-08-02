@@ -160,7 +160,7 @@ fun FairydokuBoard(
                     )
                 }
                 .border(2.dp, MossMatBorder, RoundedCornerShape(22.dp))
-                .padding(12.dp),
+                .padding(MAT_PADDING),
         ) {
             Box(
                 modifier = Modifier
@@ -180,7 +180,12 @@ fun FairydokuBoard(
                             ),
                         )
                     }
-                    .padding(5.dp),
+                    .padding(GRID_PADDING),
+                // Die Feldgröße wird abgerundet, damit das Gitter aufgeht.
+                // Der Rest von bis zu einem Punkt je Feld sammelt sich sonst an
+                // einer Seite und lässt die Fassung schief wirken; zentriert
+                // verteilt er sich auf beide.
+                contentAlignment = Alignment.Center,
             ) {
                 Column {
                     for (row in 0 until puzzle.size) {
@@ -202,6 +207,22 @@ fun FairydokuBoard(
         }
     }
 }
+
+/** Die Breite der Moos-Matte rings um das Gitter. */
+private val MAT_PADDING = 12.dp
+
+/** Die Vertiefung zwischen Matte und Gitter. */
+private val GRID_PADDING = 5.dp
+
+/**
+ * Was die Fassung des Bretts an Breite verbraucht — auf beiden Seiten zusammen.
+ *
+ * Wer die Feldgröße bestimmt, muss das von der verfügbaren Breite abziehen.
+ * Ohne diese Konstante stand die Zahl an zwei Orten, und als die Moos-Matte
+ * hinzukam, wurde nur einer von beiden nachgezogen: Das Gitter rechnete mit
+ * Platz, den es nicht mehr gab, und die rechte Feldspalte wurde beschnitten.
+ */
+val BoardFrameInsets = (MAT_PADDING + GRID_PADDING) * 2
 
 /**
  * Wie lange der Finger liegen muss, bis die Fee erscheint.
