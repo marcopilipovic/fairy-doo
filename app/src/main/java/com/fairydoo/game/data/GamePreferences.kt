@@ -30,6 +30,8 @@ data class PlayerProfile(
     /** Roher Stand des App-weiten Lebenspools, siehe [GlobalLives]. */
     val globalLives: Int = GlobalLives.MAX,
     val nextGlobalLifeAtMillis: Long = 0L,
+    /** Ob die Anleitung schon einmal zu Ende gesehen oder übersprungen wurde. */
+    val hasSeenTutorial: Boolean = false,
 ) {
     val musicEnabled: Boolean get() = musicVolume > 0f
     val soundEnabled: Boolean get() = soundVolume > 0f
@@ -70,6 +72,7 @@ class GamePreferencesRepository(context: Context) {
             highestLevelUnlocked = prefs[KeyHighestLevel] ?: 1,
             globalLives = prefs[KeyGlobalLives] ?: GlobalLives.MAX,
             nextGlobalLifeAtMillis = prefs[KeyNextGlobalLifeAt] ?: 0L,
+            hasSeenTutorial = prefs[KeyTutorialSeen] ?: false,
         )
     }
 
@@ -133,6 +136,11 @@ class GamePreferencesRepository(context: Context) {
         store.edit { it[KeyVoiceVolume] = volume.coerceIn(0f, 1f) }
     }
 
+    /** Anleitung zu Ende gesehen oder übersprungen — erscheint nicht mehr von selbst. */
+    suspend fun markTutorialSeen() {
+        store.edit { it[KeyTutorialSeen] = true }
+    }
+
     /** Setzt Fortschritt und Einstellungen zurück. */
     suspend fun resetProgress() {
         store.edit { it.clear() }
@@ -153,5 +161,6 @@ class GamePreferencesRepository(context: Context) {
         val KeyHighestLevel = intPreferencesKey("highest_level_unlocked")
         val KeyGlobalLives = intPreferencesKey("global_lives")
         val KeyNextGlobalLifeAt = longPreferencesKey("next_global_life_at")
+        val KeyTutorialSeen = booleanPreferencesKey("tutorial_seen")
     }
 }

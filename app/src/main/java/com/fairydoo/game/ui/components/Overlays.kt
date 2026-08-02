@@ -60,7 +60,7 @@ enum class OverlayEntrance { RiseUp, PopIn }
  * reagiert.
  */
 @Composable
-private fun OverlayScaffold(
+internal fun OverlayScaffold(
     borderColor: Color,
     entrance: OverlayEntrance,
     scrimAlpha: Float,
@@ -120,7 +120,7 @@ private fun OverlayScaffold(
 
 /** Der goldene Handlungsknopf, der in allen Overlays gleich aussieht. */
 @Composable
-private fun GoldButton(label: String, onClick: () -> Unit) {
+internal fun GoldButton(label: String, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
