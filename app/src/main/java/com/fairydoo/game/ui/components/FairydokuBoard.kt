@@ -60,7 +60,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
-import com.fairydoo.game.art.glowArgb
 import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.model.CellMark
@@ -80,9 +79,6 @@ import com.fairydoo.game.ui.theme.MossPatchB
 import com.fairydoo.game.ui.theme.RegionColors
 import com.fairydoo.game.ui.theme.StoneDark
 import com.fairydoo.game.ui.theme.StoneLight
-
-/** Der Eigenton, den eine Fee um sich verbreitet. */
-fun FairySpecies.glowColor(): Color = Color(glowArgb)
 
 /**
  * Das Spielbrett: moosige Steinfelder, von leuchtenden Zonengrenzen durchzogen.
@@ -549,10 +545,9 @@ private fun DrawScope.drawZoneBorders(
 /**
  * Die Fee auf dem Feld.
  *
- * Platzhalter wie im Prototyp: das Emoji, aber mit Schattenwurf, zweistufigem
- * Schein und ruhigem Schweben — dadurch sitzt sie *auf* dem Stein, statt darauf
- * zu kleben. Sobald gezeichnete Feen-Sprites vorliegen, wird nur diese Funktion
- * ersetzt.
+ * Gezeichnete Illustration statt Emoji, mit Schattenwurf, zweistufigem Schein
+ * und ruhigem Schweben — dadurch sitzt sie *auf* dem Stein, statt darauf zu
+ * kleben.
  */
 @Composable
 private fun FairyGlyph(
@@ -607,15 +602,34 @@ private fun FairyGlyph(
     val context = LocalContext.current
     val bitmap = remember(species) { FairySpriteCache.bitmapOf(context, species) }
 
-    val ownGlow = if (pulsing) Gold else species.glowColor()
+    // Der Kern trägt einen aufgehellten Zonenton statt eines Art-Eigentons —
+    // die Zone entscheidet über die Farbe, nicht die Fee: Genau das ist die
+    // Zuordnung, an der die Lesbarkeit des Rätsels hängt.
+    val ownGlow = if (pulsing) Gold else lerp(zoneColor, Color.White, 0.55f)
 
     val density = LocalDensity.current
-    val spriteSide = remember(cellSize, density) {
-        (with(density) { cellSize.toPx() } * SPRITE_FILL).roundToInt().coerceAtLeast(1)
+    // Die Vorlagen sind Hochformat-Illustrationen (~1∶1,55, je nach Figur
+    // leicht abweichend) statt der quadratischen Pixel-Art von früher — das
+    // Seitenverhältnis kommt deshalb aus dem geladenen Bild selbst statt aus
+    // einer festen Zahl. Passt die volle Breite nicht in die Zellhöhe, wird
+    // stattdessen von der Höhe her skaliert, damit die Fee ihr Feld nie
+    // verlässt.
+    val spriteSize = remember(cellSize, density, bitmap) {
+        val cellPx = with(density) { cellSize.toPx() }
+        val aspect = bitmap.height.toFloat() / bitmap.width.toFloat()
+        val width = cellPx * SPRITE_WIDTH_FRACTION
+        val height = width * aspect
+        if (height <= cellPx) {
+            IntSize(width.roundToInt().coerceAtLeast(1), height.roundToInt().coerceAtLeast(1))
+        } else {
+            val clampedHeight = cellPx
+            val clampedWidth = clampedHeight / aspect
+            IntSize(clampedWidth.roundToInt().coerceAtLeast(1), clampedHeight.roundToInt().coerceAtLeast(1))
+        }
     }
     // Das Schweben rastet auf diese Schrittweite ein, damit die Figur nicht in
     // Zwischenschritten wandert und die Kanten flimmern.
-    val hoverStep = (spriteSide / 32f).coerceAtLeast(1f)
+    val hoverStep = (spriteSize.width / 32f).coerceAtLeast(1f)
 
     Box(
         modifier = Modifier.size(cellSize),
@@ -678,28 +692,32 @@ private fun FairyGlyph(
                     translationY = (hover.value * amplitude / hoverStep).roundToInt() * hoverStep
                 }
                 .drawBehind {
-                    val left = ((size.width - spriteSide) / 2f).roundToInt()
-                    val top = ((size.height - spriteSide) / 2f).roundToInt()
+                    // Bodenverankert statt zentriert: Die Fee "steht" am
+                    // unteren Zellrand, wie eine Figur im Feld, statt als
+                    // schwebender Fleck in der Mitte. Ein schmaler Rand bleibt
+                    // zum Schattenoval hin frei, damit die Füße nicht genau
+                    // auf der Kante kleben.
+                    val left = ((size.width - spriteSize.width) / 2f).roundToInt()
+                    val top = (size.height - spriteSize.height - size.height * 0.05f).roundToInt()
 
                     drawImage(
                         image = bitmap,
                         srcOffset = IntOffset.Zero,
                         srcSize = IntSize(bitmap.width, bitmap.height),
                         dstOffset = IntOffset(left, top),
-                        dstSize = IntSize(spriteSide, spriteSide),
-                        // Die Vorlagen sind hochauflösende Pixel-Art und werden
-                        // hier verkleinert. Ungefiltert fielen dabei Bildpunkte
-                        // ersatzlos weg und die Figur bekäme Löcher; gefiltert
-                        // bleiben Konturen und Muster erhalten.
-                        filterQuality = FilterQuality.Medium,
+                        dstSize = spriteSize,
+                        // Weiche Illustration statt Pixel-Art — hier zählt
+                        // eine glatte Kante beim Skalieren, keine erhaltene
+                        // Blockstruktur.
+                        filterQuality = FilterQuality.High,
                     )
                 },
         )
     }
 }
 
-/** Anteil der Zelle, den eine Fee einnimmt. */
-private const val SPRITE_FILL = 0.86f
+/** Zielbreite einer Fee, relativ zur Zellgröße — die Höhe folgt dem Bildseitenverhältnis. */
+private const val SPRITE_WIDTH_FRACTION = 0.74f
 
 /**
  * Das Merkzeichen „hier sitzt sicher keine Fee".

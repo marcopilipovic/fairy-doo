@@ -39,17 +39,4 @@ class FairyArtTest {
 
         assertEquals(erwartet, vorhanden)
     }
-
-    @Test
-    fun `jede Fee hat einen eigenen Schein`() {
-        // Zwei Feen mit demselben Ton wären auf dem Brett schwerer zu
-        // unterscheiden — der Schein ist neben der Figur das zweite Merkmal.
-        val toene = FairySpecies.entries.map { it.glowArgb }
-
-        assertEquals("Zwei Feen teilen sich einen Ton", toene.size, toene.toSet().size)
-        assertTrue(
-            "Ein Schein ist durchsichtig",
-            toene.all { (it ushr 24 and 0xFF) > 0x80 },
-        )
-    }
 }
