@@ -314,6 +314,7 @@ fun GameScreen(preferences: GamePreferencesRepository) {
             LevelSelectScreen(
                 highestLevelUnlocked = profile.highestLevelUnlocked,
                 score = state.score,
+                bestScore = profile.highScore,
                 globalLives = globalLives,
                 // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man
                 // zurückkönnte — nicht beim allerersten Start der App.

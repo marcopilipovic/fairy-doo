@@ -54,8 +54,11 @@ import com.fairydoo.game.ui.theme.MossMatBorder
 import com.fairydoo.game.ui.theme.MossMatBottom
 import com.fairydoo.game.ui.theme.MossMatMiddle
 import com.fairydoo.game.ui.theme.MossMatTop
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import com.fairydoo.game.ui.theme.PanelBorder
 import com.fairydoo.game.ui.theme.PanelBottom
+import com.fairydoo.game.ui.theme.PanelGoldBorder
 import com.fairydoo.game.ui.theme.PanelText
 import com.fairydoo.game.ui.theme.PanelTop
 import com.fairydoo.game.ui.theme.RegionColors
@@ -101,6 +104,7 @@ private const val PATH_FREQUENCY = 1.05
 fun LevelSelectScreen(
     highestLevelUnlocked: Int,
     score: Int,
+    bestScore: Int,
     globalLives: GlobalLivesState,
     onClose: (() -> Unit)?,
     onSelectLevel: (Int) -> Unit,
@@ -118,7 +122,15 @@ fun LevelSelectScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            ScoreBadge(score)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                ScoreBadge(score)
+                // Nur sichtbar, sobald überhaupt eine Partie beendet wurde —
+                // eine "Bestleistung: 0" wäre vor der allerersten Runde nur
+                // Rauschen neben dem echten Punktestand.
+                if (bestScore > 0) {
+                    BestScoreBadge(bestScore)
+                }
+            }
 
             Spacer(Modifier.height(10.dp))
 
@@ -536,6 +548,30 @@ private fun ScoreBadge(score: Int) {
             fontSize = 15.sp,
             letterSpacing = 1.2.sp,
             color = PanelText,
+        )
+    }
+}
+
+/**
+ * Die bisherige Bestleistung — golden gerahmt statt neutral wie [ScoreBadge],
+ * damit sie auf den ersten Blick als Rekord erkennbar ist, nicht als zweiter
+ * Punktestand.
+ */
+@Composable
+private fun BestScoreBadge(bestScore: Int) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
+            .border(2.dp, PanelGoldBorder, RoundedCornerShape(16.dp))
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+    ) {
+        Text(
+            text = "🏆 $bestScore",
+            style = MaterialTheme.typography.titleLarge,
+            fontSize = 15.sp,
+            letterSpacing = 1.2.sp,
+            color = GoldCream,
         )
     }
 }
