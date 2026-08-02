@@ -1,5 +1,11 @@
 # Fairydoku — Prompts für die zehn Gebietskacheln
 
+> **Derzeit nicht in Gebrauch.** Mit dem Design-Handoff vom 2. August ist das
+> Brett auf leuchtende Neon-Zonenränder über graugrünen Steinplatten
+> zurückgegangen; gemalte Gebietskacheln gibt es dort nicht mehr. Diese Datei
+> bleibt erhalten, falls die Kacheln wiederkommen sollen — der Code dafür steht
+> im Git-Verlauf beim Commit „Erste gemalte Kachel: die Goldene Lichtung".
+
 Zehn Bilder, je eines für ein Waldgebiet des Spielbretts. Jedes wird als
 **nahtlos wiederholbare Kachel** über die Felder einer Zone gelegt.
 

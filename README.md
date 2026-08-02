@@ -96,79 +96,27 @@ prüfen auch, dass kein Klang stumm ist, keiner übersteuert und die Musikschlei
 ohne hörbaren Sprung schließt. Die aufgenommenen Feenstimmen sind davon nicht
 betroffen — die liegen als MP3 vor und lassen sich direkt anhören.
 
-## Die zehn Gebiete
+## Das Spielbrett
 
-Jedes Gebiet trägt **zwei** voneinander unabhängige Merkmale: eine deckende
-Farbe und ein gezeichnetes Motiv.
+Das Gitter liegt auf einer **Moos-Matte** und besteht aus Steinplatten mit
+Moosflecken. Jede Platte ist mit der Farbe ihrer Zone leicht eingefärbt — nur zu
+einem Zehntel: Kenntlich wird eine Zone über ihre **leuchtenden Ränder**, nicht
+über die Fläche. Auf voll eingefärbten Flächen stünden acht Neontöne
+gleichzeitig im Bild und nähmen den Feen die Aufmerksamkeit.
 
-| Gebiet | Farbe | Motiv |
-| --- | --- | --- |
-| Goldene Lichtung | Creme `#FDF6E3` | Sterne und Farnwedel |
-| Sonnengarten | Warmes Gelb `#F6C445` | Sonnenblumen |
-| Tannenhain | Waldgrün `#1B4332` | Nadelzweige |
-| Dornenranke | Smaragd `#00A86B` | Ranken mit Dornen |
-| Herbstboden | Rostorange `#C05621` | Fallendes Laub |
-| Feigenhain | Violett `#6B3074` | Feigen über 45°-Schraffur |
-| Kristallader | Grauweiß `#E2E8F0` | Marmoradern und Facetten |
-| Flusslauf | Aquamarin `#38BDF8` | Wasserwellen |
-| Himmelstor | Indigo `#1E1B4B` | Sternbilder |
-| Erdreich | Terracotta `#E05A47` | Rissiger Lehmboden |
+Wo zwei Zonengrenzen aufeinandertreffen, ist die Ecke rund. Dadurch erscheint
+eine Zone als zusammenhängender, abgerundeter Block statt als Ansammlung
+quadratischer Felder — genau die Wirkung aus der Vorlage.
 
-Das ist der Doppel-Kodierungs-Grundsatz: Wer Farben schlecht oder gar nicht
-unterscheidet, liest das Gebiet am Motiv ab; wer sie gut unterscheidet, nimmt
-das Motiv kaum wahr. Keines der beiden ist auf das andere angewiesen.
-
-Zehn, weil zehn Feen im Wald leben — so bekommt jede ein eigenes Zuhause, und
-auf dem größten Brett muss sich keine Zone eine Farbe teilen.
-
-**Die Grenzen sind Hecken.** An jeder Zonenkante läuft ein schmales Band aus
-überlappenden Blattbüscheln, von oben gesehen wie eine niedrig geschnittene
-Hecke. Vorher war es eine gezogene elfenbeinfarbene Linie — in einem Wald ein
-Fremdkörper, der die Gebiete auseinanderschnitt, statt sie zu begrenzen.
-
-Die Hecke trägt drei Töne, und das ist keine Spielerei: ein dunkles Grün, eine
-hellere Lichtseite und darunter einen dunklen Saum. Auf hellen Gebieten fällt
-das dunkle Grün auf, auf dunklen die Lichtseite. Der Tannenhain hat den Fall
-erzwungen — er ist selbst ein dunkles Waldgrün, und dort hatten Hecke wie Saum
-nur 1,46 zu 1 Kontrast. Erst ein deutlich helleres Laubgrün löst das.
-
-Für das ✕ gilt dasselbe Prinzip: Es hat einen dunklen Umriss, damit es auf
-allen zehn Flächen gleich schwer wiegt.
-
-**Statt gezeichneter Motive kann ein Gebiet eine gemalte Kachel tragen.** Eine
-nahtlose Kachel deckt vier Felder je Kante ab; jedes Feld zeichnet daraus seinen
-Ausschnitt, sodass ein durchgehendes Bild entsteht statt eines Rasters
-(`ZoneImageCache`, `drawZoneTile`). Beides steht nebeneinander: Ein Gebiet ohne
-Bild behält sein Motiv. So lassen sich die Kacheln nach und nach einbauen, und
-eine unbrauchbare ist mit einer Zeile wieder draußen. Die Prompts dafür stehen
-in [PROMPTS-ZONEN.md](PROMPTS-ZONEN.md).
-
-**Die gezeichneten Motive sind dicht gestreut**, nicht als zwei, drei große Zeichen je Feld.
-Ein einzelnes großes Blatt liest sich als Symbol, das auf der Fläche klebt;
-viele kleine lesen sich als Beschaffenheit der Fläche selbst. Dazu kommt eine
-feine Körnung: Zehn satte Farben als glatte Blöcke wirken plakativ — der
-Unterschied zwischen bedrucktem Papier und lackiertem Blech.
-
-**Der Graustufen-Test** ist als Unit-Test hinterlegt (`ZoneStylesTest`). Er
-nimmt jedem Gebiet die Farbe und prüft, was übrig bleibt: dass keine zwei
-Gebiete zugleich im Farbton *und* in der Helligkeit nah beieinanderliegen, dass
-jedes Motiv sich von seiner eigenen Fläche abhebt und dass jede Grenzlinie
-sichtbar bleibt. Zehn Farben können in Graustufen nicht alle zehn verschiedene
-Helligkeiten haben — dafür ist der Bereich zu schmal; genau deshalb tragen die
-Motive die zweite Hälfte der Unterscheidung.
-
-Ein Paar hält der Prüfung bewusst nicht stand: **Herbstboden und Erdreich**
-liegen dreizehn Grad im Farbton auseinander und sind fast gleich hell — als
-Rostorange und Terracotta sind sie beide erdig gedacht. Sie stehen als benannte
-Ausnahme im Test, getrennt allein durch ihre Motive (fallendes Laub gegen
-rissigen Lehm). Wächst diese Liste, trägt die Farbe die Unterscheidung nicht
-mehr.
+Die Markierung „hier sitzt keine Fee" ist ein goldgelbes ✕ mit Gold-Glow. Der
+Schein ist nicht nur Zierrat: Auf der graugrünen Steinplatte wirkte ein flaches
+Gelb blass.
 
 ## Die Feen
 
 In jeder Waldzone lebt eine eigene Fee — auf einem Brett sind also bis zu acht
 verschiedene gleichzeitig zu sehen, und die Zonen sind auf einen Blick
-auseinanderzuhalten (siehe [Die zehn Gebiete](#die-zehn-gebiete)).
+auseinanderzuhalten.
 
 | | | | | |
 | --- | --- | --- | --- | --- |
@@ -242,8 +190,7 @@ app/src/main/java/com/fairydoo/game/
     │   └── FairySpriteCache.kt      Bilder einmal laden und behalten
     ├── components/
     │   ├── SoundSettingsOverlay.kt  Regler für Musik, Klänge und Stimme
-    │   ├── FairydokuBoard.kt        Brett: Zonenflächen, Ränder, Feen
-    │   ├── ZoneTextures.kt          Die zehn Motive der Gebiete
+    │   ├── FairydokuBoard.kt        Brett: Steinplatten, Zonenränder, Feen
     │   ├── PowerUpBar.kt            Die drei Fähigkeiten
     │   ├── Overlays.kt              Willkommen, Level up, Spielende
     │   └── Fireflies.kt             Glühwürmchen-Schleier

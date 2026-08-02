@@ -4,7 +4,6 @@ import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameOverReason
 import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.StatusMessage
-import com.fairydoo.game.ui.theme.ZoneStyles
 
 /**
  * Alle Texte der Oberfläche an einem Ort — wörtlich aus dem Handoff.
@@ -15,15 +14,19 @@ import com.fairydoo.game.ui.theme.ZoneStyles
  */
 object GameCopy {
 
-    /**
-     * Die Namen der Waldzonen.
-     *
-     * Sie stehen nicht hier, sondern bei ihren Farben: Ein Gebiet heißt
-     * „Flussquelle", *weil* es türkis ist und Wellen trägt — Name, Farbe und
-     * Motiv sind eine Entscheidung und keine drei. Getrennte Listen liefen
-     * über kurz oder lang auseinander.
-     */
-    fun zoneName(index: Int): String = ZoneStyles[index % ZoneStyles.size].name
+    /** Die Waldzonen, in der Reihenfolge der Zonenfarben. */
+    val zoneNames = listOf(
+        "Mondlicht-Lichtung",
+        "Pilzkreis",
+        "Flussbett",
+        "Glühwürmchen-Hain",
+        "Nebelmoor",
+        "Sternenwiese",
+        "Wurzelhöhle",
+        "Elfentor",
+    )
+
+    fun zoneName(index: Int): String = zoneNames[index % zoneNames.size]
 
     fun statusText(message: StatusMessage): String = when (message) {
         StatusMessage.Hint -> "Tippen: ✕ · gedrückt halten: 🧚"

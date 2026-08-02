@@ -22,11 +22,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -80,6 +83,8 @@ import com.fairydoo.game.ui.theme.BlossomPink
 import com.fairydoo.game.ui.theme.DangerPink
 import com.fairydoo.game.ui.theme.GlowBlue
 import com.fairydoo.game.ui.theme.GlowPink
+import com.fairydoo.game.ui.theme.GlowTeal
+import com.fairydoo.game.ui.theme.GlowViolet
 import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.GoldDark
 import com.fairydoo.game.ui.theme.GoldLight
@@ -87,12 +92,19 @@ import com.fairydoo.game.ui.theme.GoldPale
 import com.fairydoo.game.ui.theme.LeafGreen
 import com.fairydoo.game.ui.theme.NightBottom
 import com.fairydoo.game.ui.theme.NightHalo
+import com.fairydoo.game.ui.theme.NightDeep
 import com.fairydoo.game.ui.theme.NightMiddle
 import com.fairydoo.game.ui.theme.NightTop
 import com.fairydoo.game.ui.theme.PanelBottom
 import com.fairydoo.game.ui.theme.PanelTop
+import com.fairydoo.game.ui.theme.PanelBorder
+import com.fairydoo.game.ui.theme.PanelGoldBorder
+import com.fairydoo.game.ui.theme.PanelText
 import com.fairydoo.game.ui.theme.StatusPurple
 import com.fairydoo.game.ui.theme.TextPrimary
+import com.fairydoo.game.ui.theme.TitleBottom
+import com.fairydoo.game.ui.theme.TitleMiddle
+import com.fairydoo.game.ui.theme.TitleTop
 
 /** Breitengrenze des Spielbretts, entspricht den 352 px der Vorlage. */
 private val BOARD_MAX_WIDTH = 352.dp
@@ -109,14 +121,17 @@ internal fun NightBackdrop(content: @Composable BoxScope.() -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
-                // Vier Schichten wie in der Vorlage: erst der Grundverlauf von
-                // oben nach unten, darüber der helle Halo am oberen Rand und
-                // die beiden farbigen Schimmer unten links und rechts.
+                // Der „gemalte" Nachtwald: erst der Grundverlauf von tiefem
+                // Petrol nach Violett, darüber der dunkle Bogen am oberen Rand
+                // und vier farbige Schimmer, die den Wald von den Seiten her
+                // erhellen. Die Reihenfolge ist wichtig — die Schimmer liegen
+                // obenauf, sonst erstickt sie der Grundverlauf.
                 drawRect(
                     Brush.verticalGradient(
                         colorStops = arrayOf(
                             0f to NightTop,
-                            0.45f to NightMiddle,
+                            0.40f to NightMiddle,
+                            0.75f to NightDeep,
                             1f to NightBottom,
                         ),
                     ),
@@ -124,29 +139,108 @@ internal fun NightBackdrop(content: @Composable BoxScope.() -> Unit) {
                 drawRect(
                     Brush.radialGradient(
                         colors = listOf(NightHalo, Color.Transparent),
-                        center = Offset(size.width * 0.5f, -size.height * 0.1f),
-                        radius = size.height * 0.7f,
+                        center = Offset(size.width * 0.5f, -size.height * 0.15f),
+                        radius = size.height * 0.75f,
                     ),
                 )
                 drawRect(
                     Brush.radialGradient(
                         colors = listOf(GlowPink, Color.Transparent),
-                        center = Offset(size.width * 0.2f, size.height),
-                        radius = size.width * 0.8f,
+                        center = Offset(size.width * 0.12f, size.height * 0.92f),
+                        radius = size.width * 0.85f,
+                    ),
+                )
+                drawRect(
+                    Brush.radialGradient(
+                        colors = listOf(GlowViolet, Color.Transparent),
+                        center = Offset(size.width * 0.90f, size.height * 0.88f),
+                        radius = size.width * 0.80f,
+                    ),
+                )
+                drawRect(
+                    Brush.radialGradient(
+                        colors = listOf(GlowTeal, Color.Transparent),
+                        center = Offset(size.width * 0.08f, size.height * 0.45f),
+                        radius = size.width * 0.70f,
                     ),
                 )
                 drawRect(
                     Brush.radialGradient(
                         colors = listOf(GlowBlue, Color.Transparent),
-                        center = Offset(size.width * 0.85f, size.height * 0.95f),
-                        radius = size.width * 0.7f,
+                        center = Offset(size.width * 0.95f, size.height * 0.40f),
+                        radius = size.width * 0.70f,
                     ),
                 )
             },
     ) {
+        GlowingMushrooms()
         FireflyLayer()
         content()
     }
+}
+
+/**
+ * Drei große, weich leuchtende Pilze an den Rändern.
+ *
+ * Sie stehen weit außerhalb des Spielgeschehens und ragen nur zur Hälfte ins
+ * Bild — dadurch wirkt der Bildschirm wie ein Ausschnitt aus einem größeren
+ * Wald statt wie eine Bühne mit Kulisse.
+ *
+ * Als Emoji mit weichem Schein, wie in der Vorlage. Sie sind ausdrücklich als
+ * Platzhalter gedacht: Sobald illustrierte Pilze vorliegen, wird nur diese
+ * Funktion ersetzt.
+ */
+@Composable
+private fun BoxScope.GlowingMushrooms() {
+    @Composable
+    fun mushroom(
+        modifier: Modifier,
+        size: androidx.compose.ui.unit.TextUnit,
+        glow: Color,
+        opacity: Float,
+        mirrored: Boolean = false,
+    ) {
+        Text(
+            text = "🍄",
+            fontSize = size,
+            modifier = modifier.graphicsLayer {
+                alpha = opacity
+                scaleX = if (mirrored) -1f else 1f
+                // Der Schein liegt als weicher Farbfleck hinter dem Pilz; ein
+                // echter Weichzeichner wäre auf jedem Bild neu zu berechnen und
+                // steht in keinem Verhältnis zu einer Hintergrunddekoration.
+                shadowElevation = 0f
+            },
+            color = Color.Unspecified,
+            style = MaterialTheme.typography.bodyLarge.copy(
+                shadow = androidx.compose.ui.graphics.Shadow(
+                    color = glow,
+                    offset = Offset.Zero,
+                    blurRadius = 40f,
+                ),
+            ),
+        )
+    }
+
+    mushroom(
+        modifier = Modifier.align(Alignment.BottomStart).offset(x = (-10).dp, y = 8.dp),
+        size = 56.sp,
+        glow = Color(0xE6FF82BE),
+        opacity = 0.28f,
+    )
+    mushroom(
+        modifier = Modifier.align(Alignment.BottomEnd).offset(x = 8.dp, y = 6.dp),
+        size = 46.sp,
+        glow = Color(0xE6BE82FF),
+        opacity = 0.28f,
+        mirrored = true,
+    )
+    mushroom(
+        modifier = Modifier.align(Alignment.TopStart).offset(x = (-6).dp, y = 120.dp),
+        size = 34.sp,
+        glow = Color(0xCC50DCC8),
+        opacity = 0.20f,
+    )
 }
 
 @Composable
@@ -466,74 +560,102 @@ private fun TitleRow() {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = "🧚‍♀️",
-            fontSize = 30.sp,
+            fontSize = 32.sp,
             modifier = Modifier.graphicsLayer { translationY = leftOffset },
         )
+        Text(text = "✦", fontSize = 16.sp, color = GoldLight)
         Text(
             text = "Fairydoku",
-            // Gold-Verlauf im Text — in der Vorlage per background-clip,
+            // Creme-Gold-Verlauf im Text — in der Vorlage per background-clip,
             // in Compose als Brush im TextStyle.
             style = MaterialTheme.typography.displayLarge.copy(
                 brush = Brush.verticalGradient(
                     colorStops = arrayOf(
-                        0f to GoldPale,
-                        0.55f to Gold,
-                        1f to GoldDark,
+                        0f to TitleTop,
+                        0.45f to TitleMiddle,
+                        1f to TitleBottom,
                     ),
                 ),
             ),
             maxLines = 1,
         )
+        Text(text = "✦", fontSize = 16.sp, color = GoldLight)
         Text(
             text = "🧚",
-            fontSize = 30.sp,
+            fontSize = 32.sp,
             modifier = Modifier.graphicsLayer { translationY = rightOffset },
         )
     }
 }
 
-/** SCORE- und Level-Pille. */
+/**
+ * SCORE- und Level-Abzeichen.
+ *
+ * Abgerundete Rechtecke statt Pillen: Die Vorlage hat den Look gewechselt, weil
+ * runde Pillen neben den eckigen Fähigkeitskacheln aus einem anderen Spiel
+ * wirkten.
+ */
 @Composable
 private fun ScoreRow(score: Int, level: Int) {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Pill(
+        Badge(
             text = "SCORE: $score",
-            borderColor = Gold.copy(alpha = 0.5f),
-            fontSize = 15.sp,
-            horizontalPadding = 18.dp,
+            borderColor = PanelBorder,
+            textColor = PanelText,
+            fontSize = 16.sp,
+            letterSpacing = 1.5.sp,
+            horizontalPadding = 22.dp,
         )
-        Pill(
+        Badge(
             text = "Level $level",
-            borderColor = LeafGreen.copy(alpha = 0.4f),
-            fontSize = 14.sp,
-            horizontalPadding = 14.dp,
+            borderColor = PanelGoldBorder,
+            textColor = GoldLight,
+            fontSize = 15.sp,
+            letterSpacing = 0.sp,
+            horizontalPadding = 16.dp,
         )
     }
 }
 
 @Composable
-private fun Pill(
+private fun Badge(
     text: String,
     borderColor: Color,
+    textColor: Color,
     fontSize: androidx.compose.ui.unit.TextUnit,
+    letterSpacing: androidx.compose.ui.unit.TextUnit,
     horizontalPadding: androidx.compose.ui.unit.Dp,
 ) {
+    val shape = RoundedCornerShape(16.dp)
     Box(
         modifier = Modifier
-            .clip(CircleShape)
+            .clip(shape)
             .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
-            .border(1.dp, borderColor, CircleShape)
-            .padding(horizontal = horizontalPadding, vertical = 6.dp),
+            .border(2.dp, borderColor, shape)
+            .drawBehind {
+                // Der helle Streifen an der Oberkante — er lässt das Abzeichen
+                // gewölbt statt aufgeklebt wirken.
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color(0x26FFFFFF), Color.Transparent),
+                        startY = 0f,
+                        endY = 3.dp.toPx(),
+                    ),
+                    size = Size(size.width, 3.dp.toPx()),
+                )
+            }
+            .padding(horizontal = horizontalPadding, vertical = 7.dp),
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.titleLarge,
             fontSize = fontSize,
-            color = TextPrimary,
+            letterSpacing = letterSpacing,
+            color = textColor,
         )
     }
 }
