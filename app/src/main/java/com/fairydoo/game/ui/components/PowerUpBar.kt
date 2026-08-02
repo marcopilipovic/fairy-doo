@@ -34,7 +34,18 @@ import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.ui.theme.BlossomPink
 import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.LeafGreen
-import com.fairydoo.game.ui.theme.TextPrimary
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import com.fairydoo.game.ui.theme.GoldCream
+import com.fairydoo.game.ui.theme.PowerTileBorder
+import com.fairydoo.game.ui.theme.PowerTileBottom
+import com.fairydoo.game.ui.theme.PowerTileMiddle
+import com.fairydoo.game.ui.theme.PowerTileShieldBorder
+import com.fairydoo.game.ui.theme.PowerTileShieldBottom
+import com.fairydoo.game.ui.theme.PowerTileShieldMiddle
+import com.fairydoo.game.ui.theme.PowerTileShieldTop
+import com.fairydoo.game.ui.theme.PowerTileTop
 
 /** Die drei Magie-Fähigkeiten am unteren Rand. */
 @Composable
@@ -100,25 +111,61 @@ private fun PowerUpButton(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(contentAlignment = Alignment.TopEnd) {
+            // Bonbon-Relief wie in der Vorlage: heller Verlauf oben, dunkler
+            // unten, dazu eine Lichtkante innen oben und ein Schatten innen
+            // unten. Erst diese vier Schichten lassen die Kachel gewölbt
+            // aussehen statt flach — der Look, den Casual-Games gemeinsam haben.
+            val shape = RoundedCornerShape(22.dp)
             Box(
                 modifier = Modifier
-                    .size(62.dp)
+                    .size(66.dp)
                     .background(
                         brush = if (active) {
                             Brush.verticalGradient(
-                                listOf(Color(0xFF2F6B45), Color(0xFF1D4A2E)),
+                                colorStops = arrayOf(
+                                    0f to PowerTileShieldTop,
+                                    0.6f to PowerTileShieldMiddle,
+                                    1f to PowerTileShieldBottom,
+                                ),
                             )
                         } else {
                             Brush.verticalGradient(
-                                listOf(Color(0xFF33407A), Color(0xFF1E2450)),
+                                colorStops = arrayOf(
+                                    0f to PowerTileTop,
+                                    0.6f to PowerTileMiddle,
+                                    1f to PowerTileBottom,
+                                ),
                             )
                         },
-                        shape = RoundedCornerShape(18.dp),
+                        shape = shape,
                     )
-                    .border(2.dp, accent.copy(alpha = 0.55f), RoundedCornerShape(18.dp)),
+                    .drawBehind {
+                        drawRect(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color(0x40FFFFFF), Color.Transparent),
+                                startY = 0f,
+                                endY = 5.dp.toPx(),
+                            ),
+                            size = Size(size.width, 5.dp.toPx()),
+                        )
+                        drawRect(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color(0x59000000)),
+                                startY = size.height - 8.dp.toPx(),
+                                endY = size.height,
+                            ),
+                            topLeft = Offset(0f, size.height - 8.dp.toPx()),
+                            size = Size(size.width, 8.dp.toPx()),
+                        )
+                    }
+                    .border(
+                        width = 2.5.dp,
+                        color = if (active) PowerTileShieldBorder else PowerTileBorder,
+                        shape = shape,
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(text = glyph, fontSize = 28.sp)
+                Text(text = glyph, fontSize = 30.sp)
             }
 
             Box(
@@ -143,7 +190,8 @@ private fun PowerUpButton(
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
-            color = TextPrimary,
+            fontSize = 12.sp,
+            color = GoldCream,
             textAlign = TextAlign.Center,
         )
     }

@@ -96,6 +96,22 @@ prüfen auch, dass kein Klang stumm ist, keiner übersteuert und die Musikschlei
 ohne hörbaren Sprung schließt. Die aufgenommenen Feenstimmen sind davon nicht
 betroffen — die liegen als MP3 vor und lassen sich direkt anhören.
 
+## Das Spielbrett
+
+Das Gitter liegt auf einer **Moos-Matte** und besteht aus Steinplatten mit
+Moosflecken. Jede Platte ist mit der Farbe ihrer Zone leicht eingefärbt — nur zu
+einem Zehntel: Kenntlich wird eine Zone über ihre **leuchtenden Ränder**, nicht
+über die Fläche. Auf voll eingefärbten Flächen stünden acht Neontöne
+gleichzeitig im Bild und nähmen den Feen die Aufmerksamkeit.
+
+Wo zwei Zonengrenzen aufeinandertreffen, ist die Ecke rund. Dadurch erscheint
+eine Zone als zusammenhängender, abgerundeter Block statt als Ansammlung
+quadratischer Felder — genau die Wirkung aus der Vorlage.
+
+Die Markierung „hier sitzt keine Fee" ist ein goldgelbes ✕ mit Gold-Glow. Der
+Schein ist nicht nur Zierrat: Auf der graugrünen Steinplatte wirkte ein flaches
+Gelb blass.
+
 ## Die Feen
 
 In jeder Waldzone lebt eine eigene Fee — auf einem Brett sind also bis zu acht
@@ -167,14 +183,14 @@ app/src/main/java/com/fairydoo/game/
 ├── data/
 │   └── GamePreferences.kt           DataStore: Highscore, Partien, Tonschalter
 └── ui/
-    ├── GameCopy.kt                  Alle Texte und Zonennamen
+    ├── GameCopy.kt                  Alle Texte der Oberfläche
     ├── theme/                       Design-Tokens, Schriften, Farbschema
     ├── sprites/
     │   ├── FairyArt.kt              Zuordnung Fee → Bildressource
     │   └── FairySpriteCache.kt      Bilder einmal laden und behalten
     ├── components/
     │   ├── SoundSettingsOverlay.kt  Regler für Musik, Klänge und Stimme
-    │   ├── FairydokuBoard.kt        Brett: Moosfelder, Zonenränder, Feen
+    │   ├── FairydokuBoard.kt        Brett: Steinplatten, Zonenränder, Feen
     │   ├── PowerUpBar.kt            Die drei Fähigkeiten
     │   ├── Overlays.kt              Willkommen, Level up, Spielende
     │   └── Fireflies.kt             Glühwürmchen-Schleier
