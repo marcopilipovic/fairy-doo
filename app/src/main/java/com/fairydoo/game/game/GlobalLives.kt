@@ -16,7 +16,14 @@ data class GlobalLivesState(
 
 object GlobalLives {
     const val MAX = 5
-    const val REGEN_INTERVAL_MILLIS = 5 * 60_000L
+    /**
+     * Wie lange ein Wald-Leben zum Nachwachsen braucht.
+     *
+     * Fünfzehn Minuten nach der Vorlage. Kürzer nähme dem Vorrat seine
+     * Bedeutung — wer nach zwei Minuten ohnehin weiterspielen kann, achtet auf
+     * nichts.
+     */
+    const val REGEN_INTERVAL_MILLIS = 15 * 60_000L
 
     /**
      * Gleicht gespeicherten Stand und Uhrzeit ab — holt nach, was seit dem

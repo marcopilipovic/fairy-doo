@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fairydoo.game.ui.theme.CardBottom
 import com.fairydoo.game.ui.theme.CardTop
+import com.fairydoo.game.game.GlobalLives
+import com.fairydoo.game.game.GlobalLivesState
+import com.fairydoo.game.ui.GameCopy
 import com.fairydoo.game.ui.theme.DangerRose
 import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.GoldLight
@@ -292,6 +295,8 @@ fun GameOverOverlay(
     score: Int,
     level: Int,
     bestScore: Int,
+    globalLives: GlobalLivesState,
+    onRetry: () -> Unit,
     onShowLevelMap: () -> Unit,
 ) {
     OverlayScaffold(
@@ -342,8 +347,46 @@ fun GameOverOverlay(
             )
         }
 
+        Spacer(Modifier.height(10.dp))
+
+        // Die Wald-Leben stehen hier, weil sich genau jetzt entscheidet, ob es
+        // sofort weitergeht: Das verlorene Leben ist bereits abgezogen, ein
+        // neuer Versuch kostet also nichts extra — solange überhaupt eines da
+        // ist.
+        Text(
+            text = "💚".repeat(globalLives.lives) +
+                "🖤".repeat((GlobalLives.MAX - globalLives.lives).coerceAtLeast(0)),
+            fontSize = 15.sp,
+        )
+
         Spacer(Modifier.height(16.dp))
 
-        GoldButton(label = "Zur Levelkarte", onClick = onShowLevelMap)
+        if (globalLives.lives > 0) {
+            GoldButton(label = "Level neu starten", onClick = onRetry)
+        } else {
+            val remainingSeconds = ((globalLives.nextLifeAtMillis - System.currentTimeMillis())
+                .coerceAtLeast(0L) / 1000L).toInt()
+            Text(
+                text = "+💚 in ${GameCopy.formatTime(remainingSeconds)}",
+                style = MaterialTheme.typography.labelLarge,
+                color = DangerRose,
+                textAlign = TextAlign.Center,
+            )
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        Text(
+            text = "🗺️ Zur Karte",
+            style = MaterialTheme.typography.labelLarge,
+            color = TextPrimary.copy(alpha = 0.85f),
+            modifier = Modifier
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onShowLevelMap,
+                )
+                .padding(8.dp),
+        )
     }
 }

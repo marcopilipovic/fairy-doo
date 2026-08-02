@@ -307,7 +307,7 @@ fun GameScreen(preferences: GamePreferencesRepository) {
     if (showLevelSelect) {
         LevelSelectScreen(
             highestLevelUnlocked = profile.highestLevelUnlocked,
-            currentLevel = state.level,
+            score = state.score,
             globalLives = globalLives,
             // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man
             // zurückkönnte — nicht beim allerersten Start der App.
@@ -327,6 +327,8 @@ fun GameScreen(preferences: GamePreferencesRepository) {
             onBegin = { viewModel.onInput(GameInput.Begin) },
             onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
             onOpenLevelSelect = viewModel::openLevelSelect,
+            onRetryLevel = viewModel::startLevel,
+            globalLives = globalLives,
             onOpenSoundSettings = {
                 viewModel.pause()
                 showSoundSettings = true
@@ -355,6 +357,8 @@ private fun GameContent(
     onBegin: () -> Unit,
     onNextLevel: () -> Unit,
     onOpenLevelSelect: () -> Unit,
+    onRetryLevel: (Int) -> Unit,
+    globalLives: com.fairydoo.game.game.GlobalLivesState,
     onOpenSoundSettings: () -> Unit,
     onCloseSoundSettings: () -> Unit,
     onMusicChange: (Float) -> Unit,
@@ -453,6 +457,8 @@ private fun GameContent(
                 score = state.score,
                 level = state.level,
                 bestScore = bestScore,
+                globalLives = globalLives,
+                onRetry = { onRetryLevel(state.level) },
                 onShowLevelMap = onOpenLevelSelect,
             )
 
