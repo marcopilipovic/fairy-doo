@@ -30,11 +30,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fairydoo.game.game.GameState
-import com.fairydoo.game.game.PowerUp
-import com.fairydoo.game.ui.theme.BlossomPink
+import com.fairydoo.game.ui.GameCopy
 import com.fairydoo.game.ui.theme.Gold
-import com.fairydoo.game.ui.theme.LeafGreen
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.fairydoo.game.ui.theme.GoldCream
@@ -47,11 +46,22 @@ import com.fairydoo.game.ui.theme.PowerTileShieldMiddle
 import com.fairydoo.game.ui.theme.PowerTileShieldTop
 import com.fairydoo.game.ui.theme.PowerTileTop
 
-/** Die drei Magie-Fähigkeiten am unteren Rand. */
+/**
+ * Der Feenstaub am unteren Rand — die einzige Hilfe im Spiel.
+ *
+ * Zuvor standen hier drei Fähigkeiten. Der Natur-Schild nahm dem Fehler die
+ * Folge, die Zeiten-Blüte der Uhr den Druck; beide machten das Rätsel beliebig.
+ * Was bleibt, ist die eine Hilfe, die weiterhilft, ohne das Nachdenken
+ * abzunehmen: ein aufgedecktes Feld.
+ *
+ * Ist der Vorrat leer, steht statt „Hinweis" die Zeit bis zum nächsten Staub.
+ * Ohne diese Angabe wäre der blasse Knopf eine Sackgasse ohne Erklärung.
+ */
 @Composable
 fun PowerUpBar(
     state: GameState,
-    onUse: (PowerUp) -> Unit,
+    nextDustInMillis: Long,
+    onUse: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -60,32 +70,17 @@ fun PowerUpBar(
     ) {
         PowerUpButton(
             glyph = "✨",
-            label = "Feenstaub\nHinweis",
-            count = state.powerUpCount(PowerUp.FairyDust),
+            label = if (state.fairyDust > 0 || nextDustInMillis <= 0L) {
+                "Feenstaub\nHinweis"
+            } else {
+                "Feenstaub\nin ${GameCopy.formatTime((nextDustInMillis / 1000L).toInt())}"
+            },
+            count = state.fairyDust,
             accent = Gold,
             badgeTextColor = Color(0xFF2A1C05),
             active = false,
-            onClick = { onUse(PowerUp.FairyDust) },
-        )
-        PowerUpButton(
-            glyph = "🍃",
-            label = "Natur-\nSchild",
-            count = state.powerUpCount(PowerUp.NatureShield),
-            accent = LeafGreen,
-            badgeTextColor = Color(0xFF05310F),
-            // Ein bereits aktiver Schild leuchtet grün — so ist erkennbar,
-            // dass ein weiterer Tipp nichts bringt.
-            active = state.shieldActive,
-            onClick = { onUse(PowerUp.NatureShield) },
-        )
-        PowerUpButton(
-            glyph = "🌸",
-            label = "Zeiten-\nBlüte",
-            count = state.powerUpCount(PowerUp.TimeBlossom),
-            accent = BlossomPink,
-            badgeTextColor = Color(0xFF3D0824),
-            active = state.timeFrozen,
-            onClick = { onUse(PowerUp.TimeBlossom) },
+            enabled = state.fairyDust > 0,
+            onClick = onUse,
         )
     }
 }
@@ -98,12 +93,18 @@ private fun PowerUpButton(
     accent: Color,
     badgeTextColor: Color,
     active: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .width(86.dp)
+            // Ein leerer Vorrat bleibt sichtbar, aber blass und ohne Wirkung —
+            // so ist erkennbar, dass die Hilfe existiert und gerade nur
+            // nachwächst.
+            .graphicsLayer { alpha = if (enabled) 1f else 0.45f }
             .clickable(
+                enabled = enabled,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,

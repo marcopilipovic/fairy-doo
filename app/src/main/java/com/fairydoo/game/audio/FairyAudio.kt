@@ -8,7 +8,6 @@ import android.media.SoundPool
 import android.util.Log
 import com.fairydoo.game.R
 import com.fairydoo.game.data.PlayerProfile
-import com.fairydoo.game.game.PowerUp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -270,17 +269,9 @@ class FairyAudio(context: Context) {
 
         when (event) {
             is SoundEvent.FairyPlaced, SoundEvent.FairyStartled -> Unit
-            SoundEvent.ShieldSaved -> playEffect(KEY_SHIELD)
             SoundEvent.Ward -> playEffect(KEY_TICK)
             SoundEvent.Undo -> playEffect(KEY_UNDO)
-
-            is SoundEvent.PowerUpUsed -> playEffect(
-                when (event.powerUp) {
-                    PowerUp.FairyDust -> KEY_SPARKLE
-                    PowerUp.NatureShield -> KEY_SHIELD
-                    PowerUp.TimeBlossom -> KEY_FREEZE
-                },
-            )
+            SoundEvent.FairyDustUsed -> playEffect(KEY_SPARKLE)
 
             SoundEvent.LevelComplete -> {
                 playEffect(KEY_CHEER)

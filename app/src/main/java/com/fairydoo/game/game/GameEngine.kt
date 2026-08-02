@@ -32,8 +32,8 @@ sealed interface GameInput {
     /** Gedrückt halten — setzt die Fee, oder nimmt sie weg. */
     data class HoldCell(val pos: Pos) : GameInput
 
-    /** Eine Magie-Fähigkeit einsetzen. */
-    data class UsePowerUp(val powerUp: PowerUp) : GameInput
+    /** Feenstaub einsetzen — deckt ein sicheres Feld auf. */
+    data object UseFairyDust : GameInput
 
     /** „Den Wald betreten" — beendet das Willkommens-Overlay. */
     data object Begin : GameInput
@@ -69,13 +69,6 @@ class FairydokuEngine(
             hintCell = if (pulse == 0L) null else state.hintCell,
         )
 
-        // Die Zeiten-Blüte hält die Uhr an, statt sie nur zu bremsen.
-        if (withPulse.timeFrozen) {
-            return withPulse.copy(
-                freezeMillis = (withPulse.freezeMillis - deltaMillis).coerceAtLeast(0L),
-            )
-        }
-
         val remaining = (withPulse.remainingMillis - deltaMillis).coerceAtLeast(0L)
         return withPulse.copy(
             remainingMillis = remaining,
@@ -87,7 +80,7 @@ class FairydokuEngine(
     override fun onInput(state: GameState, input: GameInput): GameState = when (input) {
         is GameInput.TapCell -> onTapCell(state, input.pos)
         is GameInput.HoldCell -> onHoldCell(state, input.pos)
-        is GameInput.UsePowerUp -> onUsePowerUp(state, input.powerUp)
+        GameInput.UseFairyDust -> onUseFairyDust(state)
         GameInput.Begin -> onBegin(state)
         GameInput.NextLevel -> onNextLevel(state)
     }
@@ -134,8 +127,8 @@ class FairydokuEngine(
      * Setzt ein Feld auf den Wert, den [next] bestimmt, und zieht die Folgen.
      *
      * Beide Gesten unterscheiden sich nur in dieser einen Entscheidung —
-     * Konflikte, Fehler, Schild und Siegprüfung sind für sie gleich und stehen
-     * deshalb nur hier.
+     * Konflikte, Fehler und Siegprüfung sind für sie gleich und stehen deshalb
+     * nur hier.
      */
     private fun setMark(
         state: GameState,
@@ -171,52 +164,35 @@ class FairydokuEngine(
         // anderen kollidiert — Wegnehmen und Merkzeichen kosten nie etwas.
         val causedMistake = !wasFairy && pos in conflicts
         if (causedMistake) {
-            next = if (next.shieldActive) {
-                next.copy(shieldActive = false, statusMessage = StatusMessage.ShieldSaved)
-            } else {
-                val lives = next.lives - 1
-                next.copy(
-                    lives = lives.coerceAtLeast(0),
-                    statusMessage = StatusMessage.MistakeMade,
-                    status = if (lives <= 0) GameStatus.GameOver else next.status,
-                    overReason = if (lives <= 0) {
-                        GameOverReason.TooManyConflicts
-                    } else {
-                        next.overReason
-                    },
-                )
-            }
+            val lives = next.lives - 1
+            next = next.copy(
+                lives = lives.coerceAtLeast(0),
+                statusMessage = StatusMessage.MistakeMade,
+                status = if (lives <= 0) GameStatus.GameOver else next.status,
+                overReason = if (lives <= 0) {
+                    GameOverReason.TooManyConflicts
+                } else {
+                    next.overReason
+                },
+            )
         }
 
         return checkWin(next)
     }
 
-    private fun onUsePowerUp(state: GameState, powerUp: PowerUp): GameState {
+    /**
+     * Feenstaub einsetzen.
+     *
+     * Der Vorrat wird hier nur heruntergezählt; wann das verbrauchte Stück
+     * nachwächst, entscheidet [FairyDustSupply] außerhalb der Spielregeln. Die
+     * Engine kennt keine Uhrzeit — sonst ließe sie sich nicht ohne Android
+     * prüfen.
+     */
+    private fun onUseFairyDust(state: GameState): GameState {
         if (state.status != GameStatus.Running) return state
+        if (state.fairyDust <= 0) return state
 
-        // Der Schild leuchtet schon — nicht noch einen verbrauchen.
-        if (powerUp == PowerUp.NatureShield && state.shieldActive) {
-            return state.copy(statusMessage = StatusMessage.ShieldAlreadyActive)
-        }
-        if (state.powerUpCount(powerUp) <= 0) {
-            return state.copy(statusMessage = StatusMessage.Exhausted(powerUp))
-        }
-
-        val used = state.copy(
-            powerUps = state.powerUps + (powerUp to state.powerUpCount(powerUp) - 1),
-        )
-
-        return when (powerUp) {
-            PowerUp.FairyDust -> revealSafeCell(used)
-            PowerUp.NatureShield -> used.copy(
-                shieldActive = true,
-                statusMessage = StatusMessage.ShieldActivated,
-            )
-            PowerUp.TimeBlossom -> used.copy(
-                freezeMillis = GameState.FREEZE_DURATION_MILLIS,
-                statusMessage = StatusMessage.TimeFrozen,
-            )
-        }
+        return revealSafeCell(state.copy(fairyDust = state.fairyDust - 1))
     }
 
     /** Der Feenstaub setzt eine Fee auf ein Lösungsfeld, das noch frei ist. */
@@ -284,28 +260,14 @@ class FairydokuEngine(
             gained = 0,
             puzzle = PuzzleGenerator.generate(GameState.sizeForLevel(level), random),
             lives = if (fresh) GameState.MAX_LIVES else previous.lives,
-            powerUps = if (fresh) {
-                GameState.STARTING_POWER_UPS
-            } else {
-                restock(previous.powerUps, previous.level)
-            },
+            // Der Feenstaub wird nicht mehr je Level ausgeteilt: Er ist ein
+            // Vorrat des Spielers, der über die Zeit nachwächst. Was noch da
+            // ist, nimmt das nächste Level mit; den Anfangsstand setzt beim
+            // Levelstart das ViewModel aus dem gespeicherten Stand.
+            fairyDust = previous.fairyDust,
             remainingMillis = duration,
             roundDurationMillis = duration,
             statusMessage = StatusMessage.Hint,
-        )
-    }
-
-    /**
-     * Nachschub nach jedem Level: Feenstaub und Zeiten-Blüte immer, der
-     * Natur-Schild nur jedes zweite Level — er ist die stärkste Fähigkeit.
-     */
-    private fun restock(powerUps: Map<PowerUp, Int>, completedLevel: Int): Map<PowerUp, Int> {
-        fun countOf(powerUp: PowerUp) = powerUps[powerUp] ?: 0
-        return mapOf(
-            PowerUp.FairyDust to countOf(PowerUp.FairyDust) + 1,
-            PowerUp.TimeBlossom to countOf(PowerUp.TimeBlossom) + 1,
-            PowerUp.NatureShield to countOf(PowerUp.NatureShield) +
-                if (completedLevel % 2 == 0) 1 else 0,
         )
     }
 

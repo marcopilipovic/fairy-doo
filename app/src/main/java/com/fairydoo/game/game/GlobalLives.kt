@@ -3,10 +3,12 @@ package com.fairydoo.game.game
 /**
  * Der App-weite Lebenspool — getrennt von den drei Leben pro Level.
  *
- * Ein verlorenes Level kostet eins von fünf; alle [REGEN_INTERVAL_MILLIS]
- * wächst eins nach, bis wieder alle fünf voll sind. Reine Funktionen, damit
- * sich das Nachwachsen ohne Android-Uhr und ohne laufenden Prozess testen
- * lässt — der Zustand trägt seine eigene Zeitbasis ([nextLifeAtMillis]).
+ * Ein verlorenes Level kostet eins von fünf; alle [REGEN_INTERVAL_MILLIS] wächst
+ * eins nach, bis wieder alle fünf voll sind.
+ *
+ * Die Rechnerei selbst steht in [RegeneratingSupply] — dieselbe Mechanik trägt
+ * auch den Feenstaub. Hier bleiben nur die Werte, die diesen Vorrat von jenem
+ * unterscheiden, und die Namen, unter denen ihn der Rest des Spiels kennt.
  */
 data class GlobalLivesState(
     val lives: Int,
@@ -16,6 +18,7 @@ data class GlobalLivesState(
 
 object GlobalLives {
     const val MAX = 5
+
     /**
      * Wie lange ein Wald-Leben zum Nachwachsen braucht.
      *
@@ -25,29 +28,18 @@ object GlobalLives {
      */
     const val REGEN_INTERVAL_MILLIS = 15 * 60_000L
 
+    private val supply = RegeneratingSupply(MAX, REGEN_INTERVAL_MILLIS)
+
     /**
      * Gleicht gespeicherten Stand und Uhrzeit ab — holt nach, was seit dem
      * letzten Zugriff nachgewachsen ist (auch nach Stunden außerhalb der App).
      */
-    fun normalize(storedLives: Int, nextLifeAtMillis: Long, nowMillis: Long): GlobalLivesState {
-        if (storedLives >= MAX || nextLifeAtMillis == 0L) {
-            return GlobalLivesState(storedLives.coerceIn(0, MAX), 0L)
-        }
-        if (nowMillis < nextLifeAtMillis) {
-            return GlobalLivesState(storedLives, nextLifeAtMillis)
-        }
-
-        val elapsedPastFirst = nowMillis - nextLifeAtMillis
-        val regains = 1 + elapsedPastFirst / REGEN_INTERVAL_MILLIS
-        val newLives = (storedLives + regains).coerceAtMost(MAX.toLong()).toInt()
-        val newNextAt = if (newLives >= MAX) 0L else nextLifeAtMillis + regains * REGEN_INTERVAL_MILLIS
-        return GlobalLivesState(newLives, newNextAt)
-    }
+    fun normalize(storedLives: Int, nextLifeAtMillis: Long, nowMillis: Long): GlobalLivesState =
+        supply.normalize(storedLives, nextLifeAtMillis, nowMillis).toLives()
 
     /** Verbraucht ein Leben — startet die Nachwachs-Uhr, falls sie nicht schon lief. */
-    fun consume(state: GlobalLivesState, nowMillis: Long): GlobalLivesState {
-        val newLives = (state.lives - 1).coerceAtLeast(0)
-        val newNextAt = if (state.nextLifeAtMillis == 0L) nowMillis + REGEN_INTERVAL_MILLIS else state.nextLifeAtMillis
-        return GlobalLivesState(newLives, newNextAt)
-    }
+    fun consume(state: GlobalLivesState, nowMillis: Long): GlobalLivesState =
+        supply.consume(SupplyState(state.lives, state.nextLifeAtMillis), nowMillis).toLives()
+
+    private fun SupplyState.toLives() = GlobalLivesState(amount, nextAtMillis)
 }

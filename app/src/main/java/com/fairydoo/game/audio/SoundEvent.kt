@@ -2,7 +2,6 @@ package com.fairydoo.game.audio
 
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GameStatus
-import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.StatusMessage
 import com.fairydoo.game.game.model.CellMark
 
@@ -14,16 +13,14 @@ sealed interface SoundEvent {
     /** Eine Fee wurde falsch gesetzt und erschrickt. */
     data object FairyStartled : SoundEvent
 
-    /** Der Natur-Schild hat den Fehler abgefangen. */
-    data object ShieldSaved : SoundEvent
-
     /** Ein Merkzeichen wurde gesetzt. */
     data object Ward : SoundEvent
 
     /** Eine Fee wurde wieder weggenommen. */
     data object Undo : SoundEvent
 
-    data class PowerUpUsed(val powerUp: PowerUp) : SoundEvent
+    /** Der Feenstaub wurde eingesetzt. */
+    data object FairyDustUsed : SoundEvent
 
     /** Rätsel gelöst — Jubel und Lob. */
     data object LevelComplete : SoundEvent
@@ -44,19 +41,17 @@ object SoundEvents {
     fun diff(previous: GameState, next: GameState): List<SoundEvent> {
         val events = mutableListOf<SoundEvent>()
 
-        // Eingesetzte Fähigkeiten zuerst: Ihr Klang ersetzt den des Zuges, den
-        // sie auslösen (der Feenstaub setzt ja selbst eine Fee).
-        val usedPowerUp = PowerUp.entries.firstOrNull { powerUp ->
-            next.powerUpCount(powerUp) < previous.powerUpCount(powerUp)
-        }
-        if (usedPowerUp != null) events += SoundEvent.PowerUpUsed(usedPowerUp)
+        // Der Feenstaub zuerst: Sein Klang ersetzt den des Zuges, den er
+        // auslöst — er setzt ja selbst eine Fee.
+        val usedDust = next.fairyDust < previous.fairyDust
+        if (usedDust) events += SoundEvent.FairyDustUsed
 
         val levelSolved = previous.status != GameStatus.LevelComplete &&
             next.status == GameStatus.LevelComplete
         val lost = previous.status != GameStatus.GameOver &&
             next.status == GameStatus.GameOver
 
-        if (usedPowerUp == null && !levelSolved) {
+        if (!usedDust && !levelSolved) {
             events += markChangeEvents(previous, next)
         }
 
@@ -79,7 +74,6 @@ object SoundEvents {
 
             when (after) {
                 CellMark.Fairy -> events += when {
-                    next.statusMessage == StatusMessage.ShieldSaved -> SoundEvent.ShieldSaved
                     pos in next.conflicts -> SoundEvent.FairyStartled
                     // Die Variante wechselt mit Feld und Spielstand, damit
                     // dieselbe Fee nicht bei jedem Zug identisch klingt.

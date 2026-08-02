@@ -2,7 +2,6 @@ package com.fairydoo.game.ui
 
 import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameOverReason
-import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.StatusMessage
 
 /**
@@ -35,15 +34,10 @@ object GameCopy {
         is StatusMessage.Zone ->
             "${zoneName(message.regionIndex)} · ${fairyIntroduction(message.species)}"
         StatusMessage.MistakeMade -> "⚡ Die Zauberkräfte stören sich! (−1 Leben)"
-        StatusMessage.ShieldSaved -> "🍃 Der Natur-Schild hat dich beschützt!"
-        StatusMessage.ShieldActivated -> "🍃 Natur-Schild aktiviert!"
-        StatusMessage.ShieldAlreadyActive -> "Der Schild leuchtet bereits."
         StatusMessage.FairyDustUsed -> "✨ Ein Irrlicht zeigt dir ein sicheres Feld!"
-        StatusMessage.TimeFrozen -> "🌸 Die Zeit steht still… (12 s)"
-        is StatusMessage.Exhausted -> when (message.powerUp) {
-            PowerUp.FairyDust -> "Kein Feenstaub mehr übrig…"
-            PowerUp.NatureShield -> "Keine Schutzblätter mehr…"
-            PowerUp.TimeBlossom -> "Keine Zeiten-Blüten mehr…"
+        is StatusMessage.NoFairyDust -> {
+            val minutes = (message.nextInMillis / 60_000L).toInt() + 1
+            "Kein Feenstaub mehr — neuer in etwa $minutes Minuten"
         }
     }
 

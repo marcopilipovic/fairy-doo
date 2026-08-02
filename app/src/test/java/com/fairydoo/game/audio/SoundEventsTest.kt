@@ -3,7 +3,6 @@ package com.fairydoo.game.audio
 import com.fairydoo.game.game.FairydokuEngine
 import com.fairydoo.game.game.GameInput
 import com.fairydoo.game.game.GameState
-import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.model.Pos
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -84,21 +83,6 @@ class SoundEventsTest {
     }
 
     @Test
-    fun `der rettende Schild klingt anders als der Fehler`() {
-        var state = engine.onInput(startedGame(), GameInput.UsePowerUp(PowerUp.NatureShield))
-        val puzzle = requireNotNull(state.puzzle)
-        val anchor = puzzle.solution.first()
-        state = place(state, anchor)
-
-        val clashing = puzzle.allPositions.first { it.row == anchor.row && it != anchor }
-        val warded = tap(state, clashing)
-
-        val events = SoundEvents.diff(warded, place(warded, clashing))
-
-        assertEquals(listOf(SoundEvent.ShieldSaved), events)
-    }
-
-    @Test
     fun `das Wegnehmen einer Fee klingt nach Ruecknahme`() {
         var state = startedGame()
         val pos = requireNotNull(state.puzzle).solution.first()
@@ -110,29 +94,26 @@ class SoundEventsTest {
     }
 
     @Test
-    fun `eine Faehigkeit klingt nach sich selbst und nicht nach dem Zug`() {
+    fun `der Feenstaub klingt nach sich selbst und nicht nach dem Zug`() {
         val before = startedGame()
 
         val events = SoundEvents.diff(
             before,
-            engine.onInput(before, GameInput.UsePowerUp(PowerUp.FairyDust)),
+            engine.onInput(before, GameInput.UseFairyDust),
         )
 
         // Der Feenstaub setzt eine Fee — zu hören ist trotzdem nur das Funkeln.
-        assertEquals(listOf(SoundEvent.PowerUpUsed(PowerUp.FairyDust)), events)
+        assertEquals(listOf(SoundEvent.FairyDustUsed), events)
     }
 
     @Test
-    fun `eine erschoepfte Faehigkeit bleibt still`() {
+    fun `erschoepfter Feenstaub bleibt still`() {
         var state = startedGame()
-        repeat(state.powerUpCount(PowerUp.TimeBlossom)) {
-            state = engine.onInput(state, GameInput.UsePowerUp(PowerUp.TimeBlossom))
+        repeat(state.fairyDust) {
+            state = engine.onInput(state, GameInput.UseFairyDust)
         }
 
-        val events = SoundEvents.diff(
-            state,
-            engine.onInput(state, GameInput.UsePowerUp(PowerUp.TimeBlossom)),
-        )
+        val events = SoundEvents.diff(state, engine.onInput(state, GameInput.UseFairyDust))
 
         assertTrue("Erwartet wurde Stille, war: $events", events.isEmpty())
     }

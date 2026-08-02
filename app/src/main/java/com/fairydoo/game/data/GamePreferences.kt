@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.fairydoo.game.game.FairyDustSupply
 import com.fairydoo.game.game.GlobalLives
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -30,6 +31,10 @@ data class PlayerProfile(
     /** Roher Stand des App-weiten Lebenspools, siehe [GlobalLives]. */
     val globalLives: Int = GlobalLives.MAX,
     val nextGlobalLifeAtMillis: Long = 0L,
+
+    /** Der Feenstaub-Vorrat — wie die Wald-Leben übergreifend und nachwachsend. */
+    val fairyDust: Int = FairyDustSupply.max,
+    val nextFairyDustAtMillis: Long = 0L,
     /** Ob die Anleitung schon einmal zu Ende gesehen oder übersprungen wurde. */
     val hasSeenTutorial: Boolean = false,
 ) {
@@ -72,6 +77,8 @@ class GamePreferencesRepository(context: Context) {
             highestLevelUnlocked = prefs[KeyHighestLevel] ?: 1,
             globalLives = prefs[KeyGlobalLives] ?: GlobalLives.MAX,
             nextGlobalLifeAtMillis = prefs[KeyNextGlobalLifeAt] ?: 0L,
+            fairyDust = prefs[KeyFairyDust] ?: FairyDustSupply.max,
+            nextFairyDustAtMillis = prefs[KeyNextFairyDustAt] ?: 0L,
             hasSeenTutorial = prefs[KeyTutorialSeen] ?: false,
         )
     }
@@ -124,6 +131,27 @@ class GamePreferencesRepository(context: Context) {
         }
     }
 
+    /**
+     * Feenstaub einsetzen — zieht eines vom Vorrat ab.
+     *
+     * Wie bei den Wald-Leben wird vor dem Abziehen nachgeholt, was inzwischen
+     * gewachsen ist. Sonst verlöre man beim Verbrauchen genau das Stück, das in
+     * derselben Sekunde fällig geworden wäre.
+     */
+    suspend fun consumeFairyDust() {
+        store.edit { prefs ->
+            val now = System.currentTimeMillis()
+            val normalized = FairyDustSupply.normalize(
+                storedAmount = prefs[KeyFairyDust] ?: FairyDustSupply.max,
+                nextAtMillis = prefs[KeyNextFairyDustAt] ?: 0L,
+                nowMillis = now,
+            )
+            val consumed = FairyDustSupply.consume(normalized, now)
+            prefs[KeyFairyDust] = consumed.amount
+            prefs[KeyNextFairyDustAt] = consumed.nextAtMillis
+        }
+    }
+
     suspend fun setMusicVolume(volume: Float) {
         store.edit { it[KeyMusicVolume] = volume.coerceIn(0f, 1f) }
     }
@@ -161,6 +189,8 @@ class GamePreferencesRepository(context: Context) {
         val KeyHighestLevel = intPreferencesKey("highest_level_unlocked")
         val KeyGlobalLives = intPreferencesKey("global_lives")
         val KeyNextGlobalLifeAt = longPreferencesKey("next_global_life_at")
+        val KeyFairyDust = intPreferencesKey("fairy_dust")
+        val KeyNextFairyDustAt = longPreferencesKey("next_fairy_dust_at")
         val KeyTutorialSeen = booleanPreferencesKey("tutorial_seen")
     }
 }

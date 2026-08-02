@@ -71,6 +71,27 @@ class GameViewModel(
         initialValue = GlobalLivesState(GlobalLives.MAX, 0L),
     )
 
+    /**
+     * Der Feenstaub-Vorrat, live nachgeführt — wie die Wald-Leben.
+     *
+     * Der Countdown im Knopf muss sichtbar herunterzählen, auch während man auf
+     * das Brett schaut, ohne dass irgendetwas geschrieben wird.
+     */
+    val fairyDust: StateFlow<SupplyState> = combine(
+        preferences.profile,
+        tickerFlow(1_000L),
+    ) { current, _ ->
+        FairyDustSupply.normalize(
+            current.fairyDust,
+            current.nextFairyDustAtMillis,
+            System.currentTimeMillis(),
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SupplyState(FairyDustSupply.max, 0L),
+    )
+
     /** Steuert, ob die Levelkarte statt des Spiels gezeigt wird. Start: die Karte. */
     private val _showLevelSelect = MutableStateFlow(true)
     val showLevelSelect: StateFlow<Boolean> = _showLevelSelect.asStateFlow()
@@ -148,9 +169,13 @@ class GameViewModel(
             _isPreparing.value = true
             // Das Erzeugen eines eindeutigen Rätsels kostet spürbar Rechenzeit
             // und gehört deshalb nicht auf den Main-Thread.
-            val fresh = withContext(Dispatchers.Default) {
+            val started = withContext(Dispatchers.Default) {
                 engine.onInput(engine.newGame(level), GameInput.Begin)
             }
+            // Der Vorrat gehört dem Spieler, nicht dem Level: Was gespeichert
+            // ist — abzüglich dessen, was inzwischen nachgewachsen ist —, geht
+            // ins neue Level mit.
+            val fresh = started.copy(fairyDust = fairyDust.value.amount)
             _isPreparing.value = false
             _showLevelSelect.value = false
             applyState(fresh)
@@ -186,6 +211,16 @@ class GameViewModel(
             GameInput.Begin -> {
                 applyState(engine.onInput(_state.value, input))
                 if (_state.value.status == GameStatus.Running) startLoop()
+            }
+
+            // Der Feenstaub wird zusätzlich dauerhaft abgebucht — nur so
+            // überlebt der Verbrauch den Levelwechsel und den App-Neustart.
+            GameInput.UseFairyDust -> {
+                val before = _state.value
+                if (before.fairyDust > 0) {
+                    applyState(engine.onInput(before, input))
+                    viewModelScope.launch { preferences.consumeFairyDust() }
+                }
             }
 
             else -> applyState(engine.onInput(_state.value, input))

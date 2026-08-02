@@ -30,16 +30,22 @@ abwarten, ob noch einer folgt.
 Eine Fee, die beim Setzen kollidiert, kostet ein Leben. Drei Leben, dann ist der
 Lauf vorbei — ebenso, wenn die Zeit abläuft.
 
-## Die Magie-Fähigkeiten
+## Der Feenstaub
 
-| Fähigkeit | Wirkung |
-| --- | --- |
-| ✨ **Feenstaub** | Setzt eine Fee auf ein garantiert sicheres Feld; es leuchtet 2 s golden nach. |
-| 🍃 **Natur-Schild** | Fängt den nächsten Fehler ab und verbraucht sich dabei. |
-| 🌸 **Zeiten-Blüte** | Hält die Uhr 12 Sekunden lang an. |
+Die einzige Hilfe im Spiel: **✨ Feenstaub** setzt eine Fee auf ein garantiert
+sicheres Feld, das zwei Sekunden golden nachleuchtet.
 
-Nach jedem Level kommen Feenstaub und Zeiten-Blüte dazu, der Natur-Schild nur
-jedes zweite Level.
+Der Vorrat fasst **drei** Stück und gehört dem Spieler, nicht dem Level — er
+geht in das nächste Level mit und überlebt den Neustart der App. Ein
+verbrauchtes Stück wächst in **einer halben Stunde** nach; ist der Vorrat voll,
+steht die Uhr still. Das Nachwachsen läuft über einen gespeicherten Zeitpunkt
+und holt deshalb auch nach, was während geschlossener App fällig geworden wäre
+(`RegeneratingSupply`, geteilt mit den Wald-Leben).
+
+Früher standen hier drei Fähigkeiten. Der **Natur-Schild** nahm dem Fehler die
+Folge und die **Zeiten-Blüte** der Uhr den Druck; zusammen machten sie das
+Rätsel beliebig. Geblieben ist die eine Hilfe, die weiterbringt, ohne das
+Nachdenken abzunehmen.
 
 ## Klang
 
@@ -170,7 +176,7 @@ app/src/main/java/com/fairydoo/game/
 │   │   ├── Puzzle.kt                Gitter, Zonen und die Regeln (FairydokuRules)
 │   │   └── PuzzleGenerator.kt       Erzeugt Rätsel mit eindeutiger Lösung
 │   ├── GameState.kt                 Unveränderlicher Partie-Zustand
-│   ├── GameEngine.kt                FairydokuEngine: Züge, Fähigkeiten, Punkte
+│   ├── GameEngine.kt                FairydokuEngine: Züge, Feenstaub, Punkte
 │   └── GameViewModel.kt             Spieluhr, Zustandsverwaltung, Persistenz
 ├── art/
 │   └── FairySprites.kt              Der Eigenton jeder Fee (Android-frei)
@@ -191,7 +197,7 @@ app/src/main/java/com/fairydoo/game/
     ├── components/
     │   ├── SoundSettingsOverlay.kt  Regler für Musik, Klänge und Stimme
     │   ├── FairydokuBoard.kt        Brett: Steinplatten, Zonenränder, Feen
-    │   ├── PowerUpBar.kt            Die drei Fähigkeiten
+    │   ├── PowerUpBar.kt            Der Feenstaub-Knopf
     │   ├── Overlays.kt              Willkommen, Level up, Spielende
     │   └── Fireflies.kt             Glühwürmchen-Schleier
     └── screens/GameScreen.kt        Setzt alles zusammen
@@ -244,7 +250,7 @@ Bretts hängt an den Zonenfarben.
 - Die beiden Emoji in der Titelzeile und im „Level up"-Overlay sind noch
   Platzhalter.
 - Hintergrund-Illustration fehlt noch.
-- **Jubel und Fähigkeiten sind noch synthetisch.** Die Feenstimmen sind
+- **Jubel und Effektklänge sind noch synthetisch.** Die Feenstimmen sind
   inzwischen Aufnahmen; wer auch den Rest aufgenommen haben will, ersetzt die
   entsprechenden Zweige in `FairyAudio` durch weitere Clips — die Schnittstelle
   dafür ist `SoundEvent` und bleibt gleich.
@@ -259,7 +265,7 @@ Alle Stellschrauben stehen als Konstanten in `GameState.Companion` und
 | Gittergröße | 4×4, wächst alle zwei Level, Maximum 8×8 |
 | Zeit je Level | 60 s + 15 s je Gitterfeld |
 | Leben | 3 |
-| Startvorrat | 3× Feenstaub, 1× Natur-Schild, 2× Zeiten-Blüte |
+| Feenstaub | 3 Stück, nachwachsend alle 30 Minuten |
 | Punkte je Level | 100 × Gittergröße + 5 je Restsekunde |
 | Feen-Arten | Blüten → Wasser → Feuer → Sternen, dann von vorn |
 

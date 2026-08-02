@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fairydoo.game.game.FairyDustSupply
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GlobalLives
 import com.fairydoo.game.ui.theme.ConflictRed
@@ -304,11 +305,9 @@ private fun TutorialPowerUpsStep() {
         text = buildAnnotatedString {
             append("✨ ")
             withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Feenstaub") }
-            append(": deckt ein sicheres Feld auf\n🍃 ")
-            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Natur-Schild") }
-            append(": schützt vor dem nächsten Fehler\n🌸 ")
-            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Zeiten-Blüte") }
-            append(": friert die Zeit ${GameState.FREEZE_DURATION_MILLIS / 1000} s ein")
+            append(": deckt ein sicheres Feld auf.\n")
+            append("Du hast ${FairyDustSupply.max} davon — verbrauchter wächst ")
+            append("in einer halben Stunde nach.")
         },
         style = MaterialTheme.typography.bodyMedium,
         fontSize = 12.5.sp,

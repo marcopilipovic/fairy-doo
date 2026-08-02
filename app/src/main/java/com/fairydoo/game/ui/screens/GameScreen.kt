@@ -69,7 +69,6 @@ import com.fairydoo.game.game.GameInput
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GameStatus
 import com.fairydoo.game.game.GameViewModel
-import com.fairydoo.game.game.PowerUp
 import com.fairydoo.game.game.model.Pos
 import com.fairydoo.game.ui.GameCopy
 import com.fairydoo.game.ui.components.BoardFrameInsets
@@ -255,6 +254,7 @@ fun GameScreen(preferences: GamePreferencesRepository) {
     val isPreparing by viewModel.isPreparing.collectAsStateWithLifecycle()
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val globalLives by viewModel.globalLives.collectAsStateWithLifecycle()
+    val fairyDust by viewModel.fairyDust.collectAsStateWithLifecycle()
     val showLevelSelect by viewModel.showLevelSelect.collectAsStateWithLifecycle()
     val tutorialOpen by viewModel.tutorialOpen.collectAsStateWithLifecycle()
     val tutorialStep by viewModel.tutorialStep.collectAsStateWithLifecycle()
@@ -330,12 +330,16 @@ fun GameScreen(preferences: GamePreferencesRepository) {
                 showSoundSettings = showSoundSettings,
                 onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
                 onHoldCell = { viewModel.onInput(GameInput.HoldCell(it)) },
-                onUsePowerUp = { viewModel.onInput(GameInput.UsePowerUp(it)) },
+                onUseFairyDust = { viewModel.onInput(GameInput.UseFairyDust) },
                 onBegin = { viewModel.onInput(GameInput.Begin) },
                 onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
                 onOpenLevelSelect = viewModel::openLevelSelect,
                 onRetryLevel = viewModel::startLevel,
                 globalLives = globalLives,
+                // Der Countdown im Feenstaub-Knopf: 0, solange der Vorrat voll
+                // ist — dann steht dort nichts zu warten.
+                nextDustInMillis = (fairyDust.nextAtMillis - System.currentTimeMillis())
+                    .coerceAtLeast(0L),
                 onOpenSoundSettings = {
                     viewModel.pause()
                     showSoundSettings = true
@@ -371,12 +375,13 @@ private fun GameContent(
     showSoundSettings: Boolean,
     onTapCell: (Pos) -> Unit,
     onHoldCell: (Pos) -> Unit,
-    onUsePowerUp: (PowerUp) -> Unit,
+    onUseFairyDust: () -> Unit,
     onBegin: () -> Unit,
     onNextLevel: () -> Unit,
     onOpenLevelSelect: () -> Unit,
     onRetryLevel: (Int) -> Unit,
     globalLives: com.fairydoo.game.game.GlobalLivesState,
+    nextDustInMillis: Long,
     onOpenSoundSettings: () -> Unit,
     onCloseSoundSettings: () -> Unit,
     onMusicChange: (Float) -> Unit,
@@ -435,7 +440,11 @@ private fun GameContent(
 
             StatusMessageLine(text = GameCopy.statusText(state.statusMessage))
 
-            PowerUpBar(state = state, onUse = onUsePowerUp)
+            PowerUpBar(
+            state = state,
+            nextDustInMillis = nextDustInMillis,
+            onUse = onUseFairyDust,
+        )
         }
 
         Row(
@@ -774,24 +783,10 @@ private fun StatusRow(state: GameState) {
         )
 
         Text(
-            text = (if (state.timeFrozen) "🌸 " else "⏳ ") +
-                GameCopy.formatTime(state.remainingSeconds),
+            text = "⏳ " + GameCopy.formatTime(state.remainingSeconds),
             style = MaterialTheme.typography.titleLarge,
             fontSize = 15.sp,
-            color = when {
-                state.timeFrozen -> BlossomPink
-                state.remainingSeconds < 20 -> DangerPink
-                else -> TextPrimary
-            },
+            color = if (state.remainingSeconds < 20) DangerPink else TextPrimary,
         )
-
-        if (state.shieldActive) {
-            Text(
-                text = "🍃 Schild aktiv",
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = 13.sp,
-                color = LeafGreen,
-            )
-        }
     }
 }

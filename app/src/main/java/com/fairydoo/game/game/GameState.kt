@@ -24,16 +24,7 @@ enum class GameStatus {
 }
 
 /** Die drei Magie-Fähigkeiten aus dem Feenreich. */
-enum class PowerUp {
-    /** Feenstaub: deckt ein garantiert sicheres Feld auf. */
-    FairyDust,
 
-    /** Natur-Schild: fängt den nächsten Fehler ab. */
-    NatureShield,
-
-    /** Zeiten-Blüte: friert die Uhr eine Weile ein. */
-    TimeBlossom,
-}
 
 /** Warum die Partie endete. */
 enum class GameOverReason {
@@ -57,12 +48,10 @@ sealed interface StatusMessage {
     data class Zone(val regionIndex: Int, val species: FairySpecies) : StatusMessage
 
     data object MistakeMade : StatusMessage
-    data object ShieldSaved : StatusMessage
-    data object ShieldActivated : StatusMessage
-    data object ShieldAlreadyActive : StatusMessage
     data object FairyDustUsed : StatusMessage
-    data object TimeFrozen : StatusMessage
-    data class Exhausted(val powerUp: PowerUp) : StatusMessage
+
+    /** Kein Feenstaub mehr da — mit der Zeit bis zum nächsten. */
+    data class NoFairyDust(val nextInMillis: Long) : StatusMessage
 }
 
 /**
@@ -84,18 +73,21 @@ data class GameState(
     val hintCell: Pos? = null,
     val hintPulseMillis: Long = 0L,
     val lives: Int = MAX_LIVES,
-    val shieldActive: Boolean = false,
-    val powerUps: Map<PowerUp, Int> = STARTING_POWER_UPS,
+    /**
+     * Wie viel Feenstaub gerade vorrätig ist.
+     *
+     * Der Vorrat gehört nicht zum Level, sondern zum Spieler: Er wird beim
+     * Start eines Levels aus dem gespeicherten Stand übernommen und wächst über
+     * die Zeit nach ([FairyDustSupply]). Ein levelweiser Vorrat hätte sich bei
+     * jedem Neustart zurückgesetzt, und das Nachwachsen wäre bedeutungslos.
+     */
+    val fairyDust: Int = FairyDustSupply.max,
     val remainingMillis: Long = 0L,
     val roundDurationMillis: Long = 0L,
-    /** Restlaufzeit der Zeiten-Blüte; solange > 0, steht die Uhr still. */
-    val freezeMillis: Long = 0L,
     val statusMessage: StatusMessage = StatusMessage.Hint,
     val overReason: GameOverReason? = null,
 ) {
     val isActive: Boolean get() = status == GameStatus.Running
-
-    val timeFrozen: Boolean get() = freezeMillis > 0L
 
     val remainingSeconds: Int get() = (remainingMillis / 1000).toInt()
 
@@ -113,8 +105,6 @@ data class GameState(
 
     fun markAt(pos: Pos): CellMark = marks[pos] ?: CellMark.Empty
 
-    fun powerUpCount(powerUp: PowerUp): Int = powerUps[powerUp] ?: 0
-
     /** Fortschritt im aktuellen Rätsel, 0f..1f — speist den Goldbalken. */
     val levelProgress: Float
         get() {
@@ -126,14 +116,6 @@ data class GameState(
     companion object {
         const val MAX_LIVES = 3
 
-        val STARTING_POWER_UPS: Map<PowerUp, Int> = mapOf(
-            PowerUp.FairyDust to 3,
-            PowerUp.NatureShield to 1,
-            PowerUp.TimeBlossom to 2,
-        )
-
-        /** Wie lange die Zeiten-Blüte die Uhr anhält. */
-        const val FREEZE_DURATION_MILLIS = 12_000L
 
         /** Wie lange ein aufgedecktes Feld nachleuchtet. */
         const val HINT_PULSE_MILLIS = 2_000L
