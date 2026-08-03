@@ -8,7 +8,6 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlin.random.Random
 
 /**
  * Die Engine ist reine Logik ohne Android-Abhängigkeiten und läuft deshalb als
@@ -16,7 +15,7 @@ import kotlin.random.Random
  */
 class FairydokuEngineTest {
 
-    private val engine = FairydokuEngine(Random(42))
+    private val engine = FairydokuEngine()
 
     /** Startet eine Partie und überspringt das Willkommens-Overlay. */
     private fun startedGame(level: Int = 1): GameState =
