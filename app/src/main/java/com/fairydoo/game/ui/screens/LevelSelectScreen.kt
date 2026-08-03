@@ -172,7 +172,7 @@ fun LevelSelectScreen(
 
             Text(
                 text = if (globalLives.lives > 0) {
-                    "Tippe ein Level, um es zu betreten"
+                    "Bereit für etwas Magie? Wähle deinen Pfad!"
                 } else {
                     "Ohne Wald-Leben bleibt der Pfad verschlossen"
                 },
