@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 170" width="160" height="170" role="img" aria-label="Leuchtender Pilz">
+  <title>Leuchtender Pilz</title>
+  <defs>
+    <radialGradient id="pzGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ff9ecf" stop-opacity=".55"></stop>
+      <stop offset="1" stop-color="#ff9ecf" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="pzCap" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#ffc7e4"></stop>
+      <stop offset="0.5" stop-color="#ff9ecf"></stop>
+      <stop offset="1" stop-color="#d95f9c"></stop>
+    </linearGradient>
+    <linearGradient id="pzStem" x1="0" y1="0" x2="1" y2="0.3">
+      <stop offset="0" stop-color="#fffbe8"></stop>
+      <stop offset="1" stop-color="#e6cfa0"></stop>
+    </linearGradient>
+    <linearGradient id="pzMoss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fc98a"></stop>
+      <stop offset="1" stop-color="#3c6b4a"></stop>
+    </linearGradient>
+  </defs>
+
+  <ellipse cx="80" cy="98" rx="78" ry="62" fill="url(#pzGlow)"></ellipse>
+
+  
+  <path d="M67 88 C63 112 61 126 55 140 C69 147 91 147 105 140 C99 126 97 112 93 88 Z" fill="url(#pzStem)" stroke="#b8862f" stroke-width="2" stroke-linejoin="round"></path>
+  
+  <path d="M60 100 C72 106 88 106 100 100" fill="none" stroke="#d9b877" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path>
+
+  
+  <path d="M26 86 C40 96 120 96 134 86 C132 96 110 102 80 102 C50 102 28 96 26 86 Z" fill="#a8558c"></path>
+
+  
+  <path d="M24 88 C24 42 48 20 80 20 C112 20 136 42 136 88 C118 80 100 76 80 76 C60 76 42 80 24 88 Z" fill="url(#pzCap)" stroke="#b8467f" stroke-width="2.5" stroke-linejoin="round"></path>
+  
+  <ellipse cx="60" cy="46" rx="11" ry="9" fill="#fffbe8" opacity=".9"></ellipse>
+  <ellipse cx="96" cy="40" rx="8" ry="6.5" fill="#fffbe8" opacity=".85"></ellipse>
+  <ellipse cx="112" cy="62" rx="7" ry="5.5" fill="#fffbe8" opacity=".8"></ellipse>
+  <ellipse cx="40" cy="68" rx="6" ry="5" fill="#fffbe8" opacity=".75"></ellipse>
+  <ellipse cx="80" cy="60" rx="5.5" ry="4.5" fill="#fffbe8" opacity=".7"></ellipse>
+
+  
+  <path d="M46 142 C40 132 34 130 30 138 C26 132 20 136 22 146 L52 146 Z" fill="#4f8f5f"></path>
+  <path d="M108 144 C114 134 122 132 126 140 C132 136 138 140 136 148 L104 148 Z" fill="#4f8f5f"></path>
+  
+  <g fill="#ffe9a8">
+    <circle cx="136" cy="30" r="2.6"></circle>
+    <circle cx="20" cy="42" r="2"></circle>
+    <circle cx="126" cy="112" r="1.8"></circle>
+    <circle cx="30" cy="108" r="2.2"></circle>
+  </g>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 190" width="280" height="190" role="img" aria-label="Baumgruppe">
+  <title>Baumgruppe</title>
+  <defs>
+    <linearGradient id="bgFir" x1="0.2" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#3f7d63"></stop>
+      <stop offset="0.55" stop-color="#28563f"></stop>
+      <stop offset="1" stop-color="#173525"></stop>
+    </linearGradient>
+    <linearGradient id="bgLeaf" x1="0.2" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#4d8f6a"></stop>
+      <stop offset="1" stop-color="#1e3f2c"></stop>
+    </linearGradient>
+    <linearGradient id="bgTrunk" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7a5a34"></stop>
+      <stop offset="1" stop-color="#4a3520"></stop>
+    </linearGradient>
+    <radialGradient id="bgHalo" cx="0.5" cy="0.55" r="0.5">
+      <stop offset="0" stop-color="#ffd76b" stop-opacity=".22"></stop>
+      <stop offset="1" stop-color="#ffd76b" stop-opacity="0"></stop>
+    </radialGradient>
+    <symbol id="fir" viewBox="0 0 120 170">
+      <path d="M60 6 L92 58 L78 58 L102 102 L86 102 L112 152 L8 152 L34 102 L18 102 L42 58 L28 58 Z" fill="url(#bgFir)" stroke="#8fd6a8" stroke-width="2.5" stroke-linejoin="round" stroke-opacity=".45"></path>
+    </symbol>
+  </defs>
+
+  <ellipse cx="140" cy="120" rx="138" ry="68" fill="url(#bgHalo)"></ellipse>
+
+  
+  <rect x="203" y="130" width="12" height="34" rx="4" fill="url(#bgTrunk)"></rect>
+  <use href="#fir" x="167" y="34" width="84" height="119" opacity=".85"></use>
+
+  
+  <rect x="128" y="126" width="13" height="40" rx="5" fill="url(#bgTrunk)"></rect>
+  <path d="M134 132 C104 132 88 114 92 94 C74 82 82 56 102 54 C106 34 134 26 148 40 C170 32 190 50 184 70 C202 82 196 112 172 116 C168 130 150 136 134 132 Z" fill="url(#bgLeaf)" stroke="#8fd6a8" stroke-width="2.5" stroke-linejoin="round" stroke-opacity=".45"></path>
+
+  
+  <rect x="57" y="140" width="14" height="32" rx="5" fill="url(#bgTrunk)"></rect>
+  <use href="#fir" x="15" y="24" width="99" height="140"></use>
+
+  
+  <path d="M4 168 C60 158 110 176 160 168 C206 161 250 172 276 166" fill="none" stroke="#4f8f5f" stroke-width="5" stroke-linecap="round" opacity=".7"></path>
+
+  
+  <g fill="#ffe9a8">
+    <circle cx="118" cy="46" r="2.6"></circle>
+    <circle cx="212" cy="86" r="2.2"></circle>
+    <circle cx="34" cy="72" r="2"></circle>
+    <circle cx="160" cy="140" r="2.4"></circle>
+    <circle cx="252" cy="122" r="1.8"></circle>
+    <circle cx="88" cy="152" r="1.8"></circle>
+  </g>
+</svg>
