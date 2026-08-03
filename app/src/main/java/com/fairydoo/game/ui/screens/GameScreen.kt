@@ -686,7 +686,7 @@ private fun TitleRow() {
 private fun ScoreRow(score: Int, level: Int) {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Badge(
-            text = "SCORE: $score",
+            text = "🌅 $score",
             borderColor = PanelBorder,
             textColor = PanelText,
             fontSize = 16.sp,

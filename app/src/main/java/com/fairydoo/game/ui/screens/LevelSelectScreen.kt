@@ -621,7 +621,7 @@ private fun ScoreBadge(score: Int) {
             .padding(horizontal = 22.dp, vertical = 6.dp),
     ) {
         Text(
-            text = "SCORE: $score",
+            text = "🌅 $score",
             style = MaterialTheme.typography.titleLarge,
             fontSize = 15.sp,
             letterSpacing = 1.2.sp,
