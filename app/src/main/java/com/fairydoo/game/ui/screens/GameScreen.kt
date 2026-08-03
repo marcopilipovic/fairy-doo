@@ -30,7 +30,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -593,7 +596,7 @@ internal fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             .size(40.dp)
             .clip(CircleShape)
             .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
-            .border(1.dp, Gold.copy(alpha = 0.4f), CircleShape)
+            .border(2.dp, PanelBorder, CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -601,7 +604,14 @@ internal fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             ),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = "❔", fontSize = 18.sp)
+        Icon(
+            imageVector = Icons.Filled.QuestionMark,
+            contentDescription = "Anleitung",
+            // Der gemessene Parchment-Ton der 📜-Emoji-Grafik daneben — so
+            // liest sich das Fragezeichen als zugehörig statt als Fremdkörper.
+            tint = Color(0xFFFFD8A1),
+            modifier = Modifier.size(18.dp),
+        )
     }
 }
 

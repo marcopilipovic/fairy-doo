@@ -67,7 +67,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import com.fairydoo.game.ui.theme.PanelBorder
 import com.fairydoo.game.ui.theme.PanelBottom
-import com.fairydoo.game.ui.theme.PanelGoldBorder
 import com.fairydoo.game.ui.theme.PanelText
 import com.fairydoo.game.ui.theme.PanelTop
 import com.fairydoo.game.ui.theme.RegionColors
@@ -213,16 +212,24 @@ fun LevelSelectScreen(
             }
         }
 
-        Row(
+        // ❔ und 📜 bewusst auf getrennten Seiten statt zusammengedrängt in
+        // einer Ecke — die Kopfzeile wirkt sonst überladen, weil links
+        // ansonsten nichts steht.
+        HelpButton(
+            onClick = onOpenTutorial,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .safeDrawingPadding()
+                .padding(start = 6.dp, top = 2.dp),
+        )
+
+        SettingsButton(
+            onClick = { showSettings = true },
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .safeDrawingPadding()
                 .padding(end = 6.dp, top = 2.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            HelpButton(onClick = onOpenTutorial)
-            SettingsButton(onClick = { showSettings = true })
-        }
+        )
 
         if (showSettings) {
             SettingsOverlay(
@@ -634,7 +641,7 @@ private fun BestScoreBadge(bestScore: Int) {
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
-            .border(2.dp, PanelGoldBorder, RoundedCornerShape(16.dp))
+            .border(2.dp, PanelBorder, RoundedCornerShape(16.dp))
             .padding(horizontal = 16.dp, vertical = 6.dp),
     ) {
         Text(
