@@ -312,15 +312,19 @@ fun GameScreen(preferences: GamePreferencesRepository) {
     Box(modifier = Modifier.fillMaxSize()) {
         if (showLevelSelect) {
             LevelSelectScreen(
-                highestLevelUnlocked = profile.highestLevelUnlocked,
+                profile = profile,
                 score = state.score,
-                bestScore = profile.highScore,
                 globalLives = globalLives,
                 // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man
                 // zurückkönnte — nicht beim allerersten Start der App.
                 onClose = if (state.puzzle != null) viewModel::closeLevelSelect else null,
                 onSelectLevel = viewModel::startLevel,
                 onOpenTutorial = viewModel::openTutorial,
+                onSetPlayerName = viewModel::setPlayerName,
+                onSetAvatar = viewModel::setSelectedAvatar,
+                onMusicChange = viewModel::setMusicVolume,
+                onSoundChange = viewModel::setSoundVolume,
+                onVoiceChange = viewModel::setVoiceVolume,
             )
         } else {
             GameContent(

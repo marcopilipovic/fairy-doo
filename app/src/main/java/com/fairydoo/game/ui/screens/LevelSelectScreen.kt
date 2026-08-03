@@ -22,7 +22,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,9 +47,15 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import com.fairydoo.game.data.PlayerProfile
+import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GlobalLives
 import com.fairydoo.game.game.GlobalLivesState
 import com.fairydoo.game.ui.GameCopy
+import com.fairydoo.game.ui.LegalPage
+import com.fairydoo.game.ui.components.LegalOverlay
+import com.fairydoo.game.ui.components.SettingsOverlay
+import com.fairydoo.game.ui.components.SoundSettingsOverlay
 import com.fairydoo.game.ui.theme.DangerRose
 import com.fairydoo.game.ui.theme.GoldCream
 import com.fairydoo.game.ui.theme.GoldLight
@@ -102,14 +111,25 @@ private const val PATH_FREQUENCY = 1.05
  */
 @Composable
 fun LevelSelectScreen(
-    highestLevelUnlocked: Int,
+    profile: PlayerProfile,
     score: Int,
-    bestScore: Int,
     globalLives: GlobalLivesState,
     onClose: (() -> Unit)?,
     onSelectLevel: (Int) -> Unit,
     onOpenTutorial: () -> Unit,
+    onSetPlayerName: (String) -> Unit,
+    onSetAvatar: (FairySpecies) -> Unit,
+    onMusicChange: (Float) -> Unit,
+    onSoundChange: (Float) -> Unit,
+    onVoiceChange: (Float) -> Unit,
 ) {
+    // Rein lokale UI-Zustände: Die Levelkarte hat keine laufende Uhr, die ein
+    // geöffnetes Overlay schützen müsste — anders als beim Tutorial gibt es
+    // hier nichts zu pausieren.
+    var showSettings by rememberSaveable { mutableStateOf(false) }
+    var showSound by rememberSaveable { mutableStateOf(false) }
+    var legalPage by rememberSaveable { mutableStateOf<LegalPage?>(null) }
+
     NightBackdrop {
         Column(
             modifier = Modifier
@@ -127,8 +147,8 @@ fun LevelSelectScreen(
                 // Nur sichtbar, sobald überhaupt eine Partie beendet wurde —
                 // eine "Bestleistung: 0" wäre vor der allerersten Runde nur
                 // Rauschen neben dem echten Punktestand.
-                if (bestScore > 0) {
-                    BestScoreBadge(bestScore)
+                if (profile.highScore > 0) {
+                    BestScoreBadge(profile.highScore)
                 }
             }
 
@@ -166,7 +186,7 @@ fun LevelSelectScreen(
             Spacer(Modifier.height(10.dp))
 
             ForestPath(
-                highestLevelUnlocked = highestLevelUnlocked,
+                highestLevelUnlocked = profile.highestLevelUnlocked,
                 canPlay = globalLives.lives > 0,
                 onSelectLevel = onSelectLevel,
                 modifier = Modifier.weight(1f),
@@ -193,13 +213,44 @@ fun LevelSelectScreen(
             }
         }
 
-        HelpButton(
-            onClick = onOpenTutorial,
+        Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .safeDrawingPadding()
                 .padding(end = 6.dp, top = 2.dp),
-        )
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            HelpButton(onClick = onOpenTutorial)
+            SettingsButton(onClick = { showSettings = true })
+        }
+
+        if (showSettings) {
+            SettingsOverlay(
+                playerName = profile.playerName,
+                selectedAvatar = profile.selectedAvatar,
+                onPlayerNameChange = onSetPlayerName,
+                onAvatarSelected = onSetAvatar,
+                onOpenSound = { showSound = true },
+                onOpenLegal = { legalPage = it },
+                onClose = { showSettings = false },
+            )
+        }
+
+        if (showSound) {
+            SoundSettingsOverlay(
+                musicVolume = profile.musicVolume,
+                soundVolume = profile.soundVolume,
+                voiceVolume = profile.voiceVolume,
+                onMusicChange = onMusicChange,
+                onSoundChange = onSoundChange,
+                onVoiceChange = onVoiceChange,
+                onClose = { showSound = false },
+            )
+        }
+
+        legalPage?.let { page ->
+            LegalOverlay(page = page, onClose = { legalPage = null })
+        }
     }
 }
 
@@ -530,6 +581,26 @@ private fun ForestLivesBadge(state: GlobalLivesState) {
                 color = if (state.lives == 0) DangerRose else PanelText.copy(alpha = 0.8f),
             )
         }
+    }
+}
+
+/** Rundknopf mit 📜 — öffnet Profil, Sound und Rechtliches. Nur auf der Levelkarte. */
+@Composable
+private fun SettingsButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
+            .border(2.dp, PanelBorder, CircleShape)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text = "📜", fontSize = 18.sp)
     }
 }
 

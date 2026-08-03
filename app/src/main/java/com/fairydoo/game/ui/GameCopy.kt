@@ -102,4 +102,40 @@ object GameCopy {
         val seconds = totalSeconds % 60
         return "$minutes:${seconds.toString().padStart(2, '0')}"
     }
+
+    fun legalTitle(page: LegalPage): String = when (page) {
+        LegalPage.Impressum -> "Impressum"
+        LegalPage.Agb -> "AGB"
+        LegalPage.Datenschutz -> "Datenschutz"
+    }
+
+    /**
+     * Platzhaltertexte — vor Veröffentlichung durch echte, juristisch geprüfte
+     * Texte ersetzen (Anbieterkennzeichnung nach § 5 TMG/DDG, Datenschutzerklärung
+     * nach DSGVO Art. 13).
+     */
+    fun legalBody(page: LegalPage): String = when (page) {
+        LegalPage.Impressum -> "Platzhalter – vor Veröffentlichung durch echten " +
+            "Rechtstext ersetzen.\n\n" +
+            "Angaben gemäß § 5 TMG:\n" +
+            "Mustername Studios\n" +
+            "Musterstraße 1, 12345 Musterstadt\n\n" +
+            "Vertreten durch: Max Mustername\n" +
+            "Kontakt: kontakt@fairydoku-beispiel.de"
+        LegalPage.Agb -> "Platzhalter – vor Veröffentlichung durch echte Allgemeine " +
+            "Geschäftsbedingungen ersetzen.\n\n" +
+            "1. Geltungsbereich\n" +
+            "2. Nutzung der App\n" +
+            "3. Käufe & Leistungen\n" +
+            "4. Haftung\n" +
+            "5. Schlussbestimmungen"
+        LegalPage.Datenschutz -> "Platzhalter – vor Veröffentlichung durch echte " +
+            "Datenschutzerklärung ersetzen.\n\n" +
+            "Welche Daten werden verarbeitet, zu welchem Zweck, auf welcher " +
+            "Rechtsgrundlage, wie lange gespeichert, welche Rechte hast du " +
+            "(Auskunft, Löschung, Widerspruch)."
+    }
 }
+
+/** Die drei rechtlich vorgeschriebenen Seiten, von jeder Stelle in maximal zwei Tipps erreichbar. */
+enum class LegalPage { Impressum, Agb, Datenschutz }

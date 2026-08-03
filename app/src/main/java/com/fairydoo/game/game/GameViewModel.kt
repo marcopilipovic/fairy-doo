@@ -239,6 +239,14 @@ class GameViewModel(
         viewModelScope.launch { preferences.setVoiceVolume(volume) }
     }
 
+    fun setPlayerName(name: String) {
+        viewModelScope.launch { preferences.setPlayerName(name) }
+    }
+
+    fun setSelectedAvatar(species: FairySpecies) {
+        viewModelScope.launch { preferences.setSelectedAvatar(species) }
+    }
+
     fun pause() {
         if (_state.value.status != GameStatus.Running) return
         loopJob?.cancel()
