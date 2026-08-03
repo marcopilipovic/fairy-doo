@@ -19,11 +19,19 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 @Composable
 fun HarpIcon(tint: Color, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
-        val viewboxWidth = 200f
-        val viewboxHeight = 260f
-        val scale = minOf(size.width / viewboxWidth, size.height / viewboxHeight)
-        val offsetX = (size.width - viewboxWidth * scale) / 2f
-        val offsetY = (size.height - viewboxHeight * scale) / 2f
+        // Die eigentliche Zeichnung sitzt nicht mittig im 200×260-viewBox der
+        // Vorlage (die Vordersäule steht links, der Korpus ragt weiter nach
+        // rechts als die Saiten nach links). Deshalb wird anhand der
+        // tatsächlichen Bounding-Box aller Pfadpunkte zentriert statt anhand
+        // des vollen viewBox-Rechtecks — sonst wirkt die Harfe im Kreis-Knopf
+        // leicht nach links oben verschoben.
+        val contentMinX = 30f
+        val contentMinY = 26f
+        val contentWidth = 151f - contentMinX
+        val contentHeight = 252f - contentMinY
+        val scale = minOf(size.width / contentWidth, size.height / contentHeight)
+        val offsetX = (size.width - contentWidth * scale) / 2f - contentMinX * scale
+        val offsetY = (size.height - contentHeight * scale) / 2f - contentMinY * scale
 
         withTransform({
             translate(offsetX, offsetY)

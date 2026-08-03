@@ -1,18 +1,26 @@
 package com.fairydoo.game.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.fairydoo.game.ui.theme.PanelBorder
+import com.fairydoo.game.ui.theme.PanelBottom
+import com.fairydoo.game.ui.theme.PanelTop
 
 /**
  * Der Zugang zu den Klang-Einstellungen.
@@ -34,6 +42,9 @@ fun SoundMenuButton(
         modifier = modifier
             // Großzügige Tippfläche trotz kleiner Darstellung.
             .size(40.dp)
+            .clip(CircleShape)
+            .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
+            .border(2.dp, PanelBorder, CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,

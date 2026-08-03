@@ -31,7 +31,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -582,7 +582,7 @@ private fun MapButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            imageVector = Icons.Filled.Map,
+            imageVector = Icons.Outlined.Map,
             contentDescription = "Zur Karte",
             // Derselbe Parchment-Ton wie beim ❔ — beide Vollfarb-Emojis
             // wurden durch ein einfärbbares Icon ersetzt, der gleiche Ton
