@@ -210,6 +210,10 @@ fun LevelSelectScreen(
                         .padding(horizontal = 22.dp, vertical = 8.dp),
                 )
             }
+
+            Spacer(Modifier.height(10.dp))
+
+            LegalFooter(onOpenLegal = { legalPage = it })
         }
 
         // ❔ und 📜 bewusst auf getrennten Seiten statt zusammengedrängt in
@@ -238,7 +242,6 @@ fun LevelSelectScreen(
                 onPlayerNameChange = onSetPlayerName,
                 onAvatarSelected = onSetAvatar,
                 onOpenSound = { showSound = true },
-                onOpenLegal = { legalPage = it },
                 onClose = { showSettings = false },
             )
         }
@@ -591,7 +594,53 @@ private fun ForestLivesBadge(state: GlobalLivesState) {
     }
 }
 
-/** Rundknopf mit 📜 — öffnet Profil, Sound und Rechtliches. Nur auf der Levelkarte. */
+/**
+ * Zeile mit den drei Pflichtseiten, klein und unauffällig am Fuß der
+ * Levelkarte — nicht hinter den Einstellungen versteckt, damit das
+ * Impressum "leicht erkennbar und unmittelbar erreichbar" bleibt (§ 5 TMG).
+ */
+@Composable
+private fun LegalFooter(onOpenLegal: (LegalPage) -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LegalFooterLink("Impressum") { onOpenLegal(LegalPage.Impressum) }
+        LegalFooterDot()
+        LegalFooterLink("AGB") { onOpenLegal(LegalPage.Agb) }
+        LegalFooterDot()
+        LegalFooterLink("Datenschutz") { onOpenLegal(LegalPage.Datenschutz) }
+    }
+}
+
+@Composable
+private fun LegalFooterLink(label: String, onClick: () -> Unit) {
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        fontSize = 11.sp,
+        color = StatusPurple,
+        modifier = Modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(4.dp),
+    )
+}
+
+@Composable
+private fun LegalFooterDot() {
+    Text(
+        text = "·",
+        style = MaterialTheme.typography.labelSmall,
+        fontSize = 11.sp,
+        color = StatusPurple.copy(alpha = 0.5f),
+    )
+}
+
+/** Rundknopf mit 📜 — öffnet Profil und Sound. Nur auf der Levelkarte. */
 @Composable
 private fun SettingsButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(

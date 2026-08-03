@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" width="200" height="260" role="img" aria-label="Harfe">
+  <title>Harfe</title>
+  <defs>
+    <linearGradient id="harpGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffbe8"></stop>
+      <stop offset="0.45" stop-color="#ffedb0"></stop>
+      <stop offset="1" stop-color="#f2c060"></stop>
+    </linearGradient>
+    <linearGradient id="harpBoard" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0" stop-color="#f7dd9a"></stop>
+      <stop offset="1" stop-color="#d9a445"></stop>
+    </linearGradient>
+    <filter id="harpGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="b"></feGaussianBlur>
+      <feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#harpGlow)">
+    
+    <path d="M133 108 L151 127 L99 246 L73 240 Z" fill="url(#harpBoard)" stroke="#b8862f" stroke-width="2" stroke-linejoin="round"></path>
+    <circle cx="119" cy="160" r="4.5" fill="#b8862f" opacity=".55"></circle>
+    <circle cx="104" cy="196" r="3.5" fill="#b8862f" opacity=".55"></circle>
+
+    
+    <g stroke="#fff6d8" stroke-width="1.6" stroke-linecap="round" opacity=".95">
+      <line x1="53.1" y1="43.6" x2="88.7" y2="232.1"></line>
+      <line x1="65.2" y1="44.0" x2="93.6" y2="221.5"></line>
+      <line x1="76.5" y1="45.9" x2="98.4" y2="210.9"></line>
+      <line x1="87.0" y1="49.2" x2="103.3" y2="200.2"></line>
+      <line x1="96.6" y1="53.9" x2="108.1" y2="189.6"></line>
+      <line x1="105.5" y1="60.0" x2="113.0" y2="179.0"></line>
+      <line x1="113.6" y1="67.6" x2="117.9" y2="168.4"></line>
+      <line x1="120.8" y1="76.5" x2="122.7" y2="157.8"></line>
+      <line x1="127.2" y1="86.9" x2="127.6" y2="147.1"></line>
+      <line x1="132.9" y1="98.8" x2="132.4" y2="136.6"></line>
+    </g>
+
+    
+    <path d="M41 44 C80 26 124 44 142 118 L130 124 C114 58 78 42 45 56 Z" fill="url(#harpGold)" stroke="#b8862f" stroke-width="2" stroke-linejoin="round"></path>
+    
+    <path d="M39 240 C35 160 37 92 41 44 L53 46 C49 94 47 162 51 240 Z" fill="url(#harpGold)" stroke="#b8862f" stroke-width="2" stroke-linejoin="round"></path>
+    
+    <rect x="30" y="238" width="80" height="14" rx="7" fill="url(#harpGold)" stroke="#b8862f" stroke-width="2"></rect>
+    
+    <circle cx="44" cy="44" r="7" fill="url(#harpGold)" stroke="#b8862f" stroke-width="2"></circle>
+    <circle cx="44" cy="44" r="2.4" fill="#b8862f"></circle>
+  </g>
+</svg>

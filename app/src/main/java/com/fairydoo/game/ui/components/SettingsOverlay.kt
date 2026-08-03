@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fairydoo.game.BuildConfig
 import com.fairydoo.game.game.FairySpecies
-import com.fairydoo.game.ui.LegalPage
 import com.fairydoo.game.ui.sprites.FairySpriteCache
 import com.fairydoo.game.ui.theme.CardBottom
 import com.fairydoo.game.ui.theme.CardTop
@@ -57,9 +56,11 @@ import com.fairydoo.game.ui.theme.TextPrimary
 /**
  * Einstellungen — nur von der Levelkarte aus erreichbar (📜-Knopf).
  *
- * Bündelt Profil (Spielername + Fee-Avatar), den Weg zum Sound-Regler und die
- * Rechtliches-Seiten an einem Ort. Kein eigener Pausenmechanismus nötig: Die
- * Levelkarte hat ohnehin keine laufende Uhr, die geschützt werden müsste.
+ * Bündelt Profil (Spielername + Fee-Avatar) und den Weg zum Sound-Regler.
+ * Rechtliches steht bewusst *nicht* hier, sondern als eigene Fußzeile direkt
+ * auf der Levelkarte — leichter erreichbar als hinter einem Menü. Kein
+ * eigener Pausenmechanismus nötig: Die Levelkarte hat ohnehin keine laufende
+ * Uhr, die geschützt werden müsste.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -69,7 +70,6 @@ fun SettingsOverlay(
     onPlayerNameChange: (String) -> Unit,
     onAvatarSelected: (FairySpecies) -> Unit,
     onOpenSound: () -> Unit,
-    onOpenLegal: (LegalPage) -> Unit,
     onClose: () -> Unit,
 ) {
     Box(
@@ -146,17 +146,11 @@ fun SettingsOverlay(
 
             Spacer(Modifier.height(14.dp))
 
-            MenuRow(icon = "🔊", label = "Sound", onClick = onOpenSound)
-
-            Spacer(Modifier.height(10.dp))
-
-            SectionLabel("Rechtliches")
-
-            Spacer(Modifier.height(4.dp))
-
-            MenuRow(icon = "📜", label = "Impressum", onClick = { onOpenLegal(LegalPage.Impressum) })
-            MenuRow(icon = "📜", label = "AGB", onClick = { onOpenLegal(LegalPage.Agb) })
-            MenuRow(icon = "📜", label = "Datenschutz", onClick = { onOpenLegal(LegalPage.Datenschutz) })
+            MenuRow(
+                icon = { HarpIcon(tint = Color(0xFFFFD8A1), modifier = Modifier.size(18.dp)) },
+                label = "Sound",
+                onClick = onOpenSound,
+            )
 
             Spacer(Modifier.height(14.dp))
 
@@ -203,7 +197,7 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun MenuRow(icon: String, label: String, onClick: () -> Unit) {
+private fun MenuRow(icon: @Composable () -> Unit, label: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -218,7 +212,7 @@ private fun MenuRow(icon: String, label: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(text = icon, fontSize = 18.sp)
+        icon()
         Text(text = label, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
     }
     Spacer(Modifier.height(6.dp))
