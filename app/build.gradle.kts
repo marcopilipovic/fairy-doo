@@ -1,3 +1,16 @@
+import java.util.Properties
+
+// Liegt bewusst außerhalb von Git (siehe .gitignore) — enthält den Signier-
+// Schlüssel-Zugang. Ohne diese Datei (z. B. bei jemand anderem, der das
+// Repo frisch auscheckt) bleibt der Release-Build unsigniert buildbar,
+// nur eben nicht installierbar, bis eine eigene keystore.properties angelegt wird.
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) {
+        load(file.inputStream())
+    }
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,6 +32,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystoreProperties.containsKey("storeFile")) {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -32,6 +56,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            if (keystoreProperties.containsKey("storeFile")) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
