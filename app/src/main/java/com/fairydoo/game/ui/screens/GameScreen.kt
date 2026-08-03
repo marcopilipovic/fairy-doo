@@ -103,7 +103,6 @@ import com.fairydoo.game.ui.theme.NightTop
 import com.fairydoo.game.ui.theme.PanelBottom
 import com.fairydoo.game.ui.theme.PanelTop
 import com.fairydoo.game.ui.theme.PanelBorder
-import com.fairydoo.game.ui.theme.PanelGoldBorder
 import com.fairydoo.game.ui.theme.PanelText
 import com.fairydoo.game.ui.theme.StatusPurple
 import com.fairydoo.game.ui.theme.TextPrimary
@@ -569,7 +568,7 @@ private fun MapButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
         modifier = modifier
             .clip(CircleShape)
             .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
-            .border(1.dp, Gold.copy(alpha = 0.4f), CircleShape)
+            .border(2.dp, PanelBorder, CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -695,7 +694,7 @@ private fun ScoreRow(score: Int, level: Int) {
         )
         Badge(
             text = "Level $level",
-            borderColor = PanelGoldBorder,
+            borderColor = PanelBorder,
             textColor = GoldLight,
             fontSize = 15.sp,
             letterSpacing = 0.sp,
