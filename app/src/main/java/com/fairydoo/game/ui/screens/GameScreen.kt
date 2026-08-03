@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -454,11 +455,14 @@ private fun GameContent(
         )
         }
 
+        // ❔ bleibt auf beiden Bildschirmen links — auf der Levelkarte steht
+        // es dort schon. 🗺️ übernimmt rechts die Rolle, die dort 📜 auf der
+        // Levelkarte hat.
         Row(
             modifier = Modifier
-                .align(Alignment.TopEnd)
+                .align(Alignment.TopStart)
                 .safeDrawingPadding()
-                .padding(end = 6.dp, top = 2.dp),
+                .padding(start = 6.dp, top = 2.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             HelpButton(onClick = onOpenTutorial)
@@ -471,9 +475,9 @@ private fun GameContent(
         MapButton(
             onClick = onOpenLevelSelect,
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .align(Alignment.TopEnd)
                 .safeDrawingPadding()
-                .padding(start = 6.dp, top = 2.dp),
+                .padding(end = 6.dp, top = 2.dp),
         )
 
         when (state.status) {
@@ -577,7 +581,15 @@ private fun MapButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             .padding(8.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = "🗺️", fontSize = 18.sp)
+        Icon(
+            imageVector = Icons.Filled.Map,
+            contentDescription = "Zur Karte",
+            // Derselbe Parchment-Ton wie beim ❔ — beide Vollfarb-Emojis
+            // wurden durch ein einfärbbares Icon ersetzt, der gleiche Ton
+            // hält sie als zusammengehöriges Paar erkennbar.
+            tint = Color(0xFFFFD8A1),
+            modifier = Modifier.size(18.dp),
+        )
     }
 }
 
