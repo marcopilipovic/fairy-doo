@@ -59,8 +59,9 @@ private object TwilightTokens {
     val pineForeground = Color(0xFF071410)
     val distantTree = Color(0xFF2F5B42)
     val mossPool = Color(0x1E86BE78)
-    val mushroomCaps = listOf(Color(0xFF6D4A63), Color(0xFF4C4A72), Color(0xFF5C5A48))
-    val stoneColor = Color(0xFF1E2E25)
+    val mushroomCaps = listOf(Color(0xFF9A6C89), Color(0xFF7A76A8), Color(0xFF8C8768))
+    val stoneColor = Color(0xFF3E5648)
+    val stoneRim = Color(0xFF5C7A66)
     val starColors = listOf(Color(0xFFFFF6DD), Color(0xFFEAFFF2), Color(0xFFF7ECFF), Color(0xFFFFF3CF))
 }
 
@@ -498,6 +499,12 @@ private fun DrawScope.drawStoneCluster(topLeft: Offset, w: Float, h: Float) {
     drawOval(color = TwilightTokens.stoneColor, topLeft = Offset(p(1f, 14f).x, p(1f, 14f).y), size = Size(26f * sx, 16f * sy))
     drawOval(color = TwilightTokens.stoneColor, topLeft = Offset(p(25f, 16f).x, p(25f, 16f).y), size = Size(28f * sx, 14f * sy))
     drawOval(color = TwilightTokens.stoneColor, topLeft = Offset(p(11f, 3f).x, p(11f, 3f).y), size = Size(30f * sx, 20f * sy))
+    // Lichtsaum obenauf, sonst geht die Kuppe im Dunkel unter.
+    drawOval(
+        color = TwilightTokens.stoneRim.copy(alpha = 0.6f),
+        topLeft = Offset(p(11f, 3f).x, p(11f, 3f).y),
+        size = Size(30f * sx, 10f * sy),
+    )
 }
 
 @Composable

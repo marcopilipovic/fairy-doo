@@ -479,14 +479,6 @@ private fun BoxScope.PathDecorations() {
             },
     )
     Text(
-        text = "🧚",
-        fontSize = 26.sp,
-        modifier = Modifier
-            .align(Alignment.TopEnd)
-            .offset(x = (-14).dp, y = 10.dp)
-            .graphicsLayer { alpha = 0.45f },
-    )
-    Text(
         text = "✦",
         fontSize = 13.sp,
         color = GoldLight.copy(alpha = 0.4f),
