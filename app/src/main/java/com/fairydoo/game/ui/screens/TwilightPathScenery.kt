@@ -78,16 +78,16 @@ internal fun BoxScope.TwilightScenery(
     val maxScrollDp = with(LocalDensity.current) { maxScrollPx.toDp() }
 
     // 1. deep (0.78)
-    ParallaxLayer(depth = 0.78f, canvasHeight = canvasHeight, maxScrollDp = maxScrollDp, scrollState = scrollState) {
-        DeepLayerContent(laneWidth, canvasHeight)
+    ParallaxLayer(depth = 0.78f, canvasHeight = canvasHeight, maxScrollDp = maxScrollDp, scrollState = scrollState) { height ->
+        DeepLayerContent(laneWidth, height)
     }
     // 2. far (0.50)
-    ParallaxLayer(depth = 0.50f, canvasHeight = canvasHeight, maxScrollDp = maxScrollDp, scrollState = scrollState) {
-        FarLayerContent(laneWidth, canvasHeight)
+    ParallaxLayer(depth = 0.50f, canvasHeight = canvasHeight, maxScrollDp = maxScrollDp, scrollState = scrollState) { height ->
+        FarLayerContent(laneWidth, height)
     }
     // 3. mid (0.26)
-    ParallaxLayer(depth = 0.26f, canvasHeight = canvasHeight, maxScrollDp = maxScrollDp, scrollState = scrollState) {
-        MidLayerContent(laneWidth, canvasHeight)
+    ParallaxLayer(depth = 0.26f, canvasHeight = canvasHeight, maxScrollDp = maxScrollDp, scrollState = scrollState) { height ->
+        MidLayerContent(laneWidth, height)
     }
 }
 
@@ -100,8 +100,8 @@ internal fun BoxScope.TwilightForeground(
     laneWidth: Dp,
 ) {
     val maxScrollDp = with(LocalDensity.current) { maxScrollPx.toDp() }
-    ParallaxLayer(depth = -0.20f, canvasHeight = canvasHeight, maxScrollDp = maxScrollDp, scrollState = scrollState) {
-        ForegroundLayerContent(laneWidth, canvasHeight)
+    ParallaxLayer(depth = -0.20f, canvasHeight = canvasHeight, maxScrollDp = maxScrollDp, scrollState = scrollState) { height ->
+        ForegroundLayerContent(laneWidth, height)
     }
 }
 
@@ -111,10 +111,11 @@ private fun BoxScope.ParallaxLayer(
     canvasHeight: Dp,
     maxScrollDp: Dp,
     scrollState: ScrollState,
-    content: @Composable BoxScope.() -> Unit,
+    content: @Composable BoxScope.(height: Dp) -> Unit,
 ) {
     val buffer = maxScrollDp * abs(depth) + 24.dp
     val topPad = if (depth < 0f) buffer else 0.dp
+    val expandedHeight = canvasHeight + buffer
     Box(
         modifier = Modifier
             .align(Alignment.TopStart)
@@ -127,9 +128,10 @@ private fun BoxScope.ParallaxLayer(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .offset(y = -topPad)
-                .height(canvasHeight + buffer),
-            content = content,
-        )
+                .height(expandedHeight),
+        ) {
+            content(expandedHeight)
+        }
     }
 }
 
@@ -439,7 +441,11 @@ internal fun BoxScope.TwilightGlowLayer(
                 val h = 30f * sc
                 val midY = (a.y + b.y) / 2f
                 val away = (a.x + b.x) / 2f < centerX
-                val x = if (away) centerX + laneWidth.value * 0.42f + 96f * r1 else centerX - laneWidth.value * 0.42f - 96f * r1 - w
+                // Feste Werte aus der Vorlage (232…328 rechts, 18…114
+                // links, bei 374 dp Referenzbreite) — nicht proportional zur
+                // tatsächlichen Kartenbreite, sonst landen die Requisiten je
+                // nach Gerät außerhalb des sichtbaren Bereichs.
+                val x = if (away) 232f + 96f * r1 else 18f + 96f * r1
                 val top = midY - h / 2f + (r2 - 0.5f) * 26f
 
                 // Bodenschatten + warmer Schein.
