@@ -48,9 +48,7 @@ sealed interface GameInput {
  * Endlos-Modus — der Wald wird mit jedem zweiten Level dichter, und die Feen-Art
  * wechselt. Vorbei ist es, wenn die Zeit abläuft oder alle Leben verbraucht sind.
  */
-class FairydokuEngine(
-    private val random: Random = Random.Default,
-) : GameEngine {
+class FairydokuEngine : GameEngine {
 
     override fun newGame(level: Int): GameState = buildLevel(
         previous = GameState(),
@@ -258,7 +256,12 @@ class FairydokuEngine(
             level = level,
             score = if (fresh) 0 else previous.score,
             gained = 0,
-            puzzle = PuzzleGenerator.generate(GameState.sizeForLevel(level), random),
+            // An die Levelnummer gebunden statt an einen fortlaufenden
+            // Zufallsstrom: Sonst wäre ein neuer Versuch nach einem verlorenen
+            // Level ein ganz anderes Rätsel als das, an dem man gerade
+            // gescheitert ist — Level 2 muss immer Level 2 sein, wie oft man
+            // es auch neu beginnt.
+            puzzle = PuzzleGenerator.generate(GameState.sizeForLevel(level), Random(level.toLong())),
             lives = if (fresh) GameState.MAX_LIVES else previous.lives,
             // Der Feenstaub wird nicht mehr je Level ausgeteilt: Er ist ein
             // Vorrat des Spielers, der über die Zeit nachwächst. Was noch da

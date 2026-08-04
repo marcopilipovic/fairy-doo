@@ -8,8 +8,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.fairydoo.game.game.FairyDustSupply
+import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GlobalLives
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -37,6 +39,10 @@ data class PlayerProfile(
     val nextFairyDustAtMillis: Long = 0L,
     /** Ob die Anleitung schon einmal zu Ende gesehen oder übersprungen wurde. */
     val hasSeenTutorial: Boolean = false,
+    /** Wie die Spielerin in der Rangliste heißen möchte — leer, bis gesetzt. */
+    val playerName: String = "",
+    /** Die Fee, die als Avatar in Profil und Rangliste erscheint. */
+    val selectedAvatar: FairySpecies = FairySpecies.Flora,
 ) {
     val musicEnabled: Boolean get() = musicVolume > 0f
     val soundEnabled: Boolean get() = soundVolume > 0f
@@ -80,6 +86,10 @@ class GamePreferencesRepository(context: Context) {
             fairyDust = prefs[KeyFairyDust] ?: FairyDustSupply.max,
             nextFairyDustAtMillis = prefs[KeyNextFairyDustAt] ?: 0L,
             hasSeenTutorial = prefs[KeyTutorialSeen] ?: false,
+            playerName = prefs[KeyPlayerName] ?: "",
+            selectedAvatar = prefs[KeySelectedAvatar]
+                ?.let { stored -> FairySpecies.entries.find { it.name == stored } }
+                ?: FairySpecies.Flora,
         )
     }
 
@@ -169,6 +179,14 @@ class GamePreferencesRepository(context: Context) {
         store.edit { it[KeyTutorialSeen] = true }
     }
 
+    suspend fun setPlayerName(name: String) {
+        store.edit { it[KeyPlayerName] = name }
+    }
+
+    suspend fun setSelectedAvatar(species: FairySpecies) {
+        store.edit { it[KeySelectedAvatar] = species.name }
+    }
+
     /** Setzt Fortschritt und Einstellungen zurück. */
     suspend fun resetProgress() {
         store.edit { it.clear() }
@@ -192,5 +210,7 @@ class GamePreferencesRepository(context: Context) {
         val KeyFairyDust = intPreferencesKey("fairy_dust")
         val KeyNextFairyDustAt = longPreferencesKey("next_fairy_dust_at")
         val KeyTutorialSeen = booleanPreferencesKey("tutorial_seen")
+        val KeyPlayerName = stringPreferencesKey("player_name")
+        val KeySelectedAvatar = stringPreferencesKey("selected_avatar")
     }
 }

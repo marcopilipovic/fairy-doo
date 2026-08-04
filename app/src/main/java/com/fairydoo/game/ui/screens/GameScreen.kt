@@ -30,7 +30,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -100,7 +104,6 @@ import com.fairydoo.game.ui.theme.NightTop
 import com.fairydoo.game.ui.theme.PanelBottom
 import com.fairydoo.game.ui.theme.PanelTop
 import com.fairydoo.game.ui.theme.PanelBorder
-import com.fairydoo.game.ui.theme.PanelGoldBorder
 import com.fairydoo.game.ui.theme.PanelText
 import com.fairydoo.game.ui.theme.StatusPurple
 import com.fairydoo.game.ui.theme.TextPrimary
@@ -312,15 +315,19 @@ fun GameScreen(preferences: GamePreferencesRepository) {
     Box(modifier = Modifier.fillMaxSize()) {
         if (showLevelSelect) {
             LevelSelectScreen(
-                highestLevelUnlocked = profile.highestLevelUnlocked,
+                profile = profile,
                 score = state.score,
-                bestScore = profile.highScore,
                 globalLives = globalLives,
                 // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man
                 // zurückkönnte — nicht beim allerersten Start der App.
                 onClose = if (state.puzzle != null) viewModel::closeLevelSelect else null,
                 onSelectLevel = viewModel::startLevel,
                 onOpenTutorial = viewModel::openTutorial,
+                onSetPlayerName = viewModel::setPlayerName,
+                onSetAvatar = viewModel::setSelectedAvatar,
+                onMusicChange = viewModel::setMusicVolume,
+                onSoundChange = viewModel::setSoundVolume,
+                onVoiceChange = viewModel::setVoiceVolume,
             )
         } else {
             GameContent(
@@ -448,11 +455,14 @@ private fun GameContent(
         )
         }
 
+        // ❔ bleibt auf beiden Bildschirmen links — auf der Levelkarte steht
+        // es dort schon. 🗺️ übernimmt rechts die Rolle, die dort 📜 auf der
+        // Levelkarte hat.
         Row(
             modifier = Modifier
-                .align(Alignment.TopEnd)
+                .align(Alignment.TopStart)
                 .safeDrawingPadding()
-                .padding(end = 6.dp, top = 2.dp),
+                .padding(start = 6.dp, top = 2.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             HelpButton(onClick = onOpenTutorial)
@@ -465,9 +475,9 @@ private fun GameContent(
         MapButton(
             onClick = onOpenLevelSelect,
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .align(Alignment.TopEnd)
                 .safeDrawingPadding()
-                .padding(start = 6.dp, top = 2.dp),
+                .padding(end = 6.dp, top = 2.dp),
         )
 
         when (state.status) {
@@ -562,7 +572,7 @@ private fun MapButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
         modifier = modifier
             .clip(CircleShape)
             .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
-            .border(1.dp, Gold.copy(alpha = 0.4f), CircleShape)
+            .border(2.dp, PanelBorder, CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -571,7 +581,15 @@ private fun MapButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             .padding(8.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = "🗺️", fontSize = 18.sp)
+        Icon(
+            imageVector = Icons.Outlined.Map,
+            contentDescription = "Zur Karte",
+            // Derselbe Parchment-Ton wie beim ❔ — beide Vollfarb-Emojis
+            // wurden durch ein einfärbbares Icon ersetzt, der gleiche Ton
+            // hält sie als zusammengehöriges Paar erkennbar.
+            tint = Color(0xFFFFD8A1),
+            modifier = Modifier.size(18.dp),
+        )
     }
 }
 
@@ -589,7 +607,7 @@ internal fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             .size(40.dp)
             .clip(CircleShape)
             .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
-            .border(1.dp, Gold.copy(alpha = 0.4f), CircleShape)
+            .border(2.dp, PanelBorder, CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -597,7 +615,14 @@ internal fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             ),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = "❔", fontSize = 18.sp)
+        Icon(
+            imageVector = Icons.Filled.QuestionMark,
+            contentDescription = "Anleitung",
+            // Der gemessene Parchment-Ton der 📜-Emoji-Grafik daneben — so
+            // liest sich das Fragezeichen als zugehörig statt als Fremdkörper.
+            tint = Color(0xFFFFD8A1),
+            modifier = Modifier.size(18.dp),
+        )
     }
 }
 
@@ -672,7 +697,7 @@ private fun TitleRow() {
 private fun ScoreRow(score: Int, level: Int) {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Badge(
-            text = "SCORE: $score",
+            text = "🌅 $score",
             borderColor = PanelBorder,
             textColor = PanelText,
             fontSize = 16.sp,
@@ -681,7 +706,7 @@ private fun ScoreRow(score: Int, level: Int) {
         )
         Badge(
             text = "Level $level",
-            borderColor = PanelGoldBorder,
+            borderColor = PanelBorder,
             textColor = GoldLight,
             fontSize = 15.sp,
             letterSpacing = 0.sp,

@@ -7,7 +7,6 @@ import com.fairydoo.game.game.model.Pos
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlin.random.Random
 
 /**
  * Die Zuordnung von Spielzug zu Klang ist reine Logik und deshalb prüfbar —
@@ -15,7 +14,7 @@ import kotlin.random.Random
  */
 class SoundEventsTest {
 
-    private val engine = FairydokuEngine(Random(42))
+    private val engine = FairydokuEngine()
 
     private fun startedGame() = engine.onInput(engine.newGame(), GameInput.Begin)
 
