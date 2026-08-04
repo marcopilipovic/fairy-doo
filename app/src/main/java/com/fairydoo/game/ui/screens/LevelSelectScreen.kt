@@ -317,46 +317,11 @@ private fun ForestPath(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(18.dp))
-                .drawBehind {
-                    drawRect(
-                        brush = Brush.linearGradient(
-                            colorStops = arrayOf(
-                                0f to Color(0xFF16281C),
-                                0.55f to Color(0xFF101F16),
-                                1f to Color(0xFF0D1A1E),
-                            ),
-                            start = Offset.Zero,
-                            end = Offset(size.width * 0.4f, size.height),
-                        ),
-                    )
-                    // Grüner und violetter Schimmer im Unterholz.
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(Color(0x2E4C9A5A), Color.Transparent),
-                            center = Offset(size.width * 0.2f, size.height * 0.25f),
-                            radius = size.minDimension * 0.9f,
-                        ),
-                    )
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(Color(0x2E7A5AC8), Color.Transparent),
-                            center = Offset(size.width * 0.85f, size.height * 0.75f),
-                            radius = size.minDimension * 0.9f,
-                        ),
-                    )
-                    // Der dunkle Saum nach innen, damit der Pfad in der Tiefe liegt.
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colorStops = arrayOf(
-                                0f to Color.Transparent,
-                                0.5f to Color.Transparent,
-                                1f to Color(0xB3000000),
-                            ),
-                            center = Offset(size.width / 2f, size.height / 2f),
-                            radius = size.maxDimension * 0.75f,
-                        ),
-                    )
-                },
+                // Reine Sicherheitsfüllung, bevor die Twilight-Ebenen unten
+                // zeichnen — verhindert nur ein Aufblitzen des Fassungsgrüns
+                // beim allerersten Frame, trägt sonst keine eigene Gestaltung
+                // mehr (das übernimmt jetzt komplett [TwilightScenery]).
+                .drawBehind { drawRect(color = Color(0xFF0D241C)) },
         ) {
             // Die Karte öffnet auf dem höchsten freigeschalteten Level statt
             // ganz oben. Wer sie aufschlägt, will dort weiter, wo er steht —
@@ -389,12 +354,44 @@ private fun ForestPath(
             }
 
             val pathHeight = PATH_STEP * (levelCount - 1) + NODE_SIZE * 2
+            val maxScrollPx = with(density) {
+                (pathHeight.toPx() - maxHeight.toPx()).coerceAtLeast(0f)
+            }
+            val laneWidth = maxWidth
+            // In "dp-Einheiten" (nicht Pixel!), passend zur Canvas-Skalierung
+            // in [TwilightScenery]/[TwilightGlowLayer] — die zeichnen ihre
+            // Design-Werte in derselben Einheit und skalieren erst beim
+            // Zeichnen auf echte Bildschirm-Pixel hoch.
+            val nodeCenters = remember(levelCount, laneWidth) {
+                (1..levelCount).map { level ->
+                    val cx = laneWidth.value / 2f +
+                        PATH_AMPLITUDE.value * sin(level * PATH_FREQUENCY).toFloat()
+                    val cy = PATH_STEP.value * (level - 1) + NODE_SIZE.value
+                    Offset(cx, cy)
+                }
+            }
 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState),
             ) {
+                // Die fünf Parallaxe-Ebenen der "Twilight"-Szenerie, nach der
+                // Vorlage in Bilder/Fairydoku Levelkarte/. Deep/far/mid liegen
+                // hinter dem Pfad, die Glühwürmchen-/Requisiten-Ebene (depth 0)
+                // direkt darüber, der Vordergrund zuletzt darüber den Knoten.
+                TwilightScenery(
+                    canvasHeight = pathHeight,
+                    scrollState = scrollState,
+                    maxScrollPx = maxScrollPx,
+                    laneWidth = laneWidth,
+                )
+                TwilightGlowLayer(
+                    laneWidth = laneWidth,
+                    canvasHeight = pathHeight,
+                    nodeCenters = nodeCenters,
+                )
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -403,12 +400,6 @@ private fun ForestPath(
                             drawGoldenTrail(levelCount, density)
                         },
                 ) {
-                    // Wald entlang des ganzen Pfads statt nur an den zwei Ecken
-                    // des Rahmens — sonst sieht man beim Herunterscrollen durch
-                    // viele Level nur noch leeren Moosgrund. Je Etappe ein
-                    // Element auf der Seite, die der Weg gerade freigibt.
-                    ForestGlyphs(levelCount)
-
                     for (level in 1..levelCount) {
                         val offsetX = PATH_AMPLITUDE * sin(level * PATH_FREQUENCY).toFloat()
                         val offsetY = PATH_STEP * (level - 1) + NODE_SIZE * 0.5f
@@ -430,6 +421,13 @@ private fun ForestPath(
                         )
                     }
                 }
+
+                TwilightForeground(
+                    canvasHeight = pathHeight,
+                    scrollState = scrollState,
+                    maxScrollPx = maxScrollPx,
+                    laneWidth = laneWidth,
+                )
             }
         }
 
@@ -448,210 +446,6 @@ private fun ForestPath(
                 .fillMaxSize()
                 .graphicsLayer { alpha = 0.55f },
         )
-    }
-}
-
-/** Abstand einer Gruppe von der Pfadkurve — nah genug, um sie zu säumen. */
-private val CLUSTER_PATH_GAP = 58.dp
-
-/** Größe einer Baumgruppen-Illustration (Seitenverhältnis 280∶190 der Vorlage). */
-private val TREE_GROUP_WIDTH = 108.dp
-private val TREE_GROUP_HEIGHT = 74.dp
-
-/** Größe einer Pilz-Illustration (Seitenverhältnis 160∶170 der Vorlage). */
-private val MUSHROOM_MAIN_SIZE = 50.dp
-private val MUSHROOM_COMPANION_SIZE = 32.dp
-
-/** Größe eines liegenden Steinhaufens (Seitenverhältnis 200∶130 der Vorlage). */
-private val ROCK_WIDE_WIDTH = 92.dp
-private val ROCK_WIDE_HEIGHT = 60.dp
-
-/** Größe eines stehenden Steinhaufens (Seitenverhältnis 170∶200 der Vorlage). */
-private val ROCK_TALL_WIDTH = 64.dp
-private val ROCK_TALL_HEIGHT = 75.dp
-
-/**
- * Baumgruppen, Steinhaufen und Pilze, die den Pfad auf beiden Seiten
- * vollständig säumen, bis zum Kartenrand — der Weg selbst bleibt frei.
- *
- * Ein fester Abstand zur Pfadkurve reicht nicht: Schwingt der Pfad stark zu
- * einer Seite, bleibt die andere Seite bis zum Rahmen leer, und bei starkem
- * Ausschlag hätte ein fester Abstand sogar noch in den Weg hineinragen
- * können. Stattdessen wird je Zeile die tatsächlich verfügbare Breite links
- * und rechts der Kurve (bis zum jeweiligen Kartenrand, abzüglich der
- * Freihaltezone um den Knoten) mit so vielen Elementen aus dem Zyklus
- * [elementWidthForSlot] gefüllt, wie hineinpassen — dadurch bleibt der Rand
- * immer lückenlos, egal wie der Pfad gerade schwingt.
- */
-@Composable
-private fun BoxScope.ForestGlyphs(levelCount: Int) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        // Jede Seite zählt unabhängig durch die Kategorie-Folge. Ein
-        // gemeinsamer Zähler für beide Seiten hatte auf dem Papier zwar nie
-        // 3 gleiche in Folge, aber links und rechts stehen an ganz
-        // unterschiedlichen Stellen im Bild — die "Auflockerung" durch die
-        // andere Seite war dort unsichtbar, und eine einzelne Seite konnte
-        // trotzdem viele gleiche Motive übereinander bekommen.
-        var leftSlot = 0
-        var rightSlot = 0
-        val halfLane = maxWidth / 2
-        // Etwas großzügiger als der reine Knotenradius, damit die Deko auch
-        // die weiche Leuchtspur der Route nicht touchiert.
-        val clearance = NODE_SIZE / 2 + 10.dp
-        val itemGap = 6.dp
-
-        fun curveXAt(levelFraction: Float): Dp =
-            PATH_AMPLITUDE * sin(levelFraction * PATH_FREQUENCY).toFloat()
-
-        @Composable
-        fun fillMargin(curveX: Dp, y: Dp, toRight: Boolean) {
-            val available = if (toRight) halfLane - (curveX + clearance) else halfLane + (curveX - clearance)
-            var used = 0.dp
-            var guard = 0
-            var missesInARow = 0
-            // Passt ein Element nicht mehr, wird nicht die ganze Zeile
-            // abgebrochen, sondern im Zyklus weitergegangen — ein kleineres
-            // Motiv (z. B. Pilz) passt oft trotzdem noch. Erst wenn ein
-            // ganzer Zyklus (5 Motive) nacheinander nicht passt, ist die
-            // Lücke wirklich zu klein.
-            while (guard < 20 && missesInARow < 5) {
-                val slot = if (toRight) rightSlot else leftSlot
-                val width = elementWidthForSlot(slot)
-                if (used + width <= available) {
-                    val itemX = if (toRight) {
-                        curveX + clearance + used + width / 2
-                    } else {
-                        curveX - clearance - used - width / 2
-                    }
-                    SideElement(index = slot, x = itemX, y = y, mirrored = !toRight)
-                    used += width + itemGap
-                    missesInARow = 0
-                } else {
-                    missesInARow++
-                }
-                if (toRight) rightSlot++ else leftSlot++
-                guard++
-            }
-        }
-
-        // Zusätzliche Reihe kurz oberhalb von Level 1, damit auch der
-        // Bereich um den Start herum nicht leer bleibt.
-        val headY = NODE_SIZE * 1.1f - PATH_STEP * 0.55f
-        val headX = curveXAt(1f)
-        fillMargin(headX, headY, toRight = false)
-        fillMargin(headX, headY, toRight = true)
-
-        for (level in 1 until levelCount) {
-            val curveX = curveXAt(level.toFloat())
-            val anchorY = PATH_STEP * (level - 1) + NODE_SIZE * 1.1f
-            fillMargin(curveX, anchorY, toRight = false)
-            fillMargin(curveX, anchorY, toRight = true)
-
-            // Zwei weitere Reihen zwischen zwei Etappen (Drittelschritte),
-            // sonst bliebe die Lücke leer. Der Pfad selbst ist zwischen zwei
-            // Knoten eine gerade Linie, keine Sinuskurve — deshalb hier
-            // linear zwischen den beiden echten Knotenpositionen
-            // interpolieren statt die Kurvenformel an einer gebrochenen
-            // Etappe auszuwerten. Sonst kann die berechnete Position neben
-            // der tatsächlichen Route liegen und die Freihaltezone am
-            // falschen Ort greifen.
-            val nextCurveX = curveXAt((level + 1).toFloat())
-            for (t in floatArrayOf(1f / 3f, 2f / 3f)) {
-                val midCurveX = curveX + (nextCurveX - curveX) * t
-                val midY = anchorY + PATH_STEP * t
-                fillMargin(midCurveX, midY, toRight = false)
-                fillMargin(midCurveX, midY, toRight = true)
-            }
-        }
-    }
-}
-
-/**
- * Feste, vorausberechnete Kategorie-Folge (0=Baum, 1=Stein, 2=Pilz) — nicht
- * pro Slot unabhängig gewürfelt, denn echter Zufall erzeugt gelegentlich
- * lange Ketten derselben Kategorie (mathematisch normal, sieht aber nach
- * Blöcken statt Mischung aus). Der Aufbau erzwingt stattdessen: nie mehr als
- * zwei gleiche Kategorien in Folge, und über die ganze Folge annähernd
- * gleich viele von jeder — dadurch bleibt "bunt gemischt" eine Garantie,
- * keine Glückssache.
- */
-private val CATEGORY_SEQUENCE: List<Int> = buildList {
-    val counts = intArrayOf(0, 0, 0)
-    var last1 = -1
-    var last2 = -1
-    repeat(120) {
-        // Kandidaten von der am seltensten benutzten Kategorie her prüfen;
-        // die erste, die keine dritte Wiederholung in Folge wäre, gewinnt.
-        val candidates = (0..2).sortedBy { counts[it] }
-        val chosen = candidates.first { !(it == last1 && it == last2) }
-        add(chosen)
-        counts[chosen]++
-        last2 = last1
-        last1 = chosen
-    }
-}
-
-private fun categoryForSlot(index: Int): Int = CATEGORY_SEQUENCE[index % CATEGORY_SEQUENCE.size]
-
-/** Eigener Zufallsstrom für die Steinvariante, unabhängig von der Kategoriewahl. */
-private fun rockVariantForSlot(index: Int): Int = kotlin.random.Random(index * 104729 + 31).nextInt(4)
-
-/** Breite eines Elements passend zu [SideElement]s Auswahl, für die Platzrechnung. */
-private fun elementWidthForSlot(index: Int): Dp = when (categoryForSlot(index)) {
-    0 -> TREE_GROUP_WIDTH
-    1 -> if (rockVariantForSlot(index) % 2 == 0) ROCK_WIDE_WIDTH else ROCK_TALL_WIDTH
-    else -> MUSHROOM_MAIN_SIZE + MUSHROOM_COMPANION_SIZE * 0.6f
-}
-
-/**
- * Ein Element am Wegrand — zu ungefähr gleichen Teilen Baumgruppe,
- * Steinhaufen (in wechselnden Varianten) und Pilzpaar, in zufälliger statt
- * fester Reihenfolge, damit die Mischung wirklich bunt bleibt statt in
- * einem erkennbaren Rhythmus zu laufen.
- */
-@Composable
-private fun BoxScope.SideElement(index: Int, x: Dp, y: Dp, mirrored: Boolean) {
-    when (categoryForSlot(index)) {
-        0 -> TreeGroup(
-            modifier = Modifier
-                .size(TREE_GROUP_WIDTH, TREE_GROUP_HEIGHT)
-                .align(Alignment.TopCenter)
-                .offset(x - TREE_GROUP_WIDTH / 2, y)
-                .graphicsLayer { if (mirrored) scaleX = -1f },
-        )
-        1 -> {
-            val variant = rockVariantForSlot(index)
-            val tall = variant % 2 == 1
-            val withMushrooms = variant >= 2
-            val width = if (tall) ROCK_TALL_WIDTH else ROCK_WIDE_WIDTH
-            val height = if (tall) ROCK_TALL_HEIGHT else ROCK_WIDE_HEIGHT
-            RockPile(
-                tall = tall,
-                withMushrooms = withMushrooms,
-                modifier = Modifier
-                    .size(width, height)
-                    .align(Alignment.TopCenter)
-                    .offset(x - width / 2, y)
-                    .graphicsLayer { if (mirrored) scaleX = -1f },
-            )
-        }
-        else -> {
-            GlowingMushroom(
-                modifier = Modifier
-                    .size(MUSHROOM_MAIN_SIZE)
-                    .align(Alignment.TopCenter)
-                    .offset(x = x - MUSHROOM_MAIN_SIZE / 2, y = y),
-            )
-            GlowingMushroom(
-                modifier = Modifier
-                    .size(MUSHROOM_COMPANION_SIZE)
-                    .align(Alignment.TopCenter)
-                    .offset(
-                        x = x - MUSHROOM_COMPANION_SIZE / 2 + (if (mirrored) -MUSHROOM_MAIN_SIZE * 0.55f else MUSHROOM_MAIN_SIZE * 0.55f),
-                        y = y + MUSHROOM_MAIN_SIZE * 0.45f,
-                    ),
-            )
-        }
     }
 }
 
@@ -684,19 +478,37 @@ private fun BoxScope.PathDecorations() {
                 scaleX = -1f
             },
     )
+    // Die obere linke Ecke wirkte im Vergleich zu den anderen drei kahl —
+    // dort stand bisher nur ein einzelnes Glitzern, kein Pilz.
     Text(
-        text = "🧚",
-        fontSize = 26.sp,
+        text = "🍄",
+        fontSize = 20.sp,
+        color = Color.Unspecified,
+        style = MaterialTheme.typography.bodyLarge.copy(
+            shadow = Shadow(color = Color(0xCC86A6FF), offset = Offset.Zero, blurRadius = 22f),
+        ),
         modifier = Modifier
-            .align(Alignment.TopEnd)
-            .offset(x = (-14).dp, y = 10.dp)
-            .graphicsLayer { alpha = 0.45f },
+            .align(Alignment.TopStart)
+            .offset(x = 10.dp, y = 6.dp)
+            .graphicsLayer { alpha = 0.38f },
     )
     Text(
         text = "✦",
         fontSize = 13.sp,
         color = GoldLight.copy(alpha = 0.4f),
         modifier = Modifier.align(Alignment.TopStart).offset(x = 22.dp, y = 64.dp),
+    )
+    Text(
+        text = "✦",
+        fontSize = 9.sp,
+        color = GoldLight.copy(alpha = 0.3f),
+        modifier = Modifier.align(Alignment.TopStart).offset(x = 48.dp, y = 18.dp),
+    )
+    Text(
+        text = "✦",
+        fontSize = 11.sp,
+        color = GoldLight.copy(alpha = 0.34f),
+        modifier = Modifier.align(Alignment.TopStart).offset(x = 6.dp, y = 44.dp),
     )
     Text(
         text = "✦",

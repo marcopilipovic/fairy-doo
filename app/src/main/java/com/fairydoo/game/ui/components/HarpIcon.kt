@@ -1,7 +1,10 @@
 package com.fairydoo.game.ui.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -10,14 +13,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Text
 
 /**
  * Harfe aus der Design-Vorlage `Bilder/harfe.svg` (viewBox 200×260) — Pfade
  * 1:1 übernommen, aber einfarbig statt mit Farbverlauf gefüllt, damit die
  * Harfe denselben Parchment-Ton trägt wie ❔ und 🗺️.
+ *
+ * Eine kleine Note oben rechts daneben, im selben Ton wie die Harfe —
+ * sonst liest sich das Symbol allein als Instrument, nicht als "Klang".
  */
 @Composable
 fun HarpIcon(tint: Color, modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
+        HarpCanvas(tint, Modifier.fillMaxSize())
+        Text(
+            text = "♪",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = tint,
+            modifier = Modifier.align(Alignment.TopEnd),
+        )
+    }
+}
+
+@Composable
+private fun HarpCanvas(tint: Color, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
         // Die eigentliche Zeichnung sitzt nicht mittig im 200×260-viewBox der
         // Vorlage (die Vordersäule steht links, der Korpus ragt weiter nach
