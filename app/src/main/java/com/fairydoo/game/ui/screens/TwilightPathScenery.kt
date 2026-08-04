@@ -54,10 +54,10 @@ private object TwilightTokens {
     )
     val ridgeFar = listOf(Color(0xFF3D7050), Color(0xFF2E5A3E), Color(0xFF1F4029))
     val ridgeMid = listOf(Color(0xFF264B32), Color(0xFF17331F), Color(0xFF0D2214))
-    val pineDeep = Color(0xFF31593F)
-    val pineMid = Color(0xFF1D4030)
-    val pineForeground = Color(0xFF071410)
-    val distantTree = Color(0xFF2F5B42)
+    val pineDeep = Color(0xFF3D7A52)
+    val pineMid = Color(0xFF2A5C3E)
+    val pineForeground = Color(0xFF1F4A2E)
+    val distantTree = Color(0xFF3A7A52)
     val mossPool = Color(0x1E86BE78)
     val mushroomCaps = listOf(Color(0xFF9A6C89), Color(0xFF7A76A8), Color(0xFF8C8768))
     val stoneColor = Color(0xFF3E5648)
@@ -120,6 +120,17 @@ private fun BoxScope.ParallaxLayer(
     Box(
         modifier = Modifier
             .align(Alignment.TopStart)
+            // Feste Höhe = Pfadhöhe, nicht die gepufferte Höhe des Kindes:
+            // Diese Box ist direktes Kind des scrollenden Containers und
+            // bestimmt damit dessen gemessene Scroll-Reichweite mit. Würde
+            // sie (wie das innere Kind) die Pufferhöhe tragen, würde die
+            // am stärksten puffernde Ebene die Scroll-Reichweite über das
+            // Ende des Levelpfads hinausziehen — die letzten Knoten würden
+            // beim Herunterscrollen aus dem Bild rutschen, lange bevor der
+            // Bildlauf am Anschlag ist. Compose beschneidet Kinder nicht an
+            // der Elterngrenze, das breitere Kind malt also trotzdem seinen
+            // vollen Puffer, ohne dass sich das gemessene Maß ändert.
+            .height(canvasHeight)
             // scrollState.value wird hier gelesen, nicht außerhalb übergeben,
             // damit dieser Layer bei jedem Scroll-Schritt neu positioniert
             // wird, ohne dass die ganze Elternkomposition neu läuft.
@@ -146,14 +157,22 @@ private fun DeepLayerContent(laneWidth: Dp, canvasHeight: Dp) {
             Color(0x21B2E0B2), Color(0x1C9ECEE8), Color(0x1CCEB6EE), Color(0x1AB2E0B2),
         )
         islandsY.forEachIndexed { index, fy ->
+            // Verlauf über die eigene Höhe statt Radial-Verlauf, der von
+            // einem Rechteck hart abgeschnitten wird: Der Radius war so
+            // groß, dass der Schein innerhalb des Rechtecks kaum merklich
+            // abklang — am Rand des Rechtecks brach die Farbe dadurch hart
+            // ab, statt auszulaufen. Derselbe Fehler wie bei der Moos-Lache,
+            // hier nur übersehen.
+            val cy = size.height * fy
+            val h = size.width * 0.18f
             drawRect(
-                brush = Brush.radialGradient(
-                    colors = listOf(islandColors[index % islandColors.size], Color.Transparent),
-                    center = Offset(size.width * 0.5f, size.height * fy),
-                    radius = size.width * 0.55f,
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color.Transparent, islandColors[index % islandColors.size], Color.Transparent),
+                    startY = cy - h / 2f,
+                    endY = cy + h / 2f,
                 ),
-                topLeft = Offset(0f, size.height * fy - size.width * 0.09f),
-                size = Size(size.width, size.width * 0.18f),
+                topLeft = Offset(0f, cy - h / 2f),
+                size = Size(size.width, h),
             )
         }
 
@@ -183,7 +202,7 @@ private fun FarLayerContent(laneWidth: Dp, canvasHeight: Dp) {
     Canvas(modifier = Modifier.fillMaxWidth().height(canvasHeight)) {
         scale(density, density, pivot = Offset.Zero) {
             drawRidgeRow(
-                spacing = 214f, ridgeWidth = 560f, ridgeHeight = 170f,
+                spacing = 214f, ridgeWidth = 560f, ridgeHeight = 270f,
                 colors = TwilightTokens.ridgeFar, fieldHeight = size.height / density,
             )
         }
@@ -207,7 +226,7 @@ private fun MidLayerContent(laneWidth: Dp, canvasHeight: Dp) {
     Canvas(modifier = Modifier.fillMaxWidth().height(canvasHeight)) {
         scale(density, density, pivot = Offset.Zero) {
             drawRidgeRow(
-                spacing = 152f, ridgeWidth = 520f, ridgeHeight = 120f,
+                spacing = 152f, ridgeWidth = 520f, ridgeHeight = 190f,
                 colors = TwilightTokens.ridgeMid, fieldHeight = size.height / density,
             )
 
@@ -241,10 +260,20 @@ private fun MidLayerContent(laneWidth: Dp, canvasHeight: Dp) {
 
         val poolsY = floatArrayOf(0.12f, 0.33f, 0.55f, 0.76f, 0.95f)
         poolsY.forEach { fy ->
+            val cy = size.height * fy
+            val h = 56f
+            // Verlauf statt Vollfarbe: Eine flächig gefüllte Ellipse hat oben
+            // und unten eine scharfe geometrische Kante — die fiel zusammen
+            // mit der Rücken-Ebene dahinter als harte Linie quer über den
+            // Pfad auf. Der Verlauf blendet sie stattdessen weich aus.
             drawOval(
-                color = TwilightTokens.mossPool,
-                topLeft = Offset(size.width * 0.32f, size.height * fy - 28f),
-                size = Size(size.width * 0.36f, 56f),
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color.Transparent, TwilightTokens.mossPool, Color.Transparent),
+                    startY = cy - h / 2f,
+                    endY = cy + h / 2f,
+                ),
+                topLeft = Offset(size.width * 0.32f, cy - h / 2f),
+                size = Size(size.width * 0.36f, h),
             )
         }
     }
@@ -257,11 +286,15 @@ private fun ForegroundLayerContent(laneWidth: Dp, canvasHeight: Dp) {
             drawPineField(
                 laneWidth = laneWidth.value,
                 fieldHeight = size.height / density,
-                spacing = 112f,
+                // Zeilenabstand größer als die höchste Baumhöhe (140 bei
+                // scale 1.4): Vorher war der Abstand (112) kleiner als die
+                // Baumhöhe, dadurch wuchsen aufeinanderfolgende Tannen auf
+                // derselben Seite sichtbar ineinander.
+                spacing = 150f,
                 scaleMin = 1.1f,
                 scaleMax = 1.4f,
-                xMin = 2f,
-                xMax = 12f,
+                xMin = -6f,
+                xMax = 20f,
                 color = TwilightTokens.pineForeground,
                 opacity = 0.92f,
                 seed = 9.4f,
@@ -304,6 +337,8 @@ private fun DrawScope.drawPineField(
             val w = 60f * sc
             val h = 100f * sc
             val inset = xMin + (xMax - xMin) * r2
+            // Genau wie in der Vorlage: rechte Seite exakt um eine halbe
+            // Zeilenhöhe versetzt, dazu y-Jitter bis 0,35·spacing.
             val treeTop = y + (if (side > 0) spacing * 0.5f else 0f) + r2 * spacing * 0.35f
             val treeLeft = if (side < 0) -inset else centerX * 2f + inset - w
             val insideCorridor = treeLeft + w > centerX - laneWidth / 2f && treeLeft < centerX + laneWidth / 2f
@@ -340,7 +375,15 @@ private fun DrawScope.drawPineTree(topLeft: Offset, w: Float, h: Float, color: C
     }
 }
 
-/** Eine "Rücken"-Reihe (Hügelsilhouetten), abwechselnd links/rechts eingerückt. */
+/**
+ * Eine "Rücken"-Reihe: weiche, runde Lichtflecken statt Silhouetten mit
+ * fester Kontur. Eine Form mit Verlauf drüber erzeugt am Übergang von
+ * "eigene Kuppelfarbe" zu "Verlauf" immer einen Knick in der Helligkeit —
+ * das Auge liest so einen Knick als Linie, selbst wenn kein harter
+ * Farbsprung dahintersteckt (Mach-Band-Effekt). Ein einzelner Radial-Verlauf
+ * ohne Zwischenstopps und ohne geometrische Kontur hat diesen Knick gar
+ * nicht erst, weil er nirgends die Steigung wechselt.
+ */
 private fun DrawScope.drawRidgeRow(
     spacing: Float,
     ridgeWidth: Float,
@@ -350,19 +393,20 @@ private fun DrawScope.drawRidgeRow(
 ) {
     var i = 0
     var y = -spacing
-    val brush = Brush.verticalGradient(colors)
+    val peak = colors[colors.size / 2]
     while (y < fieldHeight) {
         val insetLeft = if (i % 2 == 0) -128f else -66f
-        val rect = Rect(offset = Offset(insetLeft, y), size = Size(ridgeWidth, ridgeHeight))
-        val roundRect = RoundRect(
-            rect = rect,
-            topLeft = CornerRadius(ridgeWidth / 2f, ridgeHeight),
-            topRight = CornerRadius(ridgeWidth / 2f, ridgeHeight),
-            bottomLeft = CornerRadius.Zero,
-            bottomRight = CornerRadius.Zero,
+        val cx = insetLeft + ridgeWidth / 2f
+        val cy = y + ridgeHeight * 0.35f
+        drawOval(
+            brush = Brush.radialGradient(
+                colors = listOf(peak, peak.copy(alpha = 0f)),
+                center = Offset(cx, cy),
+                radius = ridgeWidth / 2f,
+            ),
+            topLeft = Offset(cx - ridgeWidth / 2f, cy - ridgeHeight / 2f),
+            size = Size(ridgeWidth, ridgeHeight),
         )
-        val path = Path().apply { addRoundRect(roundRect) }
-        drawPath(path, brush = brush)
         y += spacing
         i++
     }
@@ -450,8 +494,15 @@ internal fun BoxScope.TwilightGlowLayer(
                 val top = midY - h / 2f + (r2 - 0.5f) * 26f
 
                 // Bodenschatten + warmer Schein.
+                // Verlauf statt Vollfarbe: Eine flache, ganz scharfkantige
+                // Schatten-Ellipse ohne jeden Verlauf fiel als harte, kurze
+                // Linie im offenen Gras zwischen zwei Schlössern auf.
                 drawOval(
-                    color = Color(0x8C02080A),
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color(0x8C02080A), Color.Transparent),
+                        center = Offset(x + w * 0.5f, top + h),
+                        radius = w * 0.5f,
+                    ),
                     topLeft = Offset(x + w * 0.06f, top + h - 4f),
                     size = Size(w * 0.88f, 8f),
                 )
@@ -469,6 +520,53 @@ internal fun BoxScope.TwilightGlowLayer(
                     drawStoneCluster(Offset(x, top), w, h)
                 } else {
                     drawMushroomProp(Offset(x, top), w, h, TwilightTokens.mushroomCaps[n % TwilightTokens.mushroomCaps.size])
+                }
+            }
+
+            // Fest platzierter Pilz mit ein paar Glühwürmchen oben links,
+            // neben dem Steinhaufen zwischen Level eins und zwei — auf
+            // ausdrücklichen Wunsch, weil die Fläche dort sonst kahl wirkte.
+            nodeCenters.firstOrNull()?.let { first ->
+                // Weit genug vom Rand weg, sonst verschwindet er hinter den
+                // dichten Randbäumen — und auf Höhe von Level eins statt
+                // darüber, damit er wirklich "gegenüber" liegt.
+                val mx = 74f
+                val my = first.y - 6f
+                drawMushroomProp(Offset(mx, my), 30f, 34f, TwilightTokens.mushroomCaps[2])
+                listOf(Offset(mx - 22f, my - 10f), Offset(mx + 40f, my + 6f)).forEach { p ->
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0x33FFE9A8), Color.Transparent),
+                            center = p,
+                            radius = 14f,
+                        ),
+                        radius = 14f,
+                        center = p,
+                    )
+                    drawCircle(color = Color(0xCCFFF3C4), radius = 3f, center = p)
+                }
+            }
+
+            // Vier ruhige, nicht blinkende Glühwürmchen links zwischen
+            // Level zwei und drei — die Rasenfläche dort wirkte sonst leer.
+            if (nodeCenters.size > 2) {
+                val midY = (nodeCenters[1].y + nodeCenters[2].y) / 2f
+                listOf(
+                    Offset(52f, midY - 34f),
+                    Offset(96f, midY - 10f),
+                    Offset(40f, midY + 22f),
+                    Offset(84f, midY + 46f),
+                ).forEach { p ->
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0x33FFE9A8), Color.Transparent),
+                            center = p,
+                            radius = 13f,
+                        ),
+                        radius = 13f,
+                        center = p,
+                    )
+                    drawCircle(color = Color(0xCCFFF3C4), radius = 2.6f, center = p)
                 }
             }
         }

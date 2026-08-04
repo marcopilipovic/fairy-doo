@@ -478,11 +478,37 @@ private fun BoxScope.PathDecorations() {
                 scaleX = -1f
             },
     )
+    // Die obere linke Ecke wirkte im Vergleich zu den anderen drei kahl —
+    // dort stand bisher nur ein einzelnes Glitzern, kein Pilz.
+    Text(
+        text = "🍄",
+        fontSize = 20.sp,
+        color = Color.Unspecified,
+        style = MaterialTheme.typography.bodyLarge.copy(
+            shadow = Shadow(color = Color(0xCC86A6FF), offset = Offset.Zero, blurRadius = 22f),
+        ),
+        modifier = Modifier
+            .align(Alignment.TopStart)
+            .offset(x = 10.dp, y = 6.dp)
+            .graphicsLayer { alpha = 0.38f },
+    )
     Text(
         text = "✦",
         fontSize = 13.sp,
         color = GoldLight.copy(alpha = 0.4f),
         modifier = Modifier.align(Alignment.TopStart).offset(x = 22.dp, y = 64.dp),
+    )
+    Text(
+        text = "✦",
+        fontSize = 9.sp,
+        color = GoldLight.copy(alpha = 0.3f),
+        modifier = Modifier.align(Alignment.TopStart).offset(x = 48.dp, y = 18.dp),
+    )
+    Text(
+        text = "✦",
+        fontSize = 11.sp,
+        color = GoldLight.copy(alpha = 0.34f),
+        modifier = Modifier.align(Alignment.TopStart).offset(x = 6.dp, y = 44.dp),
     )
     Text(
         text = "✦",
