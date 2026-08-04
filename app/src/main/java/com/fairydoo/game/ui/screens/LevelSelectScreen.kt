@@ -1,10 +1,12 @@
 package com.fairydoo.game.ui.screens
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +16,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -69,6 +70,7 @@ import com.fairydoo.game.ui.theme.TextPrimary
 import com.fairydoo.game.ui.theme.TitleBottom
 import com.fairydoo.game.ui.theme.TitleMiddle
 import com.fairydoo.game.ui.theme.TitleTop
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /** Wie viele gesperrte Level als Vorschau hinter dem höchsten freigeschalteten stehen. */
@@ -239,7 +241,7 @@ private fun ForestPath(
             .border(2.dp, MossMatBorder, RoundedCornerShape(26.dp))
             .padding(10.dp),
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(18.dp))
@@ -282,38 +284,73 @@ private fun ForestPath(
                             radius = size.maxDimension * 0.75f,
                         ),
                     )
-                }
-                .verticalScroll(rememberScrollState()),
+                },
         ) {
+            // Die Karte öffnet auf dem höchsten freigeschalteten Level statt
+            // ganz oben. Wer sie aufschlägt, will dort weiter, wo er steht —
+            // bei Level dreißig wären das sonst dreißig Wischer nach unten.
+            //
+            // Der Startwert steht schon vor dem ersten Bildpunkt fest, denn
+            // BoxWithConstraints kennt die sichtbare Höhe bereits beim Aufbau.
+            // Nachträglich zu scrollen würde die Karte einen Bildlauf lang ganz
+            // oben zeigen und dann sichtbar springen.
+            //
+            // Einziger Schlüssel ist das Level, nicht die sichtbare Höhe: Die
+            // ändert sich im Betrieb, sobald der Countdown im Kopf verschwindet,
+            // weil die Wald-Leben wieder voll sind. Stünde sie mit im Schlüssel,
+            // risse es den Spieler in diesem Moment aus seiner Scrollposition
+            // zurück in die Mitte.
+            //
+            // Beim Schließen verlässt der Bildschirm die Komposition — das
+            // nächste Öffnen fängt also wieder beim aktuellen Level an.
+            val scrollState = remember(highestLevelUnlocked) {
+                ScrollState(
+                    with(density) {
+                        LevelPathLayout.scrollToCenter(
+                            level = highestLevelUnlocked,
+                            viewportHeight = maxHeight.toPx(),
+                            stepHeight = PATH_STEP.toPx(),
+                            nodeSize = NODE_SIZE.toPx(),
+                        )
+                    }.roundToInt(),
+                )
+            }
+
             val pathHeight = PATH_STEP * (levelCount - 1) + NODE_SIZE * 2
 
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(pathHeight)
-                    .drawBehind {
-                        drawGoldenTrail(levelCount, density)
-                    },
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
             ) {
-                for (level in 1..levelCount) {
-                    val offsetX = PATH_AMPLITUDE * sin(level * PATH_FREQUENCY).toFloat()
-                    val offsetY = PATH_STEP * (level - 1) + NODE_SIZE * 0.5f
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(pathHeight)
+                        .drawBehind {
+                            drawGoldenTrail(levelCount, density)
+                        },
+                ) {
+                    for (level in 1..levelCount) {
+                        val offsetX = PATH_AMPLITUDE * sin(level * PATH_FREQUENCY).toFloat()
+                        val offsetY = PATH_STEP * (level - 1) + NODE_SIZE * 0.5f
 
-                    LevelNode(
-                        level = level,
-                        // Das höchste freigeschaltete ist das nächste, das
-                        // ansteht — es pulsiert. Ein laufendes Level bekommt
-                        // keine eigene Kennzeichnung: Wer die Karte öffnet,
-                        // sucht, wo es weitergeht, nicht wo er gerade steht.
-                        completed = level < highestLevelUnlocked,
-                        current = level == highestLevelUnlocked,
-                        locked = level > highestLevelUnlocked,
-                        canPlay = canPlay,
-                        onClick = { onSelectLevel(level) },
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .offset(x = offsetX, y = offsetY),
-                    )
+                        LevelNode(
+                            level = level,
+                            // Das höchste freigeschaltete ist das nächste, das
+                            // ansteht — es pulsiert. Ein laufendes Level bekommt
+                            // keine eigene Kennzeichnung: Wer die Karte öffnet,
+                            // sucht, wo es weitergeht, nicht wo er gerade steht.
+                            completed = level < highestLevelUnlocked,
+                            current = level == highestLevelUnlocked,
+                            locked = level > highestLevelUnlocked,
+                            canPlay = canPlay,
+                            onClick = { onSelectLevel(level) },
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .offset(x = offsetX, y = offsetY),
+                        )
+                    }
                 }
             }
         }
