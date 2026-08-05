@@ -245,7 +245,27 @@ class FairydokuEngineTest {
         assertTrue("Das Brett muss leer sein", next.marks.isEmpty())
         assertNotEquals(solved.puzzle, next.puzzle)
         assertEquals(GameState.durationForLevel(2), next.remainingMillis)
-        assertEquals(solved.lives, next.lives)
+    }
+
+    @Test
+    fun `ein Fehler im vorigen Level darf die Versuche im naechsten nicht schmaelern`() {
+        var state = startedGame()
+        val puzzle = requireNotNull(state.puzzle)
+        val anchor = puzzle.solution.first()
+        state = placeFairy(state, anchor)
+        // Ein Fehler, aber nicht genug, um das Level zu verlieren.
+        val clashing = puzzle.allPositions.first { it.row == anchor.row && it != anchor }
+        state = placeFairy(state, clashing)
+        state = engine.onInput(state, GameInput.TapCell(clashing))
+        assertEquals(GameState.MAX_LIVES - 1, state.lives)
+        // Zuruecknehmen, damit `solve` gleich jedes Loesungsfeld frisch setzen
+        // kann, statt den Anker durch erneutes Halten wieder zu entfernen.
+        state = placeFairy(state, anchor)
+
+        val solved = solve(state)
+        val next = engine.onInput(solved, GameInput.NextLevel)
+
+        assertEquals(GameState.MAX_LIVES, next.lives)
     }
 
     @Test

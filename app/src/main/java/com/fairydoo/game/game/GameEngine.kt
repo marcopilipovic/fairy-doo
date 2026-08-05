@@ -232,9 +232,11 @@ class FairydokuEngine : GameEngine {
     }
 
     /**
-     * Nächstes Level: frisches Rätsel, frische Uhr, neue Feen-Art. Punktestand
-     * und Leben wandern mit — der Endlos-Modus ist ein Lauf, keine Serie
-     * unabhängiger Runden.
+     * Nächstes Level: frisches Rätsel, frische Uhr, neue Feen-Art, drei frische
+     * Versuche. Nur der Punktestand wandert mit — der Endlos-Modus ist ein
+     * Lauf, keine Serie unabhängiger Runden, aber jedes Level für sich soll
+     * fair bleiben: Ein Fehler im vorigen Level darf das nächste nicht schon
+     * mit weniger Spielraum starten lassen.
      */
     private fun onNextLevel(state: GameState): GameState {
         if (state.status != GameStatus.LevelComplete) return state
@@ -244,9 +246,11 @@ class FairydokuEngine : GameEngine {
     /**
      * Baut ein Level auf.
      *
-     * [fresh] entscheidet, ob Punktestand, Leben und Vorräte neu beginnen
+     * [fresh] entscheidet, ob Punktestand und Vorräte neu beginnen
      * (Levelauswahl, neuer Versuch) oder von [previous] mitwandern (Weiterzug
-     * nach gelöstem Rätsel im selben Lauf).
+     * nach gelöstem Rätsel im selben Lauf). Die drei Versuche gelten dagegen
+     * immer nur für das gerade begonnene Level — sie beginnen bei jedem
+     * Levelstart neu, ob frisch gewählt oder als Weiterzug.
      */
     private fun buildLevel(previous: GameState, level: Int, status: GameStatus, fresh: Boolean): GameState {
         val duration = GameState.durationForLevel(level)
@@ -262,7 +266,7 @@ class FairydokuEngine : GameEngine {
             // gescheitert ist — Level 2 muss immer Level 2 sein, wie oft man
             // es auch neu beginnt.
             puzzle = PuzzleGenerator.generate(GameState.sizeForLevel(level), Random(level.toLong())),
-            lives = if (fresh) GameState.MAX_LIVES else previous.lives,
+            lives = GameState.MAX_LIVES,
             // Der Feenstaub wird nicht mehr je Level ausgeteilt: Er ist ein
             // Vorrat des Spielers, der über die Zeit nachwächst. Was noch da
             // ist, nimmt das nächste Level mit; den Anfangsstand setzt beim
