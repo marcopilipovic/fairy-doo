@@ -1,6 +1,5 @@
 package com.fairydoo.game.audio
 
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -24,8 +23,8 @@ class SoundRenderTest {
 
     @Test
     fun `alle Klaenge sind hoerbar und uebersteuern nicht`() {
-        // Kichern und Aufschrei sind Aufnahmen und daher nicht Teil dieser
-        // Prüfung — hier geht es nur um die berechneten Klänge.
+        // Der Aufschrei ist eine Aufnahme und daher nicht Teil dieser Prüfung
+        // — hier geht es nur um die berechneten Klänge.
         val sounds = buildMap {
             put("jubel", FairySounds.cheer())
             put("feenstaub", FairySounds.sparkle())
@@ -67,13 +66,6 @@ class SoundRenderTest {
         // der eines vollen Sägezahn-Zyklus.
         val naht = kotlin.math.abs(looped.first().toInt() - looped.last().toInt())
         assertTrue("Die Naht springt zu weit ($naht)", naht < 12_000)
-    }
-
-    @Test
-    fun `fuer jede Kicher-Variante gibt es eine Aufnahme`() {
-        // Die Ereignis-Zuordnung rechnet modulo dieser Zahl; stimmt sie nicht
-        // mit der Zahl der Dateien überein, bliebe eine Fee stumm.
-        assertEquals(FairyClips.GIGGLE_COUNT, FairyClips.giggles.size)
     }
 
     /** Nutzt dieselbe WAV-Erzeugung wie die App, damit beides nicht auseinanderläuft. */

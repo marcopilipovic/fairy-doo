@@ -1,5 +1,6 @@
 package com.fairydoo.game.audio
 
+import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GameStatus
 import com.fairydoo.game.game.StatusMessage
@@ -7,8 +8,8 @@ import com.fairydoo.game.game.model.CellMark
 
 /** Was im Wald zu hören ist. */
 sealed interface SoundEvent {
-    /** Eine Fee wurde gesetzt und sitzt richtig — sie kichert. */
-    data class FairyPlaced(val variant: Int) : SoundEvent
+    /** Eine Fee wurde gesetzt und sitzt richtig — sie ruft ihren Ausruf. */
+    data class FairyPlaced(val species: FairySpecies) : SoundEvent
 
     /** Eine Fee wurde falsch gesetzt und erschrickt. */
     data object FairyStartled : SoundEvent
@@ -34,7 +35,7 @@ sealed interface SoundEvent {
  * Bewusst hier statt in der Engine: Die Regeln sollen nichts über Klang wissen.
  * Und bewusst als reine Funktion statt verstreut in der UI — so ist in einem
  * Unit-Test prüfbar, dass ein falsch gesetzter Zug wirklich den Schreck auslöst
- * und nicht das Kichern.
+ * und nicht den Ausruf.
  */
 object SoundEvents {
 
@@ -75,12 +76,7 @@ object SoundEvents {
             when (after) {
                 CellMark.Fairy -> events += when {
                     pos in next.conflicts -> SoundEvent.FairyStartled
-                    // Die Variante wechselt mit Feld und Spielstand, damit
-                    // dieselbe Fee nicht bei jedem Zug identisch klingt.
-                    else -> SoundEvent.FairyPlaced(
-                        variant = (pos.row * 3 + pos.col + next.placedFairies) %
-                            FairyClips.GIGGLE_COUNT,
-                    )
+                    else -> SoundEvent.FairyPlaced(species = next.speciesAt(pos) ?: continue)
                 }
 
                 CellMark.Warded -> events += SoundEvent.Ward

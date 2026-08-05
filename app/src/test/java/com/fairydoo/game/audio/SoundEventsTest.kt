@@ -35,35 +35,32 @@ class SoundEventsTest {
     }
 
     @Test
-    fun `eine richtig gesetzte Fee kichert`() {
+    fun `eine richtig gesetzte Fee ruft ihren Ausruf`() {
         val warded = tap(startedGame(), requireNotNull(startedGame().puzzle).solution.first())
         val pos = requireNotNull(warded.puzzle).solution.first()
 
         val events = SoundEvents.diff(warded, place(warded, pos))
 
-        assertTrue("Erwartet wurde ein Kichern, war: $events", events.single() is SoundEvent.FairyPlaced)
+        assertTrue("Erwartet wurde ein Ausruf, war: $events", events.single() is SoundEvent.FairyPlaced)
     }
 
     @Test
-    fun `die Kicher-Variante liegt im gueltigen Bereich`() {
+    fun `der Ausruf gehoert zur Fee auf dem gesetzten Feld`() {
         var state = startedGame()
-        val variants = mutableSetOf<Int>()
+        val solution = requireNotNull(state.puzzle).solution.toList()
 
-        for (pos in requireNotNull(state.puzzle).solution) {
+        // Die letzte Fee löst das Rätsel — dann jubelt es statt zu rufen (siehe
+        // "das geloeste Raetsel jubelt statt zu kichern"), deshalb hier außen vor.
+        for (pos in solution.dropLast(1)) {
             val warded = tap(state, pos)
             val placed = place(warded, pos)
-            SoundEvents.diff(warded, placed)
+            val event = SoundEvents.diff(warded, placed)
                 .filterIsInstance<SoundEvent.FairyPlaced>()
-                .forEach { variants += it.variant }
+                .single()
+
+            assertEquals(placed.speciesAt(pos), event.species)
             state = placed
         }
-
-        assertTrue("Keine Varianten erzeugt", variants.isNotEmpty())
-        // Jede Variante muss auf eine vorhandene Aufnahme zeigen.
-        assertTrue(
-            "Variante außerhalb des Bereichs: $variants",
-            variants.all { it in 0 until FairyClips.GIGGLE_COUNT },
-        )
     }
 
     @Test

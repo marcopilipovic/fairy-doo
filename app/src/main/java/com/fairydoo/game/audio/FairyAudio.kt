@@ -43,12 +43,12 @@ class FairyAudio(context: Context) {
     private var musicJob: Job? = null
 
     /**
-     * Für die aufgenommenen Feenstimmen.
+     * Für den aufgenommenen Aufschrei bei falsch gesetzten Feen.
      *
-     * SoundPool statt AudioTrack, weil es MP3 selbst dekodiert, die Clips im
-     * Speicher hält und mehrere gleichzeitig mischen kann — beim schnellen
-     * Setzen mehrerer Feen überlappen die Stimmen dadurch, statt sich
-     * abzuschneiden.
+     * SoundPool statt AudioTrack, weil es MP3 selbst dekodiert und mehrere
+     * Clips gleichzeitig mischen kann. Die Ausrufe der richtig gesetzten Feen
+     * laufen dagegen über die Sprachausgabe (siehe [FairyVoice.exclaim]),
+     * nicht über diesen Pool — keine Aufnahme, deren Rechte zu klären wären.
      */
     private val clipPool: SoundPool = SoundPool.Builder()
         .setMaxStreams(MAX_CLIP_STREAMS)
@@ -60,7 +60,6 @@ class FairyAudio(context: Context) {
         )
         .build()
 
-    private val giggleIds = mutableListOf<Int>()
     private var startledId = 0
 
     /** Geladene Clips; vorher abgespielt liefert SoundPool nur Stille. */
@@ -92,7 +91,7 @@ class FairyAudio(context: Context) {
         if (musicEnabled) musicJob = scope.launch { startMusic() }
     }
 
-    /** Lädt die aufgenommenen Stimmen; das Dekodieren übernimmt SoundPool. */
+    /** Lädt die aufgenommene Aufschrei-Stimme; das Dekodieren übernimmt SoundPool. */
     private fun loadClips() {
         clipPool.setOnLoadCompleteListener { _, sampleId, status ->
             if (status == 0) {
@@ -102,9 +101,6 @@ class FairyAudio(context: Context) {
             }
         }
 
-        FairyClips.giggles.forEach { resId ->
-            giggleIds += clipPool.load(appContext, resId, 1)
-        }
         startledId = clipPool.load(appContext, FairyClips.startled, 1)
     }
 
@@ -254,13 +250,14 @@ class FairyAudio(context: Context) {
 
     /** Spielt, was das Spielgeschehen hergibt. */
     fun play(event: SoundEvent, level: Int = 1, score: Int = 0) {
-        // Die Stimmen liegen im SoundPool und sind unabhängig von den
-        // berechneten Klängen spielbereit — deshalb wird hier nicht auf
-        // `prepared` gewartet.
+        // Aufschrei liegt im SoundPool und die Sprachausgabe hat ihre eigene
+        // Bereitschaftsprüfung — beides unabhängig von den berechneten
+        // Klängen spielbereit, deshalb wird hier nicht auf `prepared` gewartet.
         when (event) {
-            is SoundEvent.FairyPlaced -> playClip(
-                giggleIds.getOrNull(event.variant % giggleIds.size.coerceAtLeast(1)),
-            )
+            is SoundEvent.FairyPlaced -> {
+                val volume = voiceVolume
+                if (volume > 0f) voice.exclaim(event.species, volume)
+            }
             SoundEvent.FairyStartled -> playClip(startledId)
             else -> Unit
         }
