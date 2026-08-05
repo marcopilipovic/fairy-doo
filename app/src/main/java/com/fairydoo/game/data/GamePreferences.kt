@@ -13,6 +13,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.fairydoo.game.game.FairyDustSupply
 import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GlobalLives
+import com.fairydoo.game.game.IrrlichtSupply
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -37,6 +38,9 @@ data class PlayerProfile(
     /** Der Feenstaub-Vorrat — wie die Wald-Leben übergreifend und nachwachsend. */
     val fairyDust: Int = FairyDustSupply.max,
     val nextFairyDustAtMillis: Long = 0L,
+    /** Der Irrlicht-Vorrat — genauso übergreifend und nachwachsend. */
+    val irrlicht: Int = IrrlichtSupply.max,
+    val nextIrrlichtAtMillis: Long = 0L,
     /** Ob die Anleitung schon einmal zu Ende gesehen oder übersprungen wurde. */
     val hasSeenTutorial: Boolean = false,
     /** Wie die Spielerin in der Rangliste heißen möchte — leer, bis gesetzt. */
@@ -85,6 +89,8 @@ class GamePreferencesRepository(context: Context) {
             nextGlobalLifeAtMillis = prefs[KeyNextGlobalLifeAt] ?: 0L,
             fairyDust = prefs[KeyFairyDust] ?: FairyDustSupply.max,
             nextFairyDustAtMillis = prefs[KeyNextFairyDustAt] ?: 0L,
+            irrlicht = prefs[KeyIrrlicht] ?: IrrlichtSupply.max,
+            nextIrrlichtAtMillis = prefs[KeyNextIrrlichtAt] ?: 0L,
             hasSeenTutorial = prefs[KeyTutorialSeen] ?: false,
             playerName = prefs[KeyPlayerName] ?: "",
             selectedAvatar = prefs[KeySelectedAvatar]
@@ -142,6 +148,25 @@ class GamePreferencesRepository(context: Context) {
     }
 
     /**
+     * Werbung angesehen — ein Wald-Leben extra, unabhängig vom natürlichen
+     * Nachwachsen. Erreicht der Vorrat dadurch das Maximum, steht die
+     * Nachwachs-Uhr wieder still wie bei einem ohnehin vollen Vorrat.
+     */
+    suspend fun grantGlobalLife() {
+        store.edit { prefs ->
+            val now = System.currentTimeMillis()
+            val normalized = GlobalLives.normalize(
+                storedLives = prefs[KeyGlobalLives] ?: GlobalLives.MAX,
+                nextLifeAtMillis = prefs[KeyNextGlobalLifeAt] ?: 0L,
+                nowMillis = now,
+            )
+            val granted = (normalized.lives + 1).coerceAtMost(GlobalLives.MAX)
+            prefs[KeyGlobalLives] = granted
+            prefs[KeyNextGlobalLifeAt] = if (granted >= GlobalLives.MAX) 0L else normalized.nextLifeAtMillis
+        }
+    }
+
+    /**
      * Feenstaub einsetzen — zieht eines vom Vorrat ab.
      *
      * Wie bei den Wald-Leben wird vor dem Abziehen nachgeholt, was inzwischen
@@ -159,6 +184,55 @@ class GamePreferencesRepository(context: Context) {
             val consumed = FairyDustSupply.consume(normalized, now)
             prefs[KeyFairyDust] = consumed.amount
             prefs[KeyNextFairyDustAt] = consumed.nextAtMillis
+        }
+    }
+
+    /** Werbung angesehen — ein Feenstaub extra, siehe [grantGlobalLife]. */
+    suspend fun grantFairyDust() {
+        store.edit { prefs ->
+            val now = System.currentTimeMillis()
+            val normalized = FairyDustSupply.normalize(
+                storedAmount = prefs[KeyFairyDust] ?: FairyDustSupply.max,
+                nextAtMillis = prefs[KeyNextFairyDustAt] ?: 0L,
+                nowMillis = now,
+            )
+            val granted = (normalized.amount + 1).coerceAtMost(FairyDustSupply.max)
+            prefs[KeyFairyDust] = granted
+            prefs[KeyNextFairyDustAt] = if (granted >= FairyDustSupply.max) 0L else normalized.nextAtMillis
+        }
+    }
+
+    /**
+     * Irrlicht einsetzen — zieht eines vom Vorrat ab.
+     *
+     * Gleiches Vorgehen wie bei [consumeFairyDust], nur für den zweiten Vorrat.
+     */
+    suspend fun consumeIrrlicht() {
+        store.edit { prefs ->
+            val now = System.currentTimeMillis()
+            val normalized = IrrlichtSupply.normalize(
+                storedAmount = prefs[KeyIrrlicht] ?: IrrlichtSupply.max,
+                nextAtMillis = prefs[KeyNextIrrlichtAt] ?: 0L,
+                nowMillis = now,
+            )
+            val consumed = IrrlichtSupply.consume(normalized, now)
+            prefs[KeyIrrlicht] = consumed.amount
+            prefs[KeyNextIrrlichtAt] = consumed.nextAtMillis
+        }
+    }
+
+    /** Werbung angesehen — ein Irrlicht extra, siehe [grantGlobalLife]. */
+    suspend fun grantIrrlicht() {
+        store.edit { prefs ->
+            val now = System.currentTimeMillis()
+            val normalized = IrrlichtSupply.normalize(
+                storedAmount = prefs[KeyIrrlicht] ?: IrrlichtSupply.max,
+                nextAtMillis = prefs[KeyNextIrrlichtAt] ?: 0L,
+                nowMillis = now,
+            )
+            val granted = (normalized.amount + 1).coerceAtMost(IrrlichtSupply.max)
+            prefs[KeyIrrlicht] = granted
+            prefs[KeyNextIrrlichtAt] = if (granted >= IrrlichtSupply.max) 0L else normalized.nextAtMillis
         }
     }
 
@@ -209,6 +283,8 @@ class GamePreferencesRepository(context: Context) {
         val KeyNextGlobalLifeAt = longPreferencesKey("next_global_life_at")
         val KeyFairyDust = intPreferencesKey("fairy_dust")
         val KeyNextFairyDustAt = longPreferencesKey("next_fairy_dust_at")
+        val KeyIrrlicht = intPreferencesKey("irrlicht")
+        val KeyNextIrrlichtAt = longPreferencesKey("next_irrlicht_at")
         val KeyTutorialSeen = booleanPreferencesKey("tutorial_seen")
         val KeyPlayerName = stringPreferencesKey("player_name")
         val KeySelectedAvatar = stringPreferencesKey("selected_avatar")

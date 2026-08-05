@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -91,6 +92,63 @@ class GameViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = SupplyState(FairyDustSupply.max, 0L),
     )
+
+    /** Der Irrlicht-Vorrat, live nachgeführt — wie der Feenstaub. */
+    val irrlicht: StateFlow<SupplyState> = combine(
+        preferences.profile,
+        tickerFlow(1_000L),
+    ) { current, _ ->
+        IrrlichtSupply.normalize(
+            current.irrlicht,
+            current.nextIrrlichtAtMillis,
+            System.currentTimeMillis(),
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SupplyState(IrrlichtSupply.max, 0L),
+    )
+
+    /**
+     * Werbung wird erst angeboten, nachdem die ersten zehn Level geschafft
+     * sind — wer gerade erst anfängt, soll nicht gleich mit Werbeangeboten
+     * begrüßt werden.
+     */
+    val adsUnlocked: StateFlow<Boolean> = profile
+        .map { it.highestLevelUnlocked > ADS_UNLOCK_AFTER_LEVEL }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false,
+        )
+
+    /**
+     * Werbung angesehen — je ein Feenstaub/Irrlicht/Leben extra.
+     *
+     * Feenstaub und Irrlicht wirken sofort im laufenden Level mit, nicht erst
+     * beim nächsten Levelstart: Wer mitten im Rätsel ohne Vorrat dasteht, will
+     * mit der Belohnung sofort weiterspielen, nicht erst nach einem Neustart.
+     * Das Wald-Leben betrifft dagegen nie das laufende Level, sondern nur den
+     * app-weiten Vorrat — dafür reicht das Schreiben in die Vorlieben, der
+     * eigene [globalLives]-Zustand liest ihn ohnehin live nach.
+     */
+    fun grantFairyDust() {
+        viewModelScope.launch {
+            preferences.grantFairyDust()
+            applyState(_state.value.copy(fairyDust = (_state.value.fairyDust + 1).coerceAtMost(FairyDustSupply.max)))
+        }
+    }
+
+    fun grantIrrlicht() {
+        viewModelScope.launch {
+            preferences.grantIrrlicht()
+            applyState(_state.value.copy(irrlicht = (_state.value.irrlicht + 1).coerceAtMost(IrrlichtSupply.max)))
+        }
+    }
+
+    fun grantGlobalLife() {
+        viewModelScope.launch { preferences.grantGlobalLife() }
+    }
 
     /** Steuert, ob die Levelkarte statt des Spiels gezeigt wird. Start: die Karte. */
     private val _showLevelSelect = MutableStateFlow(true)
@@ -175,7 +233,10 @@ class GameViewModel(
             // Der Vorrat gehört dem Spieler, nicht dem Level: Was gespeichert
             // ist — abzüglich dessen, was inzwischen nachgewachsen ist —, geht
             // ins neue Level mit.
-            val fresh = started.copy(fairyDust = fairyDust.value.amount)
+            val fresh = started.copy(
+                fairyDust = fairyDust.value.amount,
+                irrlicht = irrlicht.value.amount,
+            )
             _isPreparing.value = false
             _showLevelSelect.value = false
             applyState(fresh)
@@ -220,6 +281,15 @@ class GameViewModel(
                 if (before.fairyDust > 0) {
                     applyState(engine.onInput(before, input))
                     viewModelScope.launch { preferences.consumeFairyDust() }
+                }
+            }
+
+            // Wie der Feenstaub: zusätzlich dauerhaft abgebucht.
+            GameInput.UseIrrlicht -> {
+                val before = _state.value
+                if (before.irrlicht > 0) {
+                    applyState(engine.onInput(before, input))
+                    viewModelScope.launch { preferences.consumeIrrlicht() }
                 }
             }
 
@@ -333,6 +403,9 @@ class GameViewModel(
 
         /** Willkommen, Berührungsregel, Antippen&Halten, Zauberhilfen, Leben. */
         const val TUTORIAL_STEP_COUNT = 5
+
+        /** Werbung erst nach dem geschafften Level 10 — siehe [adsUnlocked]. */
+        private const val ADS_UNLOCK_AFTER_LEVEL = 10
 
         /** Für `viewModel(factory = GameViewModel.factory(repository))`. */
         fun factory(preferences: GamePreferencesRepository): ViewModelProvider.Factory =

@@ -35,6 +35,9 @@ sealed interface GameInput {
     /** Feenstaub einsetzen — deckt ein sicheres Feld auf. */
     data object UseFairyDust : GameInput
 
+    /** Irrlicht einsetzen — deckt ein sicheres, leeres Nicht-Lösungsfeld auf. */
+    data object UseIrrlicht : GameInput
+
     /** „Den Wald betreten" — beendet das Willkommens-Overlay. */
     data object Begin : GameInput
 
@@ -79,6 +82,7 @@ class FairydokuEngine : GameEngine {
         is GameInput.TapCell -> onTapCell(state, input.pos)
         is GameInput.HoldCell -> onHoldCell(state, input.pos)
         GameInput.UseFairyDust -> onUseFairyDust(state)
+        GameInput.UseIrrlicht -> onUseIrrlicht(state)
         GameInput.Begin -> onBegin(state)
         GameInput.NextLevel -> onNextLevel(state)
     }
@@ -217,6 +221,40 @@ class FairydokuEngine : GameEngine {
         )
     }
 
+    /**
+     * Irrlicht einsetzen.
+     *
+     * Die Kehrseite des Feenstaubs: deckt kein Lösungsfeld auf, sondern
+     * schließt eins aus. Kostet deshalb nie ein Leben und kann das Rätsel nie
+     * lösen — nur eine Fee tut das.
+     */
+    private fun onUseIrrlicht(state: GameState): GameState {
+        if (state.status != GameStatus.Running) return state
+        if (state.irrlicht <= 0) return state
+
+        return revealForbiddenCell(state.copy(irrlicht = state.irrlicht - 1))
+    }
+
+    /** Das Irrlicht markiert ein noch leeres Feld außerhalb der Lösung mit X. */
+    private fun revealForbiddenCell(state: GameState): GameState {
+        val puzzle = state.puzzle ?: return state
+
+        val target = puzzle.allPositions
+            .filter { it !in puzzle.solution && state.markAt(it) == CellMark.Empty }
+            .minByOrNull { it.row * puzzle.size + it.col }
+            ?: return state
+
+        val marks = state.marks.toMutableMap()
+        marks[target] = CellMark.Warded
+
+        return state.copy(
+            marks = marks,
+            hintCell = target,
+            hintPulseMillis = GameState.HINT_PULSE_MILLIS,
+            statusMessage = StatusMessage.IrrlichtUsed,
+        )
+    }
+
     /** Alle Feen gesetzt und keine im Konflikt: Level geschafft. */
     private fun checkWin(state: GameState): GameState {
         val puzzle = state.puzzle ?: return state
@@ -272,6 +310,8 @@ class FairydokuEngine : GameEngine {
             // ist, nimmt das nächste Level mit; den Anfangsstand setzt beim
             // Levelstart das ViewModel aus dem gespeicherten Stand.
             fairyDust = previous.fairyDust,
+            // Wie der Feenstaub: ein Vorrat des Spielers, kein levelweiser.
+            irrlicht = previous.irrlicht,
             remainingMillis = duration,
             roundDurationMillis = duration,
             statusMessage = StatusMessage.Hint,

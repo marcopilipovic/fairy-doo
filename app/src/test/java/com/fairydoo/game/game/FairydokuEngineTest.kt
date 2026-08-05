@@ -217,6 +217,59 @@ class FairydokuEngineTest {
     }
 
     @Test
+    fun `das Irrlicht markiert ein sicheres Feld ohne Fee`() {
+        var state = startedGame()
+        val puzzle = requireNotNull(state.puzzle)
+
+        state = engine.onInput(state, GameInput.UseIrrlicht)
+
+        val revealed = requireNotNull(state.hintCell)
+        assertTrue(
+            "Der Hinweis darf nicht zur Lösung gehören",
+            revealed !in puzzle.solution,
+        )
+        assertEquals(CellMark.Warded, state.markAt(revealed))
+        assertEquals(StatusMessage.IrrlichtUsed, state.statusMessage)
+    }
+
+    @Test
+    fun `das Irrlicht kostet nie ein Leben und loest nie das Raetsel`() {
+        var state = startedGame()
+        repeat(GameState.MAX_SIZE * GameState.MAX_SIZE) {
+            state = engine.onInput(state, GameInput.UseIrrlicht)
+        }
+
+        assertEquals(GameStatus.Running, state.status)
+        assertEquals(GameState.MAX_LIVES, state.lives)
+        assertTrue(state.conflicts.isEmpty())
+    }
+
+    @Test
+    fun `ohne Vorrat bewirkt das Irrlicht nichts`() {
+        var state = startedGame()
+        repeat(state.irrlicht) {
+            state = engine.onInput(state, GameInput.UseIrrlicht)
+        }
+        val marksBefore = state.marks
+
+        state = engine.onInput(state, GameInput.UseIrrlicht)
+
+        assertEquals(0, state.irrlicht)
+        assertEquals(marksBefore, state.marks)
+    }
+
+    @Test
+    fun `das Irrlicht geht ins naechste Level mit`() {
+        val started = startedGame()
+        val used = engine.onInput(started, GameInput.UseIrrlicht)
+        val solved = solve(used)
+        val next = engine.onInput(solved, GameInput.NextLevel)
+
+        assertEquals(started.irrlicht - 1, used.irrlicht)
+        assertEquals(used.irrlicht, next.irrlicht)
+    }
+
+    @Test
     fun `das geloeste Raetsel schliesst das Level ab`() {
         val state = solve(startedGame())
 
@@ -306,6 +359,7 @@ class FairydokuEngineTest {
 
         assertEquals(paused, engine.onInput(paused, GameInput.TapCell(pos)))
         assertEquals(paused, engine.onInput(paused, GameInput.UseFairyDust))
+        assertEquals(paused, engine.onInput(paused, GameInput.UseIrrlicht))
         assertEquals(paused, engine.tick(paused, 1_000L))
     }
 
@@ -331,6 +385,7 @@ class FairydokuEngineTest {
         assertEquals(0, freshAtLevelFive.score)
         assertEquals(GameState.MAX_LIVES, freshAtLevelFive.lives)
         assertEquals(FairyDustSupply.max, freshAtLevelFive.fairyDust)
+        assertEquals(IrrlichtSupply.max, freshAtLevelFive.irrlicht)
         assertEquals(GameState.sizeForLevel(5), freshAtLevelFive.boardSize)
     }
 }

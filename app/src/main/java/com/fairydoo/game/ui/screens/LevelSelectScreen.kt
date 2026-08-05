@@ -134,6 +134,10 @@ fun LevelSelectScreen(
     onMusicChange: (Float) -> Unit,
     onSoundChange: (Float) -> Unit,
     onVoiceChange: (Float) -> Unit,
+    adsUnlocked: Boolean,
+    adReady: Boolean,
+    onWatchAdForLife: () -> Unit,
+    onOpenGiftForLife: () -> Unit,
 ) {
     // Rein lokale UI-Zustände: Die Levelkarte hat keine laufende Uhr, die ein
     // geöffnetes Overlay schützen müsste — anders als beim Tutorial gibt es
@@ -150,7 +154,13 @@ fun LevelSelectScreen(
                 .padding(horizontal = 18.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ForestLivesBadge(globalLives)
+            ForestLivesBadge(
+                state = globalLives,
+                adsUnlocked = adsUnlocked,
+                adReady = adReady,
+                onWatchAd = onWatchAdForLife,
+                onOpenGift = onOpenGiftForLife,
+            )
 
             Spacer(Modifier.height(8.dp))
 
@@ -726,7 +736,13 @@ private fun LevelNode(
  * weitergeht.
  */
 @Composable
-private fun ForestLivesBadge(state: GlobalLivesState) {
+private fun ForestLivesBadge(
+    state: GlobalLivesState,
+    adsUnlocked: Boolean,
+    adReady: Boolean,
+    onWatchAd: () -> Unit,
+    onOpenGift: () -> Unit,
+) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
@@ -742,12 +758,46 @@ private fun ForestLivesBadge(state: GlobalLivesState) {
             )
         }
 
-        if (state.lives < GlobalLives.MAX) {
+        if (state.lives == 0 && adsUnlocked) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = if (adReady) "📺 Werbung ansehen (+1 Leben)" else "Werbung lädt…",
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 12.sp,
+                color = GoldLight,
+                modifier = Modifier
+                    .clickable(
+                        enabled = adReady,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onWatchAd,
+                    )
+                    .padding(4.dp),
+            )
+        } else if (state.lives == 0) {
+            // Vor Level 11 gibt es noch keine Werbung — ein leeres Wald-Leben
+            // wartet nicht auf den Countdown, sondern lässt sich sofort per
+            // Geschenk auffüllen.
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "🎁 Geschenk annehmen",
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 12.sp,
+                color = GoldLight,
+                modifier = Modifier
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onOpenGift,
+                    )
+                    .padding(4.dp),
+            )
+        } else if (state.lives < GlobalLives.MAX) {
             Spacer(Modifier.height(4.dp))
             val remainingSeconds = ((state.nextLifeAtMillis - System.currentTimeMillis())
                 .coerceAtLeast(0L) / 1000L).toInt()
             Text(
-                text = "+💚 in ${GameCopy.formatTime(remainingSeconds)}",
+                text = "+💚 in ${GameCopy.formatWaitTime(remainingSeconds)}",
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 12.sp,
                 color = if (state.lives == 0) DangerRose else PanelText.copy(alpha = 0.8f),

@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.ui.GameCopy
 import com.fairydoo.game.ui.theme.Gold
+import com.fairydoo.game.ui.theme.StatusPurple
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
@@ -47,40 +48,91 @@ import com.fairydoo.game.ui.theme.PowerTileShieldTop
 import com.fairydoo.game.ui.theme.PowerTileTop
 
 /**
- * Der Feenstaub am unteren Rand — die einzige Hilfe im Spiel.
+ * Die zwei Hilfen am unteren Rand: Feenstaub und Irrlicht.
  *
- * Zuvor standen hier drei Fähigkeiten. Der Natur-Schild nahm dem Fehler die
- * Folge, die Zeiten-Blüte der Uhr den Druck; beide machten das Rätsel beliebig.
- * Was bleibt, ist die eine Hilfe, die weiterhilft, ohne das Nachdenken
- * abzunehmen: ein aufgedecktes Feld.
+ * Zuvor stand hier nur der Feenstaub, davor sogar drei Fähigkeiten. Der
+ * Natur-Schild nahm dem Fehler die Folge, die Zeiten-Blüte der Uhr den Druck;
+ * beide machten das Rätsel beliebig. Feenstaub und Irrlicht bleiben dagegen
+ * beide bei der Sache — sie decken ein Feld auf, statt eine Regel
+ * abzuschwächen: der eine ein sicheres Lösungsfeld, der andere ein sicher
+ * ausgeschlossenes.
  *
- * Ist der Vorrat leer, steht statt „Hinweis" die Zeit bis zum nächsten Staub.
+ * Ist ein Vorrat leer, steht statt „Hinweis" die Zeit bis zum nächsten Stück.
  * Ohne diese Angabe wäre der blasse Knopf eine Sackgasse ohne Erklärung.
  */
 @Composable
 fun PowerUpBar(
     state: GameState,
     nextDustInMillis: Long,
-    onUse: () -> Unit,
+    nextIrrlichtInMillis: Long,
+    onUseFairyDust: () -> Unit,
+    onUseIrrlicht: () -> Unit,
+    adsUnlocked: Boolean,
+    adReady: Boolean,
+    onWatchAdForFairyDust: () -> Unit,
+    onWatchAdForIrrlicht: () -> Unit,
+    onOpenGiftForFairyDust: () -> Unit,
+    onOpenGiftForIrrlicht: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Vor Level 11 ersetzt ein Geschenk (sofortiges Auffüllen per Antippen)
+    // die Werbung — ein leerer Vorrat muss nie auf den Countdown warten.
+    // Solange noch eines übrig ist, bleibt in beiden Fällen der normale
+    // Hinweis-Knopf dran.
+    val offerAdForFairyDust = state.fairyDust <= 0 && adsUnlocked
+    val offerGiftForFairyDust = state.fairyDust <= 0 && !adsUnlocked
+    val offerAdForIrrlicht = state.irrlicht <= 0 && adsUnlocked
+    val offerGiftForIrrlicht = state.irrlicht <= 0 && !adsUnlocked
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
     ) {
         PowerUpButton(
-            glyph = "✨",
-            label = if (state.fairyDust > 0 || nextDustInMillis <= 0L) {
-                "Feenstaub\nHinweis"
-            } else {
-                "Feenstaub\nin ${GameCopy.formatTime((nextDustInMillis / 1000L).toInt())}"
+            glyph = when {
+                offerAdForFairyDust -> "📺"
+                offerGiftForFairyDust -> "🎁"
+                else -> "✨"
+            },
+            label = when {
+                offerAdForFairyDust -> if (adReady) "Werbung\nansehen" else "Werbung\nlädt…"
+                offerGiftForFairyDust -> "Geschenk\nannehmen"
+                state.fairyDust > 0 || nextDustInMillis <= 0L -> "Feenstaub\nHinweis"
+                else -> "Feenstaub\nin ${GameCopy.formatWaitTime((nextDustInMillis / 1000L).toInt())}"
             },
             count = state.fairyDust,
             accent = Gold,
             badgeTextColor = Color(0xFF2A1C05),
             active = false,
-            enabled = state.fairyDust > 0,
-            onClick = onUse,
+            enabled = if (offerAdForFairyDust) adReady else true,
+            onClick = when {
+                offerAdForFairyDust -> onWatchAdForFairyDust
+                offerGiftForFairyDust -> onOpenGiftForFairyDust
+                else -> onUseFairyDust
+            },
+        )
+        PowerUpButton(
+            glyph = when {
+                offerAdForIrrlicht -> "📺"
+                offerGiftForIrrlicht -> "🎁"
+                else -> "🔮"
+            },
+            label = when {
+                offerAdForIrrlicht -> if (adReady) "Werbung\nansehen" else "Werbung\nlädt…"
+                offerGiftForIrrlicht -> "Geschenk\nannehmen"
+                state.irrlicht > 0 || nextIrrlichtInMillis <= 0L -> "Irrlicht\nHinweis"
+                else -> "Irrlicht\nin ${GameCopy.formatWaitTime((nextIrrlichtInMillis / 1000L).toInt())}"
+            },
+            count = state.irrlicht,
+            accent = StatusPurple,
+            badgeTextColor = Color(0xFF241C42),
+            active = false,
+            enabled = if (offerAdForIrrlicht) adReady else true,
+            onClick = when {
+                offerAdForIrrlicht -> onWatchAdForIrrlicht
+                offerGiftForIrrlicht -> onOpenGiftForIrrlicht
+                else -> onUseIrrlicht
+            },
         )
     }
 }

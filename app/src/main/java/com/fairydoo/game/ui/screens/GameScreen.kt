@@ -66,6 +66,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import android.app.Activity
+import com.fairydoo.game.ads.RewardedAdManager
 import com.fairydoo.game.audio.FairyAudio
 import com.fairydoo.game.data.GamePreferencesRepository
 import com.fairydoo.game.data.PlayerProfile
@@ -79,6 +81,8 @@ import com.fairydoo.game.ui.components.BoardFrameInsets
 import com.fairydoo.game.ui.components.FairydokuBoard
 import com.fairydoo.game.ui.components.FireflyLayer
 import com.fairydoo.game.ui.components.GameOverOverlay
+import com.fairydoo.game.ui.components.GiftKind
+import com.fairydoo.game.ui.components.GiftOverlay
 import com.fairydoo.game.ui.components.IntroOverlay
 import com.fairydoo.game.ui.components.LevelUpOverlay
 import com.fairydoo.game.ui.components.PowerUpBar
@@ -249,7 +253,7 @@ private fun BoxScope.GlowingMushrooms() {
 }
 
 @Composable
-fun GameScreen(preferences: GamePreferencesRepository) {
+fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     val viewModel: GameViewModel = viewModel(
         factory = remember(preferences) { GameViewModel.factory(preferences) },
     )
@@ -258,9 +262,39 @@ fun GameScreen(preferences: GamePreferencesRepository) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val globalLives by viewModel.globalLives.collectAsStateWithLifecycle()
     val fairyDust by viewModel.fairyDust.collectAsStateWithLifecycle()
+    val irrlicht by viewModel.irrlicht.collectAsStateWithLifecycle()
+    val adsUnlocked by viewModel.adsUnlocked.collectAsStateWithLifecycle()
+    val adReady by ads.isReady.collectAsStateWithLifecycle()
     val showLevelSelect by viewModel.showLevelSelect.collectAsStateWithLifecycle()
     val tutorialOpen by viewModel.tutorialOpen.collectAsStateWithLifecycle()
     val tutorialStep by viewModel.tutorialStep.collectAsStateWithLifecycle()
+
+    // Der Activity-Bezug wird erst hier gebraucht, direkt beim Zeigen der
+    // Anzeige — der ViewModel bleibt dadurch Activity-unabhängig.
+    val activity = LocalContext.current as Activity
+    val onWatchAdForFairyDust = { ads.show(activity) { viewModel.grantFairyDust() } }
+    val onWatchAdForIrrlicht = { ads.show(activity) { viewModel.grantIrrlicht() } }
+    val onWatchAdForLife = { ads.show(activity) { viewModel.grantGlobalLife() } }
+
+    // Vor Level 11 tritt an die Stelle der Werbung ein Geschenk-Popup, das
+    // sofort auffüllt — welche Zauberhilfe bzw. welches Leben gerade dran ist,
+    // hält dieser Zustand fest, solange das Popup offen ist. Das letzte
+    // Geschenk ist an Level 10 geknüpft — beim Antippen im laufenden Spiel
+    // zählt das gerade gespielte Level (auch beim Wiederholen älterer Level
+    // bleibt so korrekt, dass nur Level 10 selbst als "letztes" gilt und
+    // nicht schon jedes Level, sobald Level 10 insgesamt freigeschaltet ist);
+    // auf der Levelkarte gibt es kein laufendes Level, dort zählt stattdessen
+    // das höchste freigeschaltete Level, weil das dem nächsten Levelstart am
+    // nächsten kommt.
+    var giftKind by rememberSaveable { mutableStateOf<GiftKind?>(null) }
+    var giftIsLast by rememberSaveable { mutableStateOf(false) }
+    val onOpenGiftForFairyDust = { giftKind = GiftKind.FairyDust; giftIsLast = state.level == 10 }
+    val onOpenGiftForIrrlicht = { giftKind = GiftKind.Irrlicht; giftIsLast = state.level == 10 }
+    val onOpenGiftForLifeInGame = { giftKind = GiftKind.Life; giftIsLast = state.level == 10 }
+    val onOpenGiftForLifeOnMap = {
+        giftKind = GiftKind.Life
+        giftIsLast = profile.highestLevelUnlocked == 10
+    }
 
     // Die Klangwelt lebt so lange wie der Bildschirm; beim Verlassen wird sie
     // freigegeben, sonst liefen Musikspur und Sprachausgabe weiter.
@@ -328,6 +362,10 @@ fun GameScreen(preferences: GamePreferencesRepository) {
                 onMusicChange = viewModel::setMusicVolume,
                 onSoundChange = viewModel::setSoundVolume,
                 onVoiceChange = viewModel::setVoiceVolume,
+                adsUnlocked = adsUnlocked,
+                adReady = adReady,
+                onWatchAdForLife = onWatchAdForLife,
+                onOpenGiftForLife = onOpenGiftForLifeOnMap,
             )
         } else {
             GameContent(
@@ -339,6 +377,7 @@ fun GameScreen(preferences: GamePreferencesRepository) {
                 onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
                 onHoldCell = { viewModel.onInput(GameInput.HoldCell(it)) },
                 onUseFairyDust = { viewModel.onInput(GameInput.UseFairyDust) },
+                onUseIrrlicht = { viewModel.onInput(GameInput.UseIrrlicht) },
                 onBegin = { viewModel.onInput(GameInput.Begin) },
                 onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
                 onOpenLevelSelect = viewModel::openLevelSelect,
@@ -348,6 +387,16 @@ fun GameScreen(preferences: GamePreferencesRepository) {
                 // ist — dann steht dort nichts zu warten.
                 nextDustInMillis = (fairyDust.nextAtMillis - System.currentTimeMillis())
                     .coerceAtLeast(0L),
+                nextIrrlichtInMillis = (irrlicht.nextAtMillis - System.currentTimeMillis())
+                    .coerceAtLeast(0L),
+                adsUnlocked = adsUnlocked,
+                adReady = adReady,
+                onWatchAdForFairyDust = onWatchAdForFairyDust,
+                onWatchAdForIrrlicht = onWatchAdForIrrlicht,
+                onWatchAdForLife = onWatchAdForLife,
+                onOpenGiftForFairyDust = onOpenGiftForFairyDust,
+                onOpenGiftForIrrlicht = onOpenGiftForIrrlicht,
+                onOpenGiftForLife = onOpenGiftForLifeInGame,
                 onOpenSoundSettings = {
                     viewModel.pause()
                     showSoundSettings = true
@@ -371,6 +420,23 @@ fun GameScreen(preferences: GamePreferencesRepository) {
                 onSkip = viewModel::skipTutorial,
             )
         }
+
+        // Über beiden Bildschirmen (Levelkarte wie Spiel), damit ein leerer
+        // Vorrat an beiden Stellen sofort per Geschenk aufgefüllt werden kann.
+        giftKind?.let { kind ->
+            GiftOverlay(
+                kind = kind,
+                isLastGift = giftIsLast,
+                onAccept = {
+                    when (kind) {
+                        GiftKind.FairyDust -> viewModel.grantFairyDust()
+                        GiftKind.Irrlicht -> viewModel.grantIrrlicht()
+                        GiftKind.Life -> viewModel.grantGlobalLife()
+                    }
+                    giftKind = null
+                },
+            )
+        }
     }
 }
 
@@ -384,12 +450,22 @@ private fun GameContent(
     onTapCell: (Pos) -> Unit,
     onHoldCell: (Pos) -> Unit,
     onUseFairyDust: () -> Unit,
+    onUseIrrlicht: () -> Unit,
     onBegin: () -> Unit,
     onNextLevel: () -> Unit,
     onOpenLevelSelect: () -> Unit,
     onRetryLevel: (Int) -> Unit,
     globalLives: com.fairydoo.game.game.GlobalLivesState,
     nextDustInMillis: Long,
+    nextIrrlichtInMillis: Long,
+    adsUnlocked: Boolean,
+    adReady: Boolean,
+    onWatchAdForFairyDust: () -> Unit,
+    onWatchAdForIrrlicht: () -> Unit,
+    onWatchAdForLife: () -> Unit,
+    onOpenGiftForFairyDust: () -> Unit,
+    onOpenGiftForIrrlicht: () -> Unit,
+    onOpenGiftForLife: () -> Unit,
     onOpenSoundSettings: () -> Unit,
     onCloseSoundSettings: () -> Unit,
     onMusicChange: (Float) -> Unit,
@@ -451,7 +527,15 @@ private fun GameContent(
             PowerUpBar(
             state = state,
             nextDustInMillis = nextDustInMillis,
-            onUse = onUseFairyDust,
+            nextIrrlichtInMillis = nextIrrlichtInMillis,
+            onUseFairyDust = onUseFairyDust,
+            onUseIrrlicht = onUseIrrlicht,
+            adsUnlocked = adsUnlocked,
+            adReady = adReady,
+            onWatchAdForFairyDust = onWatchAdForFairyDust,
+            onWatchAdForIrrlicht = onWatchAdForIrrlicht,
+            onOpenGiftForFairyDust = onOpenGiftForFairyDust,
+            onOpenGiftForIrrlicht = onOpenGiftForIrrlicht,
         )
         }
 
@@ -504,6 +588,10 @@ private fun GameContent(
                 globalLives = globalLives,
                 onRetry = { onRetryLevel(state.level) },
                 onShowLevelMap = onOpenLevelSelect,
+                adsUnlocked = adsUnlocked,
+                adReady = adReady,
+                onWatchAd = onWatchAdForLife,
+                onOpenGift = onOpenGiftForLife,
             )
 
             else -> Unit

@@ -22,11 +22,10 @@ object GlobalLives {
     /**
      * Wie lange ein Wald-Leben zum Nachwachsen braucht.
      *
-     * Fünfzehn Minuten nach der Vorlage. Kürzer nähme dem Vorrat seine
-     * Bedeutung — wer nach zwei Minuten ohnehin weiterspielen kann, achtet auf
-     * nichts.
+     * Zwei Stunden, wie Feenstaub und Irrlicht — alle drei Vorräte wachsen
+     * jetzt im selben Takt nach.
      */
-    const val REGEN_INTERVAL_MILLIS = 15 * 60_000L
+    const val REGEN_INTERVAL_MILLIS = 2 * 60 * 60_000L
 
     private val supply = RegeneratingSupply(MAX, REGEN_INTERVAL_MILLIS)
 

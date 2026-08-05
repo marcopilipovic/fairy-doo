@@ -4,8 +4,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * Der Feenstaub-Vorrat: höchstens drei, und ein verbrauchter wächst in einer
- * halben Stunde nach.
+ * Der Feenstaub-Vorrat: höchstens drei, und ein verbrauchter wächst in zwei
+ * Stunden nach.
  *
  * Geprüft wird die Rechnerei ohne Uhr — die Zeit kommt als Parameter herein.
  * Dadurch lässt sich auch der Fall abbilden, der im Spiel am schwersten zu
@@ -14,12 +14,12 @@ import org.junit.Test
 class FairyDustSupplyTest {
 
     private val supply = FairyDustSupply
-    private val halfHour = 30 * 60_000L
+    private val twoHours = 2 * 60 * 60_000L
 
     @Test
     fun `drei Stueck sind das Maximum`() {
         assertEquals(3, supply.max)
-        assertEquals(halfHour, supply.intervalMillis)
+        assertEquals(twoHours, supply.intervalMillis)
     }
 
     @Test
@@ -40,7 +40,7 @@ class FairyDustSupplyTest {
         val used = supply.consume(full, nowMillis = 1_000L)
 
         assertEquals(2, used.amount)
-        assertEquals(1_000L + halfHour, used.nextAtMillis)
+        assertEquals(1_000L + twoHours, used.nextAtMillis)
     }
 
     @Test
@@ -49,17 +49,17 @@ class FairyDustSupplyTest {
         // immer wieder verlängern.
         val once = supply.consume(SupplyState(3, 0L), nowMillis = 1_000L)
 
-        val twice = supply.consume(once, nowMillis = 1_000L + halfHour / 2)
+        val twice = supply.consume(once, nowMillis = 1_000L + twoHours / 2)
 
         assertEquals(1, twice.amount)
         assertEquals(once.nextAtMillis, twice.nextAtMillis)
     }
 
     @Test
-    fun `nach einer halben Stunde ist eines zurueck`() {
+    fun `nach zwei Stunden ist eines zurueck`() {
         val used = supply.consume(SupplyState(3, 0L), nowMillis = 0L)
 
-        val later = supply.normalize(used.amount, used.nextAtMillis, nowMillis = halfHour)
+        val later = supply.normalize(used.amount, used.nextAtMillis, nowMillis = twoHours)
 
         assertEquals(3, later.amount)
         assertEquals("Bei vollem Vorrat steht die Uhr", 0L, later.nextAtMillis)
@@ -68,8 +68,8 @@ class FairyDustSupplyTest {
     @Test
     fun `eine lange Pause holt alles nach, aber nicht mehr als das Maximum`() {
         // Die App war einen Tag geschlossen: Der Vorrat ist voll, nicht
-        // achtundvierzigfach.
-        val empty = SupplyState(0, halfHour)
+        // zwölffach.
+        val empty = SupplyState(0, twoHours)
 
         val later = supply.normalize(empty.amount, empty.nextAtMillis, nowMillis = 24 * 3_600_000L)
 
@@ -79,12 +79,12 @@ class FairyDustSupplyTest {
 
     @Test
     fun `angebrochene Wartezeit geht nicht verloren`() {
-        // Wer nach 29 Minuten nachsieht, darf nicht wieder bei 30 anfangen.
+        // Wer kurz vor Ablauf nachsieht, darf nicht wieder ganz von vorn anfangen.
         val used = supply.consume(SupplyState(3, 0L), nowMillis = 0L)
 
-        val soon = supply.normalize(used.amount, used.nextAtMillis, nowMillis = halfHour - 60_000L)
+        val soon = supply.normalize(used.amount, used.nextAtMillis, nowMillis = twoHours - 60_000L)
 
         assertEquals(2, soon.amount)
-        assertEquals(halfHour, soon.nextAtMillis)
+        assertEquals(twoHours, soon.nextAtMillis)
     }
 }

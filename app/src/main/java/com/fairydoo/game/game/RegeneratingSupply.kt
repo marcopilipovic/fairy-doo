@@ -66,10 +66,19 @@ class RegeneratingSupply(val max: Int, val intervalMillis: Long) {
 }
 
 /**
- * Der Feenstaub — die einzige Hilfe im Spiel.
+ * Der Feenstaub — deckt ein sicheres Feld auf, auf dem eine Fee steht.
  *
- * Drei Stück, und ein verbrauchtes wächst in einer halben Stunde nach. Damit ist
+ * Drei Stück, und ein verbrauchtes wächst in zwei Stunden nach. Damit ist
  * er eine Entscheidung und keine Selbstverständlichkeit: Wer ihn bei jedem
  * schweren Feld einsetzt, steht beim nächsten ohne da.
  */
-val FairyDustSupply = RegeneratingSupply(max = 3, intervalMillis = 30 * 60_000L)
+val FairyDustSupply = RegeneratingSupply(max = 3, intervalMillis = 2 * 60 * 60_000L)
+
+/**
+ * Das Irrlicht — deckt ein sicheres Feld auf, auf dem *keine* Fee steht.
+ *
+ * Die Kehrseite des Feenstaubs: Statt eine Lösung zu verraten, schließt es eine
+ * aus. Gleicher Vorrat, gleiche Nachwachszeit — beide Hilfen sollen gleich
+ * kostbar sein.
+ */
+val IrrlichtSupply = RegeneratingSupply(max = 3, intervalMillis = 2 * 60 * 60_000L)

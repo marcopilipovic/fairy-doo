@@ -43,7 +43,6 @@ import com.fairydoo.game.ui.theme.CardBottom
 import com.fairydoo.game.ui.theme.CardTop
 import com.fairydoo.game.game.GlobalLives
 import com.fairydoo.game.game.GlobalLivesState
-import com.fairydoo.game.ui.GameCopy
 import com.fairydoo.game.ui.theme.DangerRose
 import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.GoldLight
@@ -174,9 +173,8 @@ fun IntroOverlay(bestScore: Int, onStart: () -> Unit) {
 
         Text(
             text = "Tippen: leer → ✕ (hier keine Fee) → 🧚 Fee\n" +
-                "✨ Feenstaub: deckt ein sicheres Feld auf\n" +
-                "🍃 Natur-Schild: schützt vor dem nächsten Fehler\n" +
-                "🌸 Zeiten-Blüte: friert die Zeit kurz ein",
+                "✨ Feenstaub: deckt ein sicheres Feld mit Fee auf\n" +
+                "🔮 Irrlicht: deckt ein sicheres Feld ohne Fee auf",
             style = MaterialTheme.typography.bodyMedium,
             color = TextPrimary.copy(alpha = 0.9f),
             fontSize = 13.sp,
@@ -288,6 +286,68 @@ fun LevelUpOverlay(
     }
 }
 
+/** Welche Zauberhilfe bzw. welches Leben ein [GiftOverlay] gerade auffüllt. */
+enum class GiftKind { FairyDust, Irrlicht, Life }
+
+/**
+ * Das Geschenk-Popup vor Level 10: Bis dahin gibt es noch keine Werbung, ein
+ * leerer Vorrat lässt sich stattdessen sofort per Antippen auffüllen. Ab
+ * Level 11 übernimmt an derselben Stelle das Werbevideo — der Knopf ist dann
+ * schon vertraut.
+ */
+@Composable
+fun GiftOverlay(kind: GiftKind, isLastGift: Boolean, onAccept: () -> Unit) {
+    val (icon, body) = when (kind) {
+        GiftKind.FairyDust -> "✨" to "Bis Level 10 schenke ich dir diesen Tipp! " +
+            "Hier ist neuer Feenstaub – nimm ihn und rätsle weiter."
+        GiftKind.Irrlicht -> "🔮" to "Bis Level 10 schenke ich dir dieses Irrlicht! " +
+            "Es zeigt dir ein Feld, auf dem keine Fee sitzt."
+        GiftKind.Life -> "💚" to "Bis Level 10 schenke ich dir dieses Leben! " +
+            "Kopf hoch – weiter geht's."
+    }
+
+    OverlayScaffold(
+        borderColor = Gold.copy(alpha = 0.5f),
+        entrance = OverlayEntrance.PopIn,
+        scrimAlpha = 0.82f,
+    ) {
+        Text(text = "🎁", fontSize = 40.sp)
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            text = "Ein Geschenk für dich!",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Gold,
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        Text(
+            text = "$icon $body",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextPrimary,
+            textAlign = TextAlign.Center,
+        )
+
+        if (isLastGift) {
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = "Das war mein letztes Geschenk – ab jetzt bekommst du " +
+                    "mit einem kurzen Video neue Hilfen.",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextPrimary.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center,
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        GoldButton(label = "Annehmen", onClick = onAccept)
+    }
+}
+
 /** Zeit abgelaufen oder Leben verbraucht. */
 @Composable
 fun GameOverOverlay(
@@ -298,6 +358,10 @@ fun GameOverOverlay(
     globalLives: GlobalLivesState,
     onRetry: () -> Unit,
     onShowLevelMap: () -> Unit,
+    adsUnlocked: Boolean,
+    adReady: Boolean,
+    onWatchAd: () -> Unit,
+    onOpenGift: () -> Unit,
 ) {
     OverlayScaffold(
         borderColor = Color(0xFFFF788C).copy(alpha = 0.55f),
@@ -363,15 +427,16 @@ fun GameOverOverlay(
 
         if (globalLives.lives > 0) {
             GoldButton(label = "Level neu starten", onClick = onRetry)
-        } else {
-            val remainingSeconds = ((globalLives.nextLifeAtMillis - System.currentTimeMillis())
-                .coerceAtLeast(0L) / 1000L).toInt()
-            Text(
-                text = "+💚 in ${GameCopy.formatTime(remainingSeconds)}",
-                style = MaterialTheme.typography.labelLarge,
-                color = DangerRose,
-                textAlign = TextAlign.Center,
+        } else if (adsUnlocked) {
+            GoldButton(
+                label = if (adReady) "📺 Werbung ansehen (+1 Leben)" else "Werbung lädt…",
+                onClick = if (adReady) onWatchAd else ({}),
             )
+        } else {
+            // Vor Level 11 gibt es noch keine Werbung — ein leerer Vorrat
+            // wartet nicht auf den Countdown, sondern lässt sich sofort per
+            // Geschenk auffüllen.
+            GoldButton(label = "🎁 Geschenk annehmen", onClick = onOpenGift)
         }
 
         Spacer(Modifier.height(10.dp))

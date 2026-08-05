@@ -49,9 +49,13 @@ sealed interface StatusMessage {
 
     data object MistakeMade : StatusMessage
     data object FairyDustUsed : StatusMessage
+    data object IrrlichtUsed : StatusMessage
 
     /** Kein Feenstaub mehr da — mit der Zeit bis zum nächsten. */
     data class NoFairyDust(val nextInMillis: Long) : StatusMessage
+
+    /** Kein Irrlicht mehr da — mit der Zeit bis zum nächsten. */
+    data class NoIrrlicht(val nextInMillis: Long) : StatusMessage
 }
 
 /**
@@ -82,6 +86,13 @@ data class GameState(
      * jedem Neustart zurückgesetzt, und das Nachwachsen wäre bedeutungslos.
      */
     val fairyDust: Int = FairyDustSupply.max,
+    /**
+     * Wie viel Irrlicht gerade vorrätig ist.
+     *
+     * Genau wie [fairyDust] ein Vorrat des Spielers statt des Levels — siehe
+     * dort für die Begründung.
+     */
+    val irrlicht: Int = IrrlichtSupply.max,
     val remainingMillis: Long = 0L,
     val roundDurationMillis: Long = 0L,
     val statusMessage: StatusMessage = StatusMessage.Hint,

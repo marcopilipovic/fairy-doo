@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.fairydoo.game.game.FairyDustSupply
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GlobalLives
+import com.fairydoo.game.game.IrrlichtSupply
 import com.fairydoo.game.ui.theme.ConflictRed
 import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.GoldCream
@@ -288,15 +289,14 @@ private fun GestureArrow(label: String) {
     )
 }
 
-/** Schritt 4: die drei Zauberhilfen. */
+/** Schritt 4: die zwei Zauberhilfen. */
 @Composable
 private fun TutorialPowerUpsStep() {
     TutorialHeadline("Deine Zauberhilfen")
 
     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         MiniPowerTile("✨", "Feenstaub")
-        MiniPowerTile("🍃", "Natur-Schild")
-        MiniPowerTile("🌸", "Zeiten-Blüte")
+        MiniPowerTile("🔮", "Irrlicht")
     }
 
     Spacer(Modifier.height(12.dp))
@@ -305,9 +305,12 @@ private fun TutorialPowerUpsStep() {
         text = buildAnnotatedString {
             append("✨ ")
             withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Feenstaub") }
-            append(": deckt ein sicheres Feld auf.\n")
-            append("Du hast ${FairyDustSupply.max} davon — verbrauchter wächst ")
-            append("in einer halben Stunde nach.")
+            append(": deckt ein sicheres Feld mit Fee auf.\n")
+            append("🔮 ")
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Irrlicht") }
+            append(": deckt ein sicheres Feld ohne Fee auf.\n")
+            append("Du hast ${FairyDustSupply.max} Feenstaub und ${IrrlichtSupply.max} Irrlicht — ")
+            append("verbrauchte wachsen in zwei Stunden nach.")
         },
         style = MaterialTheme.typography.bodyMedium,
         fontSize = 12.5.sp,

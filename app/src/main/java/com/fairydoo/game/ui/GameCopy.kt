@@ -34,10 +34,15 @@ object GameCopy {
         is StatusMessage.Zone ->
             "${zoneName(message.regionIndex)} · ${fairyIntroduction(message.species)}"
         StatusMessage.MistakeMade -> "⚡ Die Zauberkräfte stören sich! (−1 Leben)"
-        StatusMessage.FairyDustUsed -> "✨ Ein Irrlicht zeigt dir ein sicheres Feld!"
+        StatusMessage.FairyDustUsed -> "✨ Der Feenstaub zeigt dir ein sicheres Feld!"
         is StatusMessage.NoFairyDust -> {
             val minutes = (message.nextInMillis / 60_000L).toInt() + 1
             "Kein Feenstaub mehr — neuer in etwa $minutes Minuten"
+        }
+        StatusMessage.IrrlichtUsed -> "🔮 Ein Irrlicht markiert ein Feld ohne Fee!"
+        is StatusMessage.NoIrrlicht -> {
+            val minutes = (message.nextInMillis / 60_000L).toInt() + 1
+            "Kein Irrlicht mehr — neues in etwa $minutes Minuten"
         }
     }
 
@@ -96,11 +101,29 @@ object GameCopy {
 
     private const val MAX_TEASER_NAMES = 3
 
-    /** Formatiert die Restzeit als m:ss. */
+    /** Formatiert die Restzeit als m:ss — für den Level-Timer, der sekundengenau tickt. */
     fun formatTime(totalSeconds: Int): String {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return "$minutes:${seconds.toString().padStart(2, '0')}"
+    }
+
+    /**
+     * Formatiert eine Wartezeit im Stunden-Bereich (Vorräte, Wald-Leben).
+     *
+     * Ohne Sekunden: Bei zwei Stunden Wartezeit tickt eine Sekundenanzeige nur
+     * unruhig, ohne dass sie irgendjemand abliest. Aufgerundet auf die nächste
+     * Minute, sonst wirkte "0 Min." kurz vor Ablauf wie "schon da".
+     */
+    fun formatWaitTime(totalSeconds: Int): String {
+        val totalMinutes = (totalSeconds + 59) / 60
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+        return when {
+            hours > 0 && minutes > 0 -> "$hours Std. $minutes Min."
+            hours > 0 -> "$hours Std."
+            else -> "$minutes Min."
+        }
     }
 
     fun legalTitle(page: LegalPage): String = when (page) {
