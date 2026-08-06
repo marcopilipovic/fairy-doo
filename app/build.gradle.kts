@@ -26,8 +26,16 @@ android {
         applicationId = "com.fairydoo.game"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        // Muss bei jeder Auslieferung steigen — der Play Store nimmt keinen
+        // Upload mit gleicher oder kleinerer Nummer an.
+        //
+        // Auch beim Testen wichtig: Blieb die Nummer stehen, sah Android eine
+        // bereits vorhandene, angeblich nicht neuere App, und manche
+        // Hersteller-Installer verweigern die Aktualisierung dann kommentarlos.
+        // Man musste die App erst deinstallieren — und verlor dabei den
+        // Spielstand.
+        versionCode = 2
+        versionName = "0.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
