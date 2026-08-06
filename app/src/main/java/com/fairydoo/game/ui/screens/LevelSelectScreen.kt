@@ -141,6 +141,8 @@ fun LevelSelectScreen(
     adReady: Boolean,
     onWatchAdForLife: () -> Unit,
     onOpenGiftForLife: () -> Unit,
+    privacyOptionsRequired: Boolean,
+    onOpenPrivacyOptions: () -> Unit,
 ) {
     // Rein lokale UI-Zustände: Die Levelkarte hat keine laufende Uhr, die ein
     // geöffnetes Overlay schützen müsste — anders als beim Tutorial gibt es
@@ -289,6 +291,8 @@ fun LevelSelectScreen(
                 selectedAvatar = profile.selectedAvatar,
                 onPlayerNameChange = onSetPlayerName,
                 onAvatarSelected = onSetAvatar,
+                privacyOptionsRequired = privacyOptionsRequired,
+                onOpenPrivacyOptions = onOpenPrivacyOptions,
                 onClose = { showSettings = false },
             )
         }

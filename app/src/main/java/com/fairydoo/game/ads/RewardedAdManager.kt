@@ -33,7 +33,15 @@ class RewardedAdManager(private val appContext: Context) {
     /** Ob gerade eine Anzeige bereitsteht — die UI blendet den Werbe-Knopf danach ein/aus. */
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
-    /** Einmal beim App-Start: initialisiert das SDK und lädt die erste Anzeige vor. */
+    /**
+     * Einmal beim App-Start: initialisiert das SDK und lädt die erste Anzeige
+     * vor.
+     *
+     * Wird erst aufgerufen, wenn [AdConsentManager] die Einwilligung geklärt
+     * hat — vorher darf keine Anfrage an Google gehen. Ohne Einwilligung wird
+     * gar nicht initialisiert: Die App bleibt vollständig spielbar, es entfällt
+     * nur das Angebot, für eine Belohnung ein Video anzusehen.
+     */
     fun init() {
         // Fairydoku ist für alle Altersstufen freigegeben — "G" filtert
         // Glücksspiel-, Gewalt- und sexuelle Werbeinhalte schon auf

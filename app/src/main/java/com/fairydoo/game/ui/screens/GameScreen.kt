@@ -68,6 +68,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.app.Activity
 import com.fairydoo.game.ads.RewardedAdManager
+import kotlinx.coroutines.flow.StateFlow
 import com.fairydoo.game.audio.FairyAudio
 import com.fairydoo.game.data.GamePreferencesRepository
 import com.fairydoo.game.data.PlayerProfile
@@ -254,7 +255,12 @@ private fun BoxScope.GlowingMushrooms() {
 }
 
 @Composable
-fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
+fun GameScreen(
+    preferences: GamePreferencesRepository,
+    ads: RewardedAdManager,
+    privacyOptionsRequired: StateFlow<Boolean>,
+    onOpenPrivacyOptions: () -> Unit,
+) {
     val viewModel: GameViewModel = viewModel(
         factory = remember(preferences) { GameViewModel.factory(preferences) },
     )
@@ -265,6 +271,7 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     val fairyDust by viewModel.fairyDust.collectAsStateWithLifecycle()
     val irrlicht by viewModel.irrlicht.collectAsStateWithLifecycle()
     val daily by viewModel.dailyScore.collectAsStateWithLifecycle()
+    val privacyOptions by privacyOptionsRequired.collectAsStateWithLifecycle()
     val pendingSettlement by viewModel.pendingSettlement.collectAsStateWithLifecycle()
     val adsUnlocked by viewModel.adsUnlocked.collectAsStateWithLifecycle()
     val adReady by ads.isReady.collectAsStateWithLifecycle()
@@ -369,6 +376,8 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                 adReady = adReady,
                 onWatchAdForLife = onWatchAdForLife,
                 onOpenGiftForLife = onOpenGiftForLifeOnMap,
+                privacyOptionsRequired = privacyOptions,
+                onOpenPrivacyOptions = onOpenPrivacyOptions,
             )
         } else {
             GameContent(

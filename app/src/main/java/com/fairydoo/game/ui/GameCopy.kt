@@ -256,10 +256,11 @@ object GameCopy {
         // (Abschnitt 3 + 10 — es gibt kein Google-UMP-SDK im Code, nur
         // durchgehend nicht personalisierte Werbung).
         //
-        // Abschnitt 3 benennt das fehlende Einwilligungswerkzeug inzwischen als
-        // offene Aufgabe statt als bewusste Auslassung: Google verlangt für
-        // EWR/UK ein zertifiziertes Werkzeug auch bei nicht personalisierter
-        // Werbung. Das ist vor der Veröffentlichung zu bauen.
+        // Abschnitt 3 und 10 beschreiben inzwischen ein tatsächlich vorhandenes
+        // Einwilligungswerkzeug: Googles UMP-SDK ist eingebunden (siehe
+        // AdConsentManager.kt), ohne Einwilligung wird gar nicht erst geladen,
+        // und der Widerruf liegt in den Einstellungen. Damit entfällt der
+        // frühere Vorbehalt „ob das ausreicht, sollte geprüft werden".
         //
         // Abschnitt 4 beschreibt zusätzlich die Tageswertung — Tagespunkte,
         // bestes Tagesergebnis und letzter Tageswechsel, ebenfalls
@@ -290,7 +291,9 @@ object GameCopy {
 
             AdMob ist so konfiguriert, dass ausschließlich nicht personalisierte Werbung mit der niedrigsten Inhaltsfreigabe („G") ausgeliefert wird. Werbung mit Glücksspiel-, Gewalt- oder sexuellen Inhalten ist damit ausgeschlossen. Eine auf Interessen basierende (personalisierte) Werbung findet nicht statt.
 
-            Rechtsgrundlage ist unser berechtigtes Interesse an der Finanzierung der kostenlosen App (Art. 6 Abs. 1 lit. f DSGVO). Für Nutzerinnen und Nutzer im EWR und im Vereinigten Königreich ist vor der ersten Werbeauslieferung ein von Google zertifiziertes Einwilligungswerkzeug einzubinden; dies ist vor Veröffentlichung umzusetzen und rechtlich zu prüfen. Weitere Informationen: Google-Datenschutzerklärung.
+Für Nutzerinnen und Nutzer im Europäischen Wirtschaftsraum und im Vereinigten Königreich holen wir vor der ersten Werbeauslieferung eine Einwilligung ein. Dafür ist das von Google zertifizierte Einwilligungswerkzeug (User Messaging Platform) eingebunden. Ohne erteilte Einwilligung wird keine Anzeige angefragt und keine Werbung ausgeliefert; die App bleibt vollständig spielbar, es entfällt lediglich die Möglichkeit, für eine Belohnung freiwillig ein Werbevideo anzusehen.
+
+            Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit mit Wirkung für die Zukunft ändern oder zurücknehmen — in den Einstellungen der App unter „Datenschutz-Einstellungen ändern". Weitere Informationen: Google-Datenschutzerklärung.
 
             4. Spielstand, Tageswertung und Bestleistungen
             Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden ausschließlich lokal auf deinem Gerät gespeichert. Es findet keine Übermittlung an uns oder an Dritte statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
@@ -321,8 +324,8 @@ object GameCopy {
             Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)
             Zur Ausübung genügt eine Nachricht an die oben genannte Kontaktadresse. Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
 
-            10. Widerspruch gegen Werbung
-            Da ausschließlich nicht personalisierte Werbung ausgeliefert wird, ist derzeit keine gesonderte Einwilligung einzuholen oder zu widerrufen. Möchtest du der Werbung dennoch grundsätzlich widersprechen, wende dich an die oben genannte Kontaktadresse.
+            10. Einwilligung ändern oder zurücknehmen
+            Deine Wahl zur Werbung kannst du jederzeit ändern: in den Einstellungen der App unter „Datenschutz-Einstellungen ändern". Der Punkt erscheint dort, wo eine Einwilligung erforderlich ist. Nimmst du sie zurück, wird ab diesem Zeitpunkt keine Werbung mehr ausgeliefert. Möchtest du der Verarbeitung darüber hinaus widersprechen, wende dich an die oben genannte Kontaktadresse.
 
             11. Änderungen dieser Datenschutzerklärung
             Wir passen diese Datenschutzerklärung an, wenn Änderungen an der App oder der Rechtslage dies erforderlich machen. Es gilt die jeweils in der App bzw. im Play Store verlinkte Fassung.
