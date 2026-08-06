@@ -63,7 +63,7 @@ fun TutorialOverlay(
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Überspringen ✕",
+                text = "Schließen ✕",
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 12.5.sp,
                 fontWeight = FontWeight.SemiBold,
