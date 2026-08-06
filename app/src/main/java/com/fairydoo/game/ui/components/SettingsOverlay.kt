@@ -25,9 +25,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,9 +56,11 @@ import com.fairydoo.game.ui.theme.TextPrimary
 /**
  * Einstellungen — nur von der Levelkarte aus erreichbar (📜-Knopf).
  *
- * Bündelt Profil (Spielername + Fee-Avatar) und den Weg zum Sound-Regler.
- * Rechtliches steht bewusst *nicht* hier, sondern als eigene Fußzeile direkt
- * auf der Levelkarte — leichter erreichbar als hinter einem Menü. Kein
+ * Bündelt Profil (Spielername + Fee-Avatar). Der Sound-Regler hängt nicht
+ * mehr hier drin, sondern ist als eigener Knopf neben ❔ erreichbar — genauso
+ * wie auf dem Spielbildschirm. Rechtliches steht bewusst *nicht* hier, sondern
+ * als eigene Fußzeile direkt auf der Levelkarte — leichter erreichbar als
+ * hinter einem Menü. Kein
  * eigener Pausenmechanismus nötig: Die Levelkarte hat ohnehin keine laufende
  * Uhr, die geschützt werden müsste.
  */
@@ -72,7 +71,6 @@ fun SettingsOverlay(
     selectedAvatar: FairySpecies,
     onPlayerNameChange: (String) -> Unit,
     onAvatarSelected: (FairySpecies) -> Unit,
-    onOpenSound: () -> Unit,
     onClose: () -> Unit,
 ) {
     Box(
@@ -149,21 +147,6 @@ fun SettingsOverlay(
 
             Spacer(Modifier.height(14.dp))
 
-            MenuRow(
-                icon = {
-                    Icon(
-                        imageVector = Icons.Filled.MusicNote,
-                        contentDescription = null,
-                        tint = Color(0xFFFFD8A1),
-                        modifier = Modifier.size(18.dp),
-                    )
-                },
-                label = "Sound",
-                onClick = onOpenSound,
-            )
-
-            Spacer(Modifier.height(14.dp))
-
             Text(
                 text = "Fairydoku · Version ${BuildConfig.VERSION_NAME}",
                 style = MaterialTheme.typography.labelSmall,
@@ -204,28 +187,6 @@ private fun SectionLabel(text: String) {
         color = TextPrimary.copy(alpha = 0.4f),
         modifier = Modifier.fillMaxWidth(),
     )
-}
-
-@Composable
-private fun MenuRow(icon: @Composable () -> Unit, label: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(Color.White.copy(alpha = 0.04f))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
-            .padding(horizontal = 10.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        icon()
-        Text(text = label, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
-    }
-    Spacer(Modifier.height(6.dp))
 }
 
 /** Eingabefeld im dunklen Fassungs-Look der Vorlage — kein Material-Textfeld-Chrome. */

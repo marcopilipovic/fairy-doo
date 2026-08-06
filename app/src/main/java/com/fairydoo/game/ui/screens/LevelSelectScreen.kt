@@ -67,6 +67,7 @@ import com.fairydoo.game.ui.components.LegalOverlay
 import com.fairydoo.game.ui.components.RockPile
 import com.fairydoo.game.ui.components.TreeGroup
 import com.fairydoo.game.ui.components.SettingsOverlay
+import com.fairydoo.game.ui.components.SoundMenuButton
 import com.fairydoo.game.ui.components.SoundSettingsOverlay
 import com.fairydoo.game.ui.theme.DangerRose
 import com.fairydoo.game.ui.theme.GoldCream
@@ -239,16 +240,22 @@ fun LevelSelectScreen(
             LegalFooter(onOpenLegal = { legalPage = it })
         }
 
-        // ❔ und 📜 bewusst auf getrennten Seiten statt zusammengedrängt in
-        // einer Ecke — die Kopfzeile wirkt sonst überladen, weil links
-        // ansonsten nichts steht.
-        HelpButton(
-            onClick = onOpenTutorial,
+        // Dieselbe Zweiergruppe wie auf dem Spielbildschirm (❔ + 🎵) — der
+        // Sound-Regler hing vorher hinter dem 📜-Menü, jetzt genauso direkt
+        // erreichbar wie im Level.
+        Row(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .safeDrawingPadding()
                 .padding(start = 6.dp, top = 2.dp),
-        )
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            HelpButton(onClick = onOpenTutorial)
+            SoundMenuButton(
+                anythingAudible = profile.musicEnabled || profile.soundEnabled || profile.voiceEnabled,
+                onClick = { showSound = true },
+            )
+        }
 
         SettingsButton(
             onClick = { showSettings = true },
@@ -264,7 +271,6 @@ fun LevelSelectScreen(
                 selectedAvatar = profile.selectedAvatar,
                 onPlayerNameChange = onSetPlayerName,
                 onAvatarSelected = onSetAvatar,
-                onOpenSound = { showSound = true },
                 onClose = { showSettings = false },
             )
         }
