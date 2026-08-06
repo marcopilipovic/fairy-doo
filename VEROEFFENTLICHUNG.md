@@ -23,13 +23,19 @@ aktualisieren.** Der Eintrag wäre dann tot — mit allen Bewertungen,
 Installationen und Ranglisten. Es gibt dafür keine Wiederherstellung, auch
 nicht durch Google.
 
-### Was jetzt zu tun ist
+### Sicherungen
 
-1. Beide Dateien an **zwei voneinander unabhängige Orte** sichern. Zum Beispiel
-   ein Passwortmanager mit Dateianhang plus ein USB-Stick im Schrank. Nicht
-   zweimal derselbe Rechner, nicht zweimal dieselbe Cloud.
-2. Das Passwort zusätzlich im Passwortmanager ablegen — getrennt von der Datei.
-3. In der Play Console **Play App Signing** aktivieren (Standard bei neuen
+- ✅ **USB-Stick** — am 6. August 2026 kopiert, Größe geprüft (4.302 Bytes)
+- ⬜ **Zweiter Ort** — noch offen. Am einfachsten der Passwortmanager, wenn er
+  Dateianhänge kann; sonst ein zweiter Stick, der woanders liegt.
+
+Zwei Sicherungen an *unabhängigen* Orten sind der Sinn der Sache — nicht zweimal
+derselbe Rechner, nicht zweimal dieselbe Cloud.
+
+### Weiter zu tun
+
+1. Das Passwort zusätzlich im Passwortmanager ablegen — getrennt von der Datei.
+2. In der Play Console **Play App Signing** aktivieren (Standard bei neuen
    Apps). Google verwahrt dann den eigentlichen Verteilschlüssel; dieser hier
    ist nur der Upload-Schlüssel. Geht er trotzdem verloren, kann Google einen
    Austausch anbieten — aber verlassen sollte man sich darauf nicht.
@@ -75,7 +81,7 @@ Release-Build die Namen verschleiert.
 
 | | Punkt | Stand |
 |---|---|---|
-| 1 | Signierschlüssel | ✅ angelegt — **sichern!** |
+| 1 | Signierschlüssel | ✅ angelegt, eine Sicherung auf USB — zweite fehlt |
 | 2 | Signierter Release-Build (AAB + APK) | ✅ baut durch, 5,5 MB APK |
 | 3 | Entwicklerkonto bei Google (einmalig ~25 USD) | ⬜ **nur Nataly** |
 | 4 | Einwilligungswerkzeug für Werbung (UMP) | ✅ eingebaut, Widerruf in den Einstellungen |
