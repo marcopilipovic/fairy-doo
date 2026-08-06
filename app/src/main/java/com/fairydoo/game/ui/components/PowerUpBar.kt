@@ -57,7 +57,7 @@ import com.fairydoo.game.ui.theme.PowerTileTop
  * abzuschwächen: der eine ein sicheres Lösungsfeld, der andere ein sicher
  * ausgeschlossenes.
  *
- * Ist ein Vorrat leer, steht statt „Hinweis" die Zeit bis zum nächsten Stück.
+ * Ist ein Vorrat leer, steht statt der Wirkung die Zeit bis zum nächsten Stück.
  * Ohne diese Angabe wäre der blasse Knopf eine Sackgasse ohne Erklärung.
  */
 @Composable
