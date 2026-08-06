@@ -97,7 +97,7 @@ fun PowerUpBar(
             label = when {
                 offerAdForFairyDust -> if (adReady) "Werbung\nansehen" else "Werbung\nlädt…"
                 offerGiftForFairyDust -> "Geschenk\nannehmen"
-                state.fairyDust > 0 || nextDustInMillis <= 0L -> "Feenstaub\nHinweis"
+                state.fairyDust > 0 || nextDustInMillis <= 0L -> "Feenstaub\ndeckt Fee auf"
                 else -> "Feenstaub\nin ${GameCopy.formatWaitTime((nextDustInMillis / 1000L).toInt())}"
             },
             count = state.fairyDust,
@@ -120,7 +120,7 @@ fun PowerUpBar(
             label = when {
                 offerAdForIrrlicht -> if (adReady) "Werbung\nansehen" else "Werbung\nlädt…"
                 offerGiftForIrrlicht -> "Geschenk\nannehmen"
-                state.irrlicht > 0 || nextIrrlichtInMillis <= 0L -> "Irrlicht\nHinweis"
+                state.irrlicht > 0 || nextIrrlichtInMillis <= 0L -> "Irrlicht\ndeckt X auf"
                 else -> "Irrlicht\nin ${GameCopy.formatWaitTime((nextIrrlichtInMillis / 1000L).toInt())}"
             },
             count = state.irrlicht,
