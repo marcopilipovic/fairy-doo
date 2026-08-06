@@ -48,11 +48,20 @@ class GameCopyTest {
         }
     }
 
+    /**
+     * Die Zonenmeldung darf zwei Zeilen brauchen, aber nicht drei.
+     *
+     * Sie ist die einzige zusammengesetzte Meldung — Zonenname plus
+     * Feenvorstellung — und kann durch lange Namen wachsen, ohne dass es jemand
+     * bemerkt. „Glühwürmchen-Hain · Trixie, die Chaosfee" ist der längste Fall.
+     *
+     * Anmerkung zur Grenze: Dass dieser Text auf dem Gerät trotzdem
+     * abgeschnitten wurde, lag nicht an seiner Länge, sondern daran, dass die
+     * Zeile eine feste Höhe hatte und deshalb gar nicht erst umbrach. Der Test
+     * hier hätte das nie gefunden — er prüft den Text, nicht das Layout.
+     */
     @Test
     fun `auch die laengste Zonenmeldung bleibt im Rahmen`() {
-        // Zonenname plus Feenvorstellung ist die einzige zusammengesetzte
-        // Meldung — sie kann durch lange Namen wachsen, ohne dass es jemand
-        // bemerkt.
         val longest = FairySpecies.entries.maxOf { species ->
             (0 until GameState.MAX_SIZE).maxOf { zone ->
                 GameCopy.statusText(StatusMessage.Zone(zone, species)).length

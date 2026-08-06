@@ -658,12 +658,23 @@ private fun StatusMessageLine(text: String) {
     // Der Zuschlag ist nicht Kosmetik: Ohne ihn ist die Fläche um Haaresbreite
     // zu klein für die zweite Zeile, und der Text wird stattdessen mitten im
     // Satz abgeschnitten — sichtbar erst bei vergrößerter Systemschrift.
-    val height = with(LocalDensity.current) { (lineHeight * 2).toDp() + 6.dp }
+    val reserved = with(LocalDensity.current) { (lineHeight * 2).toDp() + 6.dp }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(height),
+            // Mindesthöhe statt fester Höhe. Eine feste Höhe reicht die
+            // Obergrenze an den Text weiter, und der bricht dann nicht mehr um,
+            // sondern kürzt in der ersten Zeile ab — auf dem Gerät stand so
+            // „Glühwürmchen-Hain · Trixie, die Chaosf…", obwohl zwei Zeilen
+            // erlaubt sind und der Platz dafür reserviert ist.
+            //
+            // Die Rechnung war dabei nicht falsch, nur zu knapp: Die Schrift
+            // braucht je Zeile etwas mehr als ihre Zeilenhöhe. Mit einer
+            // Mindesthöhe ist das gleichgültig — der Platz für zwei Zeilen
+            // bleibt reserviert, damit das Brett nicht springt, und eine dritte
+            // Zeile dürfte sich den Raum nehmen, falls sie je nötig wird.
+            .heightIn(min = reserved),
         contentAlignment = Alignment.Center,
     ) {
         Text(
