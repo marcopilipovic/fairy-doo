@@ -7,6 +7,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -53,7 +56,9 @@ fun SoundMenuButton(
             .semantics { contentDescription = "Klang-Einstellungen" },
         contentAlignment = Alignment.Center,
     ) {
-        HarpIcon(
+        Icon(
+            imageVector = Icons.Filled.MusicNote,
+            contentDescription = null,
             tint = Color(0xFFFFD8A1),
             modifier = Modifier
                 .size(18.dp)

@@ -25,6 +25,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -147,7 +150,14 @@ fun SettingsOverlay(
             Spacer(Modifier.height(14.dp))
 
             MenuRow(
-                icon = { HarpIcon(tint = Color(0xFFFFD8A1), modifier = Modifier.size(18.dp)) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.MusicNote,
+                        contentDescription = null,
+                        tint = Color(0xFFFFD8A1),
+                        modifier = Modifier.size(18.dp),
+                    )
+                },
                 label = "Sound",
                 onClick = onOpenSound,
             )
