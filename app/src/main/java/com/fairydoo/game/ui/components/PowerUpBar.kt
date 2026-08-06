@@ -150,7 +150,12 @@ private fun PowerUpButton(
 ) {
     Column(
         modifier = Modifier
-            .width(86.dp)
+            // Breit genug für „Feenstaub" in einer Zeile. Bei 86 dp brach das
+            // Wort mitten durch — auf dem Gerät stand dort „Feenstau" und
+            // darunter ein einzelnes „b". Sichtbar wurde das erst, seit die
+            // Beschriftung die Wirkung nennt statt nur „Hinweis", und erst
+            // recht bei vergrößerter Systemschrift.
+            .width(108.dp)
             // Ein leerer Vorrat bleibt sichtbar, aber blass und ohne Wirkung —
             // so ist erkennbar, dass die Hilfe existiert und gerade nur
             // nachwächst.
@@ -243,7 +248,7 @@ private fun PowerUpButton(
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             color = GoldCream,
             textAlign = TextAlign.Center,
         )

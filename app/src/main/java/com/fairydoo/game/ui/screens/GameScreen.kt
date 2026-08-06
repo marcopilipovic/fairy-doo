@@ -597,6 +597,8 @@ private fun GameContent(
                     // Bretts ohne die des jetzigen.
                     newcomers = GameState.speciesOnBoard(state.level + 1) -
                         GameState.speciesOnBoard(state.level).toSet(),
+                    sizeGrew = GameState.sizeForLevel(state.level + 1) >
+                        GameState.sizeForLevel(state.level),
                 ),
                 onContinue = onNextLevel,
                 onShowLevelMap = onOpenLevelSelect,

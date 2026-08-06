@@ -29,20 +29,26 @@ object GameCopy {
 
     fun statusText(message: StatusMessage): String = when (message) {
         StatusMessage.Hint -> "Tippen: ✕ · gedrückt halten: 🧚"
+        // Alle Meldungen bewusst kurz: Die Zeile hat Platz für zwei Zeilen,
+        // aber bei vergrößerter Systemschrift reicht auch der nicht mehr, und
+        // dann wird mitten im Satz abgeschnitten. Auf dem Gerät stand so
+        // „✨ Der Feenstaub zeigt dir ein sicheres …" — die Meldung erklärte
+        // gerade das, was sie selbst nicht mehr zeigen konnte.
+        //
         // Knapp gehalten: Das ist die mit Abstand längste Meldung, und je
         // kürzer sie ist, desto seltener bricht sie auf zwei Zeilen um.
         is StatusMessage.Zone ->
             "${zoneName(message.regionIndex)} · ${fairyIntroduction(message.species)}"
         StatusMessage.MistakeMade -> "⚡ Die Zauberkräfte stören sich! (−1 Leben)"
-        StatusMessage.FairyDustUsed -> "✨ Der Feenstaub zeigt dir ein sicheres Feld!"
+        StatusMessage.FairyDustUsed -> "✨ Ein sicheres Feld mit Fee!"
         is StatusMessage.NoFairyDust -> {
             val minutes = (message.nextInMillis / 60_000L).toInt() + 1
-            "Kein Feenstaub mehr — neuer in etwa $minutes Minuten"
+            "Kein Feenstaub — neuer in ~$minutes Min."
         }
-        StatusMessage.IrrlichtUsed -> "🔮 Ein Irrlicht markiert ein Feld ohne Fee!"
+        StatusMessage.IrrlichtUsed -> "🔮 Hier wohnt sicher keine Fee!"
         is StatusMessage.NoIrrlicht -> {
             val minutes = (message.nextInMillis / 60_000L).toInt() + 1
-            "Kein Irrlicht mehr — neues in etwa $minutes Minuten"
+            "Kein Irrlicht — neues in ~$minutes Min."
         }
     }
 
@@ -78,18 +84,34 @@ object GameCopy {
      *
      * Kündigt die Neuzugänge an statt einer Feen-Art: Seit in jeder Zone eine
      * andere Fee lebt, ist das die Information, auf die man sich freut.
+     *
+     * „Dichter" wird das Gitter aber nur jedes zweite Level — es wächst nach
+     * `sizeForLevel` alle zwei Stufen um ein Feld. Stand dort früher trotzdem
+     * „Der Wald wird dichter: 5×5-Gitter", während gerade eben schon auf 5×5
+     * gespielt wurde, klang das nach einem Versprechen, das das nächste Level
+     * nicht hält. Deshalb entscheidet [sizeGrew], welcher Satz erscheint.
      */
-    fun nextLevelTeaser(nextSize: Int, newcomers: List<FairySpecies>): String {
+    fun nextLevelTeaser(
+        nextSize: Int,
+        newcomers: List<FairySpecies>,
+        sizeGrew: Boolean,
+    ): String {
         val grid = "$nextSize×$nextSize-Gitter"
+        val opening = if (sizeGrew) "Der Wald wird dichter: $grid" else "Weiter geht's im $grid"
+
         if (newcomers.isEmpty()) {
-            return "Der Wald wird dichter: ein neues $grid erwartet dich…"
+            return if (sizeGrew) {
+                "Der Wald wird dichter: ein neues $grid erwartet dich…"
+            } else {
+                "Der Pfad führt weiter — das nächste $grid wartet…"
+            }
         }
 
         val shown = newcomers.take(MAX_TEASER_NAMES).map { it.displayName }
         val hidden = newcomers.size - shown.size
         val names = enumerate(if (hidden > 0) shown + "$hidden weitere" else shown)
         val verb = if (newcomers.size == 1) "wartet" else "warten"
-        return "Der Wald wird dichter: $grid — $names $verb schon…"
+        return "$opening — $names $verb schon…"
     }
 
     /** „Flora" · „Flora und Nixie" · „Flora, Nixie und Chrono" */
