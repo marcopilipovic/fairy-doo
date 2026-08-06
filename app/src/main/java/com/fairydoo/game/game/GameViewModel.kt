@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.TimeZone
 
 /**
  * Hält den Spielzustand und treibt die Spieluhr.
@@ -110,6 +111,46 @@ class GameViewModel(
     )
 
     /**
+     * Die Tageswertung, live nachgeführt.
+     *
+     * Der Punktestand ist bereits gegen die Uhr abgeglichen: Wechselt der Tag,
+     * während die App offen ist, springt die Anzeige sofort auf null, ohne auf
+     * das Speichern zu warten. Der Sekundentakt lässt außerdem den Countdown
+     * bis zum nächsten Tag sichtbar herunterlaufen.
+     */
+    val dailyScore: StateFlow<DailyScoreState> = combine(
+        preferences.profile,
+        tickerFlow(1_000L),
+    ) { current, _ ->
+        val now = System.currentTimeMillis()
+        val offset = zoneOffsetAt(now)
+        val settled = DailyScoring.settle(current.dailyScore, now, offset).score
+        DailyScoreState(
+            points = settled.points,
+            bestPoints = settled.bestPoints,
+            remainingSeconds = DailyCycle.remainingSeconds(now, offset),
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = DailyScoreState(),
+    )
+
+    /** Ein abgerechneter Tag, dessen Abschluss-Overlay noch aussteht. */
+    val pendingSettlement: StateFlow<DailySettlement?> = profile
+        .map { it.pendingSettlement }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null,
+        )
+
+    /** Das Abschluss-Overlay wurde weggetippt. */
+    fun acknowledgeDailySettlement() {
+        viewModelScope.launch { preferences.acknowledgeDailySettlement() }
+    }
+
+    /**
      * Werbung wird erst angeboten, nachdem die ersten zehn Level geschafft
      * sind — wer gerade erst anfängt, soll nicht gleich mit Werbeangeboten
      * begrüßt werden.
@@ -168,6 +209,23 @@ class GameViewModel(
             // kurz auf, nur um sofort wieder zuzuklappen.
             if (!preferences.profile.first().hasSeenTutorial) {
                 _tutorialOpen.value = true
+            }
+        }
+
+        // Der gestrige Tag wird beim Start abgerechnet — das ist der übliche
+        // Fall, weil zwischen zwei Sitzungen eine Nacht liegt.
+        viewModelScope.launch { preferences.settleDailyCycle() }
+
+        // Und noch einmal regelmäßig, für den seltenen Fall, dass die App über
+        // den Stichtag hinweg offen bleibt. Ein halbminütiger Takt genügt:
+        // Der Wechsel liegt um vier Uhr früh, da wartet niemand auf die Sekunde.
+        viewModelScope.launch {
+            tickerFlow(CYCLE_CHECK_MILLIS).collect {
+                val now = System.currentTimeMillis()
+                val stored = preferences.profile.first().dailyScore
+                if (DailyCycle.cycleIdAt(now, zoneOffsetAt(now)) != stored.cycleId) {
+                    preferences.settleDailyCycle()
+                }
             }
         }
     }
@@ -356,8 +414,13 @@ class GameViewModel(
         }
 
         if (previous.status != GameStatus.LevelComplete && next.status == GameStatus.LevelComplete) {
-            // Das nächste Level bleibt freigeschaltet, auch wenn ein späterer Versuch misslingt.
-            viewModelScope.launch { preferences.recordLevelCompleted(next.level) }
+            viewModelScope.launch {
+                // Das nächste Level bleibt freigeschaltet, auch wenn ein späterer Versuch misslingt.
+                preferences.recordLevelCompleted(next.level)
+                // Die Punkte dieses Levels zählen sofort für den heutigen Tag —
+                // nicht erst am Ende des Laufs, siehe `addDailyPoints`.
+                preferences.addDailyPoints(next.gained)
+            }
         }
     }
 
@@ -397,9 +460,16 @@ class GameViewModel(
         }
     }
 
+    /** Der Versatz der Ortszeit gegenüber UTC — inklusive Sommerzeit. */
+    private fun zoneOffsetAt(millis: Long): Long =
+        TimeZone.getDefault().getOffset(millis).toLong()
+
     companion object {
         private const val TICK_MILLIS = 16L
         private const val MAX_FRAME_MILLIS = 250L
+
+        /** Wie oft geprüft wird, ob der Tag gewechselt hat — siehe `init`. */
+        private const val CYCLE_CHECK_MILLIS = 30_000L
 
         /** Willkommen, Berührungsregel, Antippen&Halten, Zauberhilfen, Leben. */
         const val TUTORIAL_STEP_COUNT = 5

@@ -2,6 +2,7 @@ package com.fairydoo.game.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -10,10 +11,15 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.fairydoo.game.game.DailyReward
+import com.fairydoo.game.game.DailyScore
+import com.fairydoo.game.game.DailyScoring
+import com.fairydoo.game.game.DailySettlement
 import com.fairydoo.game.game.FairyDustSupply
 import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GlobalLives
 import com.fairydoo.game.game.IrrlichtSupply
+import java.util.TimeZone
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -47,6 +53,16 @@ data class PlayerProfile(
     val playerName: String = "",
     /** Die Fee, die als Avatar in Profil und Rangliste erscheint. */
     val selectedAvatar: FairySpecies = FairySpecies.Flora,
+
+    /**
+     * Roher Stand der Tageswertung, siehe [DailyScoring].
+     *
+     * Roh wie [globalLives]: Ob der Tag inzwischen gewechselt hat, entscheidet
+     * erst der Abgleich mit der Uhr — nicht das, was zuletzt geschrieben wurde.
+     */
+    val dailyScore: DailyScore = DailyScore(),
+    /** Ein abgerechneter Tag, der noch nicht angezeigt wurde. */
+    val pendingSettlement: DailySettlement? = null,
 ) {
     val musicEnabled: Boolean get() = musicVolume > 0f
     val soundEnabled: Boolean get() = soundVolume > 0f
@@ -96,6 +112,39 @@ class GamePreferencesRepository(context: Context) {
             selectedAvatar = prefs[KeySelectedAvatar]
                 ?.let { stored -> FairySpecies.entries.find { it.name == stored } }
                 ?: FairySpecies.Flora,
+            dailyScore = prefs.dailyScore(),
+            pendingSettlement = prefs.pendingSettlement(),
+        )
+    }
+
+    /**
+     * Der gespeicherte Tagesstand.
+     *
+     * Bei einer frischen Installation gibt es noch keine Zyklus-Kennung. Dann
+     * gilt der heutige Tag — sonst sähe der Stand aus wie ein uralter,
+     * unabgerechneter Tag aus dem Jahr 1970.
+     */
+    private fun Preferences.dailyScore(): DailyScore {
+        val current = currentCycleId()
+        return DailyScore(
+            cycleId = this[KeyDailyCycle] ?: current,
+            points = this[KeyDailyPoints] ?: 0,
+            bestPoints = this[KeyDailyBest] ?: 0,
+            settledCycleId = this[KeyDailySettled] ?: (current - 1),
+        )
+    }
+
+    /** Ein abgerechneter Tag, der noch auf sein Overlay wartet — oder keiner. */
+    private fun Preferences.pendingSettlement(): DailySettlement? {
+        val cycleId = this[KeyPendingCycle] ?: return null
+        return DailySettlement(
+            cycleId = cycleId,
+            points = this[KeyPendingPoints] ?: 0,
+            wasBest = this[KeyPendingWasBest] ?: false,
+            reward = DailyReward(
+                fairyDust = this[KeyPendingDust] ?: 0,
+                irrlicht = this[KeyPendingIrrlicht] ?: 0,
+            ),
         )
     }
 
@@ -261,6 +310,112 @@ class GamePreferencesRepository(context: Context) {
         store.edit { it[KeySelectedAvatar] = species.name }
     }
 
+    /**
+     * Gleicht die Tageswertung gegen die Uhr ab — beim App-Start und immer
+     * dann, wenn die laufende Uhr einen Tageswechsel bemerkt.
+     */
+    suspend fun settleDailyCycle() {
+        store.edit { it.settleDaily(pointsToAdd = 0) }
+    }
+
+    /**
+     * Zählt die Punkte eines geschafften Levels zum heutigen Tag.
+     *
+     * Gutgeschrieben wird pro Level, nicht erst am Ende eines Laufs: Wer
+     * mittendrin aufhört, soll das Gesammelte behalten. Sonst wäre die
+     * Tageswertung eine Wette darauf, den Lauf auch zu Ende zu bringen.
+     */
+    suspend fun addDailyPoints(points: Int) {
+        if (points <= 0) return
+        store.edit { it.settleDaily(pointsToAdd = points) }
+    }
+
+    /** Das Abschluss-Overlay wurde weggetippt — der Tag ist damit erledigt. */
+    suspend fun acknowledgeDailySettlement() {
+        store.edit { prefs ->
+            prefs.remove(KeyPendingCycle)
+            prefs.remove(KeyPendingPoints)
+            prefs.remove(KeyPendingWasBest)
+            prefs.remove(KeyPendingDust)
+            prefs.remove(KeyPendingIrrlicht)
+        }
+    }
+
+    /**
+     * Abrechnen, fortschreiben und gegebenenfalls belohnen — alles in einem
+     * Schreibvorgang.
+     *
+     * Die Belohnung wird hier gutgeschrieben und nicht erst beim Wegtippen des
+     * Overlays: Nur so kann sie nicht verloren gehen, wenn die App zwischen
+     * Abrechnung und Anzeige beendet wird. Doppelt gutgeschrieben werden kann
+     * sie ebenfalls nicht, weil im selben Zug `settledCycleId` vorrückt.
+     */
+    private fun MutablePreferences.settleDaily(pointsToAdd: Int) {
+        val now = System.currentTimeMillis()
+        val offset = zoneOffsetAt(now)
+        val stored = dailyScore()
+
+        val result = if (pointsToAdd > 0) {
+            DailyScoring.add(stored, pointsToAdd, now, offset)
+        } else {
+            DailyScoring.settle(stored, now, offset)
+        }
+
+        this[KeyDailyCycle] = result.score.cycleId
+        this[KeyDailyPoints] = result.score.points
+        this[KeyDailyBest] = result.score.bestPoints
+        this[KeyDailySettled] = result.score.settledCycleId
+
+        result.settlement?.let { settlement ->
+            this[KeyPendingCycle] = settlement.cycleId
+            this[KeyPendingPoints] = settlement.points
+            this[KeyPendingWasBest] = settlement.wasBest
+            this[KeyPendingDust] = settlement.reward.fairyDust
+            this[KeyPendingIrrlicht] = settlement.reward.irrlicht
+            grantReward(settlement.reward, now)
+        }
+    }
+
+    /**
+     * Schreibt die Tagesbelohnung den beiden Vorräten gut.
+     *
+     * Wie beim Belohnungsvideo: Erst nachholen, was gewachsen ist, dann
+     * aufschlagen, und bei vollem Vorrat die Nachwachs-Uhr anhalten.
+     */
+    private fun MutablePreferences.grantReward(reward: DailyReward, now: Long) {
+        if (reward.fairyDust > 0) {
+            val normalized = FairyDustSupply.normalize(
+                storedAmount = this[KeyFairyDust] ?: FairyDustSupply.max,
+                nextAtMillis = this[KeyNextFairyDustAt] ?: 0L,
+                nowMillis = now,
+            )
+            val granted = (normalized.amount + reward.fairyDust).coerceAtMost(FairyDustSupply.max)
+            this[KeyFairyDust] = granted
+            this[KeyNextFairyDustAt] =
+                if (granted >= FairyDustSupply.max) 0L else normalized.nextAtMillis
+        }
+        if (reward.irrlicht > 0) {
+            val normalized = IrrlichtSupply.normalize(
+                storedAmount = this[KeyIrrlicht] ?: IrrlichtSupply.max,
+                nextAtMillis = this[KeyNextIrrlichtAt] ?: 0L,
+                nowMillis = now,
+            )
+            val granted = (normalized.amount + reward.irrlicht).coerceAtMost(IrrlichtSupply.max)
+            this[KeyIrrlicht] = granted
+            this[KeyNextIrrlichtAt] =
+                if (granted >= IrrlichtSupply.max) 0L else normalized.nextAtMillis
+        }
+    }
+
+    private fun currentCycleId(): Long {
+        val now = System.currentTimeMillis()
+        return com.fairydoo.game.game.DailyCycle.cycleIdAt(now, zoneOffsetAt(now))
+    }
+
+    /** Der Versatz der Ortszeit gegenüber UTC — inklusive Sommerzeit. */
+    private fun zoneOffsetAt(millis: Long): Long =
+        TimeZone.getDefault().getOffset(millis).toLong()
+
     /** Setzt Fortschritt und Einstellungen zurück. */
     suspend fun resetProgress() {
         store.edit { it.clear() }
@@ -288,5 +443,18 @@ class GamePreferencesRepository(context: Context) {
         val KeyTutorialSeen = booleanPreferencesKey("tutorial_seen")
         val KeyPlayerName = stringPreferencesKey("player_name")
         val KeySelectedAvatar = stringPreferencesKey("selected_avatar")
+
+        // Die Tageswertung. „daily_settled" ist der zuletzt abgerechnete Tag,
+        // die „pending_"-Schlüssel halten einen abgerechneten Tag fest, dessen
+        // Overlay noch aussteht.
+        val KeyDailyCycle = longPreferencesKey("daily_cycle")
+        val KeyDailyPoints = intPreferencesKey("daily_points")
+        val KeyDailyBest = intPreferencesKey("daily_best")
+        val KeyDailySettled = longPreferencesKey("daily_settled")
+        val KeyPendingCycle = longPreferencesKey("pending_cycle")
+        val KeyPendingPoints = intPreferencesKey("pending_points")
+        val KeyPendingWasBest = booleanPreferencesKey("pending_was_best")
+        val KeyPendingDust = intPreferencesKey("pending_dust")
+        val KeyPendingIrrlicht = intPreferencesKey("pending_irrlicht")
     }
 }

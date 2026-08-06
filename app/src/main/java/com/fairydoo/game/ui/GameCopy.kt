@@ -181,8 +181,21 @@ object GameCopy {
         // Play Store) und keine Google-Play-Games-Rangliste (§ 6 — Bestleistung
         // liegt nur lokal auf dem Gerät, es gibt keine geräteübergreifende
         // oder geteilte Rangliste).
+        //
+        // Zielgruppe ab 13, nicht an Kinder gerichtet (§ 8): Das entkoppelt die
+        // harmlose Inhaltseinstufung von den Familienrichtlinien und hält den
+        // Weg zu Play Games und einer Online-Rangliste offen. Ein an Kinder
+        // gerichtetes Angebot dürfte fremde Anzeigenamen kaum zeigen.
+        //
+        // Die Tageswertung ist in § 6 beschrieben, weil verfallende Punkte eine
+        // Erwartung berühren: Wer sammelt, soll vorher wissen, dass der Stand
+        // am Stichtag zurückgesetzt wird.
+        //
+        // Der Entwurf für die spätere Fassung mit Online-Rangliste liegt in
+        // RECHTSTEXTE-RANGLISTE.md — dieser Text hier beschreibt die App, wie
+        // sie heute ist.
         LegalPage.Agb -> """
-            ENTWURF – keine Rechtsberatung. Dieser Text ist eine sorgfältige Vorlage, ersetzt aber keine anwaltliche Prüfung. Da sich die App auch an Kinder richtet, sollte ein Fachanwalt (IT-/Datenschutzrecht) den Text vor Veröffentlichung freigeben. Alle Angaben in [eckigen Klammern] bitte ausfüllen.
+            ENTWURF – keine Rechtsberatung. Dieser Text ist eine sorgfältige Vorlage, ersetzt aber keine anwaltliche Prüfung. Da die App werbefinanziert ist und auch von Jugendlichen genutzt wird, sollte ein Fachanwalt (IT-/Datenschutzrecht) den Text vor Veröffentlichung freigeben. Alle Angaben in [eckigen Klammern] bitte ausfüllen.
 
             § 1 Geltungsbereich und Anbieter
             Diese Nutzungsbedingungen gelten für die Nutzung der mobilen App „Fairydoku" (nachfolgend „App"), angeboten von [Firmenname / Rechtsform], [Anschrift] (nachfolgend „Anbieter"). Mit der Installation und Nutzung der App erkennst du diese Bedingungen an.
@@ -199,14 +212,20 @@ object GameCopy {
             § 5 Virtuelle Gegenstände (Spielhilfen und Leben)
             Innerhalb der App gibt es virtuelle Elemente wie Spielhilfen („Feenstaub", „Irrlicht") und Leben. Diese haben keinen Geldwert, sind nicht in echtes Geld umwandelbar, nicht übertragbar und können nicht ausgezahlt werden. Ein Anspruch auf eine bestimmte Menge oder eine dauerhafte Verfügbarkeit besteht nicht; der Anbieter kann die Regeln zu Erhalt und Nachwachsen dieser Elemente anpassen.
 
-            § 6 Spielstand
-            Dein Punktestand und deine bisherige Bestleistung werden lokal auf deinem Gerät gespeichert. Es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+            § 6 Spielstand und Tageswertung
+            Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden lokal auf deinem Gerät gespeichert. Es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+
+            Die Tageswertung sammelt Punkte bis zu einem festen täglichen Stichtag. Danach verfallen die gesammelten Punkte, und es wird eine Belohnung in virtuellen Spielhilfen gutgeschrieben. Ein Anspruch auf den Erhalt gesammelter Punkte über den Stichtag hinaus besteht nicht. Der Anbieter kann Zeitpunkt des Stichtags, Punkteberechnung und Belohnungsstufen anpassen.
+
+            Löschst du die App oder die App-Daten, gehen Spielstand, Tageswertung und Bestleistungen verloren; eine Wiederherstellung ist nicht möglich.
 
             § 7 Pflichten des Nutzers
             Du verpflichtest dich, die App nicht missbräuchlich zu nutzen, keine Sicherheitsmechanismen zu umgehen und nicht in die Software einzugreifen (z. B. durch Reverse Engineering), soweit dies nicht gesetzlich ausdrücklich erlaubt ist.
 
-            § 8 Nutzung durch Minderjährige
-            Die App ist für alle Altersstufen geeignet. Minderjährige dürfen die App nur mit Zustimmung ihrer Erziehungsberechtigten nutzen. Erziehungsberechtigte sind für die Nutzung durch ihre Kinder verantwortlich.
+            § 8 Zielgruppe und Nutzung durch Minderjährige
+            Die Inhalte der App sind gewaltfrei und für jedes Alter unbedenklich; die Alterseinstufung im Store weist die niedrigste Stufe aus. Die App richtet sich mit ihrem Angebot jedoch an Personen ab 13 Jahren und ist kein an Kinder gerichtetes Angebot im Sinne der Play-Store-Familienrichtlinien.
+
+            Minderjährige dürfen die App nur mit Zustimmung ihrer Erziehungsberechtigten nutzen. Erziehungsberechtigte sind für die Nutzung durch ihre Kinder verantwortlich.
 
             § 9 Verfügbarkeit und Änderungen
             Der Anbieter ist bemüht, die App störungsfrei bereitzustellen, schuldet jedoch keine ununterbrochene Verfügbarkeit. Der Anbieter darf die App weiterentwickeln, ändern, einschränken oder den Betrieb einstellen, soweit dies für dich zumutbar ist.
@@ -236,8 +255,22 @@ object GameCopy {
         // und kein Einwilligungsdialog/keine Einwilligungseinstellungen
         // (Abschnitt 3 + 10 — es gibt kein Google-UMP-SDK im Code, nur
         // durchgehend nicht personalisierte Werbung).
+        //
+        // Abschnitt 3 benennt das fehlende Einwilligungswerkzeug inzwischen als
+        // offene Aufgabe statt als bewusste Auslassung: Google verlangt für
+        // EWR/UK ein zertifiziertes Werkzeug auch bei nicht personalisierter
+        // Werbung. Das ist vor der Veröffentlichung zu bauen.
+        //
+        // Abschnitt 4 beschreibt zusätzlich die Tageswertung — Tagespunkte,
+        // bestes Tagesergebnis und letzter Tageswechsel, ebenfalls
+        // ausschließlich lokal (siehe DailyCycle.kt).
+        //
+        // Abschnitt 6 folgt der Zielgruppen-Entscheidung „ab 13": Die Inhalte
+        // bleiben unbedenklich, das Angebot ist aber keins für Kinder im Sinne
+        // der Familienrichtlinien. Der Entwurf für die spätere Fassung mit
+        // Online-Rangliste liegt in RECHTSTEXTE-RANGLISTE.md.
         LegalPage.Datenschutz -> """
-            ENTWURF – keine Rechtsberatung. Dieser Text ist eine sorgfältige Vorlage, ersetzt aber keine anwaltliche Prüfung. Da sich die App auch an Kinder richtet, sollte ein Fachanwalt (IT-/Datenschutzrecht) den Text vor Veröffentlichung freigeben. Alle Angaben in [eckigen Klammern] bitte ausfüllen.
+            ENTWURF – keine Rechtsberatung. Dieser Text ist eine sorgfältige Vorlage, ersetzt aber keine anwaltliche Prüfung. Da die App werbefinanziert ist und auch von Jugendlichen genutzt wird, sollte ein Fachanwalt (IT-/Datenschutzrecht) den Text vor Veröffentlichung freigeben. Alle Angaben in [eckigen Klammern] bitte ausfüllen.
 
             Der Schutz deiner Daten ist uns wichtig. Diese Datenschutzerklärung informiert dich darüber, welche Daten bei der Nutzung der App „Fairydoku" verarbeitet werden. Grundsatz: Fairydoku erhebt so wenige Daten wie möglich. Es gibt keine Registrierung und kein Nutzerkonto.
 
@@ -255,18 +288,22 @@ object GameCopy {
             3. Werbung (Google AdMob)
             Zur Finanzierung der kostenlosen App wird Werbung über Google AdMob (Google Ireland Limited bzw. Google LLC) eingeblendet. Dabei können durch Google Geräte- und Nutzungsinformationen sowie ggf. eine Werbekennung (Advertising ID) verarbeitet werden, um Werbung auszuliefern und Missbrauch (z. B. Klickbetrug) zu verhindern.
 
-            Da sich Fairydoku auch an Kinder richtet, ist AdMob so konfiguriert, dass ausschließlich nicht personalisierte, kindgerechte Werbung ausgeliefert wird (maximale Inhaltsfreigabe „G"). Eine auf Interessen basierende (personalisierte) Werbung findet nicht statt.
+            AdMob ist so konfiguriert, dass ausschließlich nicht personalisierte Werbung mit der niedrigsten Inhaltsfreigabe („G") ausgeliefert wird. Werbung mit Glücksspiel-, Gewalt- oder sexuellen Inhalten ist damit ausgeschlossen. Eine auf Interessen basierende (personalisierte) Werbung findet nicht statt.
 
-            Rechtsgrundlage ist unser berechtigtes Interesse an der Finanzierung der kostenlosen App (Art. 6 Abs. 1 lit. f DSGVO). Da ausschließlich nicht personalisierte Werbung ausgeliefert wird, ist derzeit kein gesonderter Einwilligungsdialog vorgeschaltet; ob das für die Veröffentlichung ausreicht, sollte rechtlich geprüft werden. Weitere Informationen: Google-Datenschutzerklärung.
+            Rechtsgrundlage ist unser berechtigtes Interesse an der Finanzierung der kostenlosen App (Art. 6 Abs. 1 lit. f DSGVO). Für Nutzerinnen und Nutzer im EWR und im Vereinigten Königreich ist vor der ersten Werbeauslieferung ein von Google zertifiziertes Einwilligungswerkzeug einzubinden; dies ist vor Veröffentlichung umzusetzen und rechtlich zu prüfen. Weitere Informationen: Google-Datenschutzerklärung.
 
-            4. Spielstand und Bestleistung
-            Dein Punktestand und deine bisherige Bestleistung werden ausschließlich lokal auf deinem Gerät gespeichert. Es findet keine Übermittlung an uns oder an Dritte statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+            4. Spielstand, Tageswertung und Bestleistungen
+            Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden ausschließlich lokal auf deinem Gerät gespeichert. Es findet keine Übermittlung an uns oder an Dritte statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+
+            Die Tageswertung speichert dazu, wie viele Punkte am laufenden Tag gesammelt wurden, das beste Tagesergebnis und den Zeitpunkt des letzten Tageswechsels. Auch diese Angaben verlassen dein Gerät nicht. Ein Anzeigename und eine Avatar-Fee lassen sich in den Einstellungen hinterlegen; beides wird ebenfalls nur lokal gespeichert und niemandem angezeigt.
 
             5. Technische Bereitstellung
             Beim Betrieb der App können technisch notwendige Informationen (z. B. Geräteinformationen) anfallen, soweit dies für Auslieferung und Betrieb erforderlich ist. Wir setzen keine Analyse-, Tracking- oder Absturzberichtsdienste ein.
 
-            6. Hinweise für Kinder und Eltern
-            Fairydoku ist für alle Altersstufen freigegeben und auch für Kinder gedacht. Es wird keine personalisierte Werbung an Kinder ausgeliefert. Erziehungsberechtigte können sich bei Fragen jederzeit an die oben genannte Kontaktadresse wenden.
+            6. Zielgruppe sowie Hinweise für Eltern
+            Die Inhalte der App sind gewaltfrei und für jedes Alter unbedenklich. Als Angebot richtet sich Fairydoku an Personen ab 13 Jahren; es handelt sich nicht um ein an Kinder gerichtetes Angebot im Sinne der Play-Store-Familienrichtlinien, und die App nimmt nicht am Programm „Designed for Families" teil.
+
+            Unabhängig davon wird niemandem personalisierte Werbung ausgeliefert, und es werden keine Profile gebildet. Erziehungsberechtigte können sich bei Fragen jederzeit an die oben genannte Kontaktadresse wenden.
 
             7. Empfänger und Datenübermittlung in Drittländer
             Empfänger der oben genannten Daten ist Google. Dabei kann es zu einer Übermittlung von Daten in Länder außerhalb der EU/des EWR (insbesondere USA) kommen. Google stützt solche Übermittlungen auf geeignete Garantien (z. B. EU-Standardvertragsklauseln bzw. das EU-US Data Privacy Framework).

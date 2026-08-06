@@ -78,6 +78,7 @@ import com.fairydoo.game.game.GameViewModel
 import com.fairydoo.game.game.model.Pos
 import com.fairydoo.game.ui.GameCopy
 import com.fairydoo.game.ui.components.BoardFrameInsets
+import com.fairydoo.game.ui.components.DailySettlementOverlay
 import com.fairydoo.game.ui.components.FairydokuBoard
 import com.fairydoo.game.ui.components.FireflyLayer
 import com.fairydoo.game.ui.components.GameOverOverlay
@@ -263,6 +264,8 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     val globalLives by viewModel.globalLives.collectAsStateWithLifecycle()
     val fairyDust by viewModel.fairyDust.collectAsStateWithLifecycle()
     val irrlicht by viewModel.irrlicht.collectAsStateWithLifecycle()
+    val daily by viewModel.dailyScore.collectAsStateWithLifecycle()
+    val pendingSettlement by viewModel.pendingSettlement.collectAsStateWithLifecycle()
     val adsUnlocked by viewModel.adsUnlocked.collectAsStateWithLifecycle()
     val adReady by ads.isReady.collectAsStateWithLifecycle()
     val showLevelSelect by viewModel.showLevelSelect.collectAsStateWithLifecycle()
@@ -350,7 +353,7 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
         if (showLevelSelect) {
             LevelSelectScreen(
                 profile = profile,
-                score = state.score,
+                daily = daily,
                 globalLives = globalLives,
                 // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man
                 // zurückkönnte — nicht beim allerersten Start der App.
@@ -435,6 +438,16 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                     }
                     giftKind = null
                 },
+            )
+        }
+
+        // Ganz oben, über allem anderen: Der Tagesabschluss ist das Erste, was
+        // eine zurückkehrende Spielerin sehen soll — egal, ob die App auf der
+        // Levelkarte oder mitten im Brett wieder aufgeht.
+        pendingSettlement?.let { settlement ->
+            DailySettlementOverlay(
+                settlement = settlement,
+                onContinue = viewModel::acknowledgeDailySettlement,
             )
         }
     }

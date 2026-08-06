@@ -56,11 +56,13 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import com.fairydoo.game.data.PlayerProfile
+import com.fairydoo.game.game.DailyScoreState
 import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GlobalLives
 import com.fairydoo.game.game.GlobalLivesState
 import com.fairydoo.game.ui.GameCopy
 import com.fairydoo.game.ui.LegalPage
+import com.fairydoo.game.ui.components.DailyScoreOverlay
 import com.fairydoo.game.ui.components.FireflyLayer
 import com.fairydoo.game.ui.components.GlowingMushroom
 import com.fairydoo.game.ui.components.LegalOverlay
@@ -125,7 +127,7 @@ private const val PATH_FREQUENCY = 1.05
 @Composable
 fun LevelSelectScreen(
     profile: PlayerProfile,
-    score: Int,
+    daily: DailyScoreState,
     globalLives: GlobalLivesState,
     onClose: (() -> Unit)?,
     onSelectLevel: (Int) -> Unit,
@@ -145,6 +147,7 @@ fun LevelSelectScreen(
     // hier nichts zu pausieren.
     var showSettings by rememberSaveable { mutableStateOf(false) }
     var showSound by rememberSaveable { mutableStateOf(false) }
+    var showDailyScore by rememberSaveable { mutableStateOf(false) }
     var legalPage by rememberSaveable { mutableStateOf<LegalPage?>(null) }
 
     NightBackdrop {
@@ -165,17 +168,32 @@ fun LevelSelectScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            // Auf der Karte steht der Tag, nicht der laufende Lauf: Der Lauf
+            // gehört auf das Spielbrett, wo er entsteht. Drei Punktzahlen
+            // nebeneinander läse ohnehin niemand mehr.
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                ScoreBadge(score)
-                // Nur sichtbar, sobald überhaupt eine Partie beendet wurde —
-                // eine "Bestleistung: 0" wäre vor der allerersten Runde nur
-                // Rauschen neben dem echten Punktestand.
-                if (profile.highScore > 0) {
-                    BestScoreBadge(profile.highScore)
+                ScoreBadge(daily.points, onClick = { showDailyScore = true })
+                // Nur sichtbar, sobald überhaupt ein Tag abgeschlossen wurde —
+                // eine "Bestleistung: 0" wäre am ersten Tag nur Rauschen neben
+                // dem echten Punktestand.
+                if (daily.bestPoints > 0) {
+                    BestScoreBadge(daily.bestPoints)
                 }
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(6.dp))
+
+            // Dieselbe Sprache wie "+💚 in 1:34" bei den Wald-Leben — der
+            // Tageswechsel soll sich nicht wie ein neues System anfühlen.
+            Text(
+                text = "Neuer Tag in ${GameCopy.formatWaitTime(daily.remainingSeconds)}",
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 11.sp,
+                color = GoldLight.copy(alpha = 0.85f),
+                textAlign = TextAlign.Center,
+            )
+
+            Spacer(Modifier.height(8.dp))
 
             Text(
                 text = "✦ Der Feenpfad ✦",
@@ -285,6 +303,10 @@ fun LevelSelectScreen(
                 onVoiceChange = onVoiceChange,
                 onClose = { showSound = false },
             )
+        }
+
+        if (showDailyScore) {
+            DailyScoreOverlay(daily = daily, onClose = { showDailyScore = false })
         }
 
         legalPage?.let { page ->
@@ -878,13 +900,24 @@ private fun SettingsButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Die Tagespunkte — und zugleich der Weg in die Tageswertung.
+ *
+ * Antippbar statt eines eigenen Knopfes: Der Kopfbereich ist voll, und wer auf
+ * seine Punkte tippt, will ohnehin wissen, was sie wert sind.
+ */
 @Composable
-private fun ScoreBadge(score: Int) {
+private fun ScoreBadge(score: Int, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
             .border(2.dp, PanelBorder, RoundedCornerShape(16.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
             .padding(horizontal = 22.dp, vertical = 6.dp),
     ) {
         Text(
@@ -898,8 +931,8 @@ private fun ScoreBadge(score: Int) {
 }
 
 /**
- * Die bisherige Bestleistung — golden gerahmt statt neutral wie [ScoreBadge],
- * damit sie auf den ersten Blick als Rekord erkennbar ist, nicht als zweiter
+ * Das beste Tagesergebnis — golden gerahmt statt neutral wie [ScoreBadge],
+ * damit es auf den ersten Blick als Rekord erkennbar ist, nicht als zweiter
  * Punktestand.
  */
 @Composable
