@@ -37,7 +37,15 @@ class RegeneratingSupply(val max: Int, val intervalMillis: Long) {
      */
     fun normalize(storedAmount: Int, nextAtMillis: Long, nowMillis: Long): SupplyState {
         if (storedAmount >= max || nextAtMillis == 0L) {
-            return SupplyState(storedAmount.coerceIn(0, max), 0L)
+            // Nach unten begrenzen, aber nicht nach oben: Ein Geschenk darf über
+            // die Obergrenze hinausgehen. Sonst verpufft die Tagesbelohnung
+            // genau dann, wenn sie am wahrscheinlichsten ist — über Nacht
+            // vergehen mehr als die sechs Stunden, die den Vorrat ohnehin
+            // füllen, und man bekäme ein Geschenk, das nichts enthält.
+            //
+            // Nachwachsen tut über der Grenze nichts (die Uhr steht), es baut
+            // sich also nur durch Verbrauchen wieder ab.
+            return SupplyState(storedAmount.coerceAtLeast(0), 0L)
         }
         if (nowMillis < nextAtMillis) {
             return SupplyState(storedAmount, nextAtMillis)

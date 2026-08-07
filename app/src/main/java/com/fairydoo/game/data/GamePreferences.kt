@@ -379,8 +379,11 @@ class GamePreferencesRepository(context: Context) {
     /**
      * Schreibt die Tagesbelohnung den beiden Vorräten gut.
      *
-     * Wie beim Belohnungsvideo: Erst nachholen, was gewachsen ist, dann
-     * aufschlagen, und bei vollem Vorrat die Nachwachs-Uhr anhalten.
+     * Anders als beim Belohnungsvideo **ohne** Deckelung auf die Obergrenze:
+     * Über Nacht ist der Vorrat ohnehin voll nachgewachsen, ein gedeckeltes
+     * Geschenk wäre also praktisch immer leer. Der Vorrat darf durch die
+     * Tagesbelohnung über sein Maximum steigen und baut sich dann durchs
+     * Spielen wieder ab — nachwachsen tut oberhalb nichts.
      */
     private fun MutablePreferences.grantReward(reward: DailyReward, now: Long) {
         if (reward.fairyDust > 0) {
@@ -389,7 +392,7 @@ class GamePreferencesRepository(context: Context) {
                 nextAtMillis = this[KeyNextFairyDustAt] ?: 0L,
                 nowMillis = now,
             )
-            val granted = (normalized.amount + reward.fairyDust).coerceAtMost(FairyDustSupply.max)
+            val granted = normalized.amount + reward.fairyDust
             this[KeyFairyDust] = granted
             this[KeyNextFairyDustAt] =
                 if (granted >= FairyDustSupply.max) 0L else normalized.nextAtMillis
@@ -400,7 +403,7 @@ class GamePreferencesRepository(context: Context) {
                 nextAtMillis = this[KeyNextIrrlichtAt] ?: 0L,
                 nowMillis = now,
             )
-            val granted = (normalized.amount + reward.irrlicht).coerceAtMost(IrrlichtSupply.max)
+            val granted = normalized.amount + reward.irrlicht
             this[KeyIrrlicht] = granted
             this[KeyNextIrrlichtAt] =
                 if (granted >= IrrlichtSupply.max) 0L else normalized.nextAtMillis
