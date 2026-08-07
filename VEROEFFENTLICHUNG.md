@@ -163,3 +163,58 @@ auch wenn der Fehler in einer Stunde behoben ist.
 - **Ligen.** Brauchen 25–30 Aktive pro Gruppe, sonst wirken sie leer.
 - **iOS.** Die Spiellogik ließe sich übernehmen, die Oberfläche wäre neu —
   Kotlin mit Compose läuft nicht auf dem iPhone.
+
+---
+
+## Die vollständige Liste
+
+Stand 7. August 2026. Alles, was zwischen heute und dem Play Store steht.
+
+### Nur Nataly
+
+| | Was | Anmerkung |
+|---|---|---|
+| ⬜ | **Entwicklerkonto bei Google** | play.google.com/console, einmalig ~25 USD. Die Identitätsprüfung dauert Tage — früh anstoßen. |
+| ⬜ | **AdMob-Konto** | Liefert die echte App-ID und Anzeigen-ID. Ohne sie läuft die App mit Googles Testanzeigen, und die werden beanstandet. |
+| ⬜ | **Platzhalter ausfüllen** | 21 Stück in `GameCopy.kt`. Liste unter `app/build/rechtstexte/offene-platzhalter.txt`. |
+| ⬜ | **Rechtstexte prüfen lassen** | Empfehlung der Texte selbst: Fachanwalt IT-/Datenschutzrecht. |
+| ⬜ | **Datenschutzseite hochladen** | Datei entsteht per Test, braucht nur einen öffentlich erreichbaren Ort. |
+| ⬜ | **Zweite Sicherung des Schlüssels** | Der USB-Stick ist die erste. Eine reicht nicht. |
+| ⬜ | **App-Namen festlegen** | Drei Vorschläge in `STORE-EINTRAG.md`. |
+| ⬜ | **Klang-Lizenz klären** | Womit wurden `ambient_forest.mp3` und `fairy_startled.mp3` erzeugt? Beide werden mit ausgeliefert. |
+
+### Zu entscheiden
+
+| | Was |
+|---|---|
+| ⬜ | **Die zehn Feenmotive** — bleiben sie, und welche müssen nachgebessert werden? |
+| ⬜ | **Die gesprochenen Lobsätze** — weglassen, oder leiser und kürzer? |
+
+### Testen, nur auf dem Gerät möglich
+
+| | Was | Warum |
+|---|---|---|
+| ⬜ | **Tagesabschluss** | Kommt das Overlay nach 4 Uhr? Kommt der Feenstaub im Vorrat an? Erscheint es nur einmal? |
+| ⬜ | **Release-Fassung** | Ist noch nie gelaufen. Die Verkleinerung für den Store kann still etwas zerstören. |
+| ⬜ | **Werbung** | Ab Level 11. Kommt die Belohnung an? |
+| ⬜ | **Einwilligungsdialog** | Nur bei frischer Installation und nur in der EU. Ablehnen muss sauber funktionieren. |
+| ⬜ | **Klang insgesamt** | Mit Kopfhörern. Niemand hat das Spiel bisher gehört. |
+| ⬜ | **Neustart** | Stand nach vollständigem Schließen noch vollständig da? |
+
+### Bei mir
+
+| | Was | Dringlichkeit |
+|---|---|---|
+| ⬜ | **`targetSdk` von 35 auf 36** | **Zuerst.** Google verlangt für neue Apps ein aktuelles Ziel-Level; die Frist läuft üblicherweise Ende August. |
+| ⬜ | **App-Symbol einreichfertig** | `Bilder/app-icon-512.png` liegt in 512 × 512 bereit, muss nur geprüft werden. |
+| ⬜ | **Echte AdMob-Kennungen einsetzen** | Sobald das Konto steht. |
+| ⬜ | **Feenmotive einbauen** | Sobald entschieden. |
+| ⬜ | **Lobsätze anpassen** | Sobald entschieden. |
+| ⬜ | **Signiertes AAB zum Hochladen** | Zuletzt, wenn alles andere steht. |
+
+### Nach der Veröffentlichung
+
+- **Illustrierte Pilze** — im Spielbildschirm stehen noch Emoji als Platzhalter
+- **Feentitel aus Bausteinen** statt des freien Namensfelds
+- **Online-Rangliste** über Firebase, wenn es Spielerinnen gibt
+- **Ligen**, ab einigen hundert Aktiven
