@@ -151,31 +151,87 @@ class FairyAudio(context: Context) {
     }
 
     /**
-     * Die Waldstimmung als Schleife.
+     * Die Musikschleife als rohe Abtastwerte im Zwischenspeicher.
      *
-     * **Sie wird berechnet, nicht geladen.** Bis hierher lag sie als
-     * `ambient_forest.mp3` bei, wurde beim ersten Start dekodiert und danach
-     * als rohes PCM zwischengespeichert — mit allem, was dazugehört: einer
-     * Prüfsumme der Aufnahme als Dateiname, dem Aufräumen alter Fassungen, dem
-     * Überblenden der Ränder, die MP3 kodierungsbedingt mitbringt.
-     *
-     * Das alles entfällt. Die Aufnahme stammte aus ElevenLabs, und ob ihre
-     * Lizenz kommerzielle Nutzung deckt, hängt am Tarif zum Zeitpunkt der
-     * Erzeugung — eine Frage, die sich Jahre später schlecht belegen lässt. Ein
-     * berechneter Klang hat diese Frage nicht: Seine Herkunft steht als Code da.
-     *
-     * **Und ohne Datei braucht es keinen Zwischenspeicher.** Der war für das
-     * Dekodieren gedacht, das spürbar Zeit kostete. Fünf Sinusstimmen über
-     * zweiunddreißig Sekunden zu rechnen ist eine Sache von Millisekunden, und
-     * es passiert ohnehin nebenläufig. Damit fallen die Prüfsumme, das
-     * Aufräumen und die ganze Fehlerquelle weg, die im Kommentar davor stand:
-     * ein vergessenes Hochsetzen der Fassungsnummer, das jedem Gerät weiter die
-     * alte Musik vorspielte.
-     *
-     * Das Überblenden der Ränder entfällt ebenfalls — die Schleife schließt von
-     * selbst, siehe [FairySounds.waldstimmung].
+     * Die Datei wird einmal dekodiert und danach von hier geladen — das
+     * Dekodieren einer Minute Musik kostet spürbar Zeit, und so lange bliebe
+     * es still. Abgelegt wird rohes PCM, weil AudioTrack die Daten als
+     * Zahlenfeld erwartet; ein Container brächte nur einen Kopfsatz zum
+     * Überspringen.
      */
-    private fun waldschleife(): ShortArray = Synth.toPcm16(FairySounds.waldstimmung())
+    private fun loadOrDecodeMusic(cacheDir: File): ShortArray {
+        val file = File(cacheDir, "ambient-${musicFingerprint()}.pcm")
+        // Was eine frühere Musik hinterlassen hat, wird jetzt nicht mehr
+        // gefunden — aber es läge sonst für immer da und belegte Platz.
+        runCatching {
+            cacheDir.listFiles()
+                ?.filter { it.name.startsWith("ambient") && it.name != file.name }
+                ?.forEach { it.delete() }
+        }
+
+        if (file.exists() && file.length() > 0) {
+            runCatching {
+                val bytes = file.readBytes()
+                return ShortArray(bytes.size / 2) { index ->
+                    val low = bytes[index * 2].toInt() and 0xFF
+                    val high = bytes[index * 2 + 1].toInt()
+                    ((high shl 8) or low).toShort()
+                }
+            }.onFailure { error ->
+                Log.w(TAG, "Musik aus dem Zwischenspeicher unbrauchbar", error)
+            }
+        }
+
+        val decoded = MusicDecoder.decodeToMono(appContext, R.raw.ambient_forest)
+        // Kurzes Überblenden von Schluss auf Anfang: MP3 trägt kodierungsbedingt
+        // etwas Stille an den Rändern, die beim Wiederholen als Lücke hörbar
+        // wäre.
+        val samples = Synth.crossfadeLoop(decoded, seconds = LOOP_CROSSFADE_SECONDS)
+
+        runCatching {
+            val bytes = ByteArray(samples.size * 2)
+            samples.forEachIndexed { index, value ->
+                bytes[index * 2] = (value.toInt() and 0xFF).toByte()
+                bytes[index * 2 + 1] = (value.toInt() shr 8).toByte()
+            }
+            file.writeBytes(bytes)
+        }.onFailure { error ->
+            Log.w(TAG, "Musik konnte nicht zwischengespeichert werden", error)
+        }
+        return samples
+    }
+
+    /**
+     * Erkennungsmerkmal der Musikaufnahme.
+     *
+     * Der Zwischenspeicher hing zuvor allein an [SOUND_CACHE_VERSION]. Als die
+     * berechnete Schleife durch die komponierte Aufnahme ersetzt wurde, blieb
+     * diese Zahl unverändert — und jedes Gerät, auf dem das Spiel vorher
+     * gelaufen war, spielte danach weiter die alte Schleife. Der Fehler war von
+     * außen nicht zu erkennen: Der Ton war ja da, nur der falsche.
+     *
+     * Am Dateinamen hängt deshalb jetzt die Prüfsumme der Aufnahme selbst. Wird
+     * die Musik ausgetauscht, ändert sich der Name von allein; niemand muss
+     * mehr daran denken, eine Nummer hochzusetzen.
+     *
+     * Das Lesen der Datei kostet bei jedem Start ein paar Millisekunden — der
+     * Preis dafür, dass ein Vergessen keine Folgen mehr hat.
+     */
+    private fun musicFingerprint(): Long = runCatching {
+        val checksum = CRC32()
+        appContext.resources.openRawResource(R.raw.ambient_forest).use { input ->
+            val buffer = ByteArray(FINGERPRINT_BUFFER_BYTES)
+            while (true) {
+                val read = input.read(buffer)
+                if (read <= 0) break
+                checksum.update(buffer, 0, read)
+            }
+        }
+        checksum.value
+    }.getOrElse { error ->
+        Log.w(TAG, "Prüfsumme der Musik nicht ermittelbar", error)
+        0L
+    }
 
     /**
      * Entfernt die Klangordner früherer Fassungen.
@@ -347,7 +403,7 @@ class FairyAudio(context: Context) {
     private suspend fun startMusic() {
         stopMusic()
         runCatching {
-            val loop = withContext(Dispatchers.Default) { waldschleife() }
+            val loop = withContext(Dispatchers.Default) { loadOrDecodeMusic(soundCacheDir()) }
             val track = createMusicTrack(loop.size)
             track.write(loop, 0, loop.size)
             // Der ganze Puffer ist die Schleife — dadurch läuft die Musik ohne
@@ -433,19 +489,26 @@ class FairyAudio(context: Context) {
          * Hochzählen, wenn sich die **Synthese** in [FairySounds] ändert — sonst
          * spielt die App weiter die alten Effekte aus dem Zwischenspeicher.
          *
-         * Die Musik steht hier nicht mehr drin: Sie wird bei jedem Start neu
-         * berechnet und gar nicht mehr abgelegt. Der frühere Hinweis auf eine
-         * Prüfsumme der Aufnahme ist damit gegenstandslos — es gibt keine
-         * Aufnahme mehr.
+         * Für die Musik gilt das nicht mehr: Ihr Zwischenspeicher hängt an der
+         * Prüfsumme der Aufnahme (siehe `musicFingerprint`), weil genau dieses
+         * Hochzählen beim Austausch der Musik einmal vergessen wurde.
          *
          * Auf 6 gesetzt, weil der Klick beim Setzen einer Fee dazugekommen ist
          * und die gesprochenen Ausrufe entfallen sind. Ohne das Hochzählen
          * behielte jedes Gerät, auf dem das Spiel schon lief, seinen alten
-         * Klangsatz — der Fehler, vor dem dieser Kommentar warnt, und der hier
-         * beinahe ein zweites Mal passiert wäre.
+         * Klangsatz.
+         *
+         * Beinahe wäre es zweimal schiefgegangen: Der Wert stand schon einmal
+         * auf 6, ging beim Zurücknehmen der berechneten Waldmusik aber wieder
+         * auf 5 — obwohl der Klick, der ihn nötig macht, geblieben ist. Beim
+         * Zurücknehmen ist das leichter zu übersehen als beim Ändern.
          */
         const val SOUND_CACHE_VERSION = 6
 
+        /** Häppchen beim Prüfsummenlesen — größer bringt messbar nichts mehr. */
+        const val FINGERPRINT_BUFFER_BYTES = 64 * 1024
 
+        /** Überblendung an der Schleifennaht — kurz genug, um nicht aufzufallen. */
+        const val LOOP_CROSSFADE_SECONDS = 0.4f
     }
 }
