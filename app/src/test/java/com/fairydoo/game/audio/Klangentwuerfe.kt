@@ -89,7 +89,7 @@ object Klangentwuerfe {
      * dasselbe wie am Anfang. Das ist sauberer als jedes Überblenden, weil es
      * mathematisch stimmt und nicht nur ungefähr.
      */
-    fun waldstimmung(sekunden: Float = 24f, dichte: Float = 1f): FloatArray {
+    fun waldstimmung(sekunden: Float = 32f, dichte: Float = 1f): FloatArray {
         val zufall = Random(20260810)
 
         /** Eine Schwellung, die am Anfang und am Ende bei null steht. */
