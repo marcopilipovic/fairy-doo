@@ -50,6 +50,44 @@ class KlangentwuerfeTest {
         val sprung = abs(wald.last() - wald.first())
         assertTrue("Die Schleife hat eine hörbare Naht (Sprung $sprung)", sprung < 0.08f)
 
+        /**
+         * Wald oder Meer?
+         *
+         * **Diese Prüfung ist die zweite.** Die erste maß das Verhältnis von
+         * Spitze zu mittlerer Lautheit und ließ eine Fassung durch, die
+         * weiterhin nach Brandung klang: Sie kam auf 7 gegenüber 5,9 vorher —
+         * ein Unterschied, der nichts bewies. Die Zahl war einfach das falsche
+         * Maß.
+         *
+         * Was Wald von See unterscheidet, ist **Stille**. Die See hört nie auf;
+         * ein Wald hat zwischen zwei Böen Abschnitte, in denen fast nichts
+         * passiert. Also wird das gemessen: Wie viel der Zeit liegt deutlich
+         * unter der mittleren Lautheit?
+         *
+         * Beim Entwurf, der nach Meer klang, waren es **null Prozent**. Die
+         * Grundschicht deckte jede Lücke zu. Ausgemessen wurde dann die Reihe
+         * 0,30 → 0 %, 0,15 → 22 %, 0,12 → 57 %, 0,08 → 77 %; bei 0,08 wirkt der
+         * Wald tot, gewählt ist 0,12.
+         *
+         * Das beweist nicht, dass es nach Wald klingt — das kann kein Test.
+         * Aber es fängt den Rückfall ins Dauerrauschen, und der ist beim
+         * Nachjustieren der wahrscheinlichste Fehler.
+         */
+        val wald2 = entwuerfe.getValue("waldrauschen")
+        val lautheit = sqrt(wald2.sumOf { (it * it).toDouble() } / wald2.size).toFloat()
+        val block = Synth.SAMPLE_RATE / 20
+        val bloecke = wald2.toList().chunked(block).filter { it.size == block }
+        val ruhig = bloecke.count { teil ->
+            sqrt(teil.sumOf { (it * it).toDouble() } / block) < 0.35 * lautheit
+        }
+        val anteil = 100 * ruhig / bloecke.size
+        println("  Wald: ruhige Abschnitte $anteil %")
+        assertTrue(
+            "Der Wald rauscht durchgehend und klingt wieder nach Meer " +
+                "($anteil % ruhig, erwartet mindestens 30)",
+            anteil >= 30,
+        )
+
         println("KLANGENTWÜRFE in ${ziel.absolutePath}")
         ziel.listFiles()?.sortedBy { it.name }?.forEach {
             println("  ${it.name} — ${it.length() / 1024} KB")

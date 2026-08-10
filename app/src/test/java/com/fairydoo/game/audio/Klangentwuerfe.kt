@@ -62,84 +62,131 @@ object Klangentwuerfe {
     }
 
     /**
-     * Das Waldrauschen als Schleife.
+     * Der Wald als Schleife.
      *
-     * Drei Schichten, wie ein Wald sie hat: der Wind als tiefes Rauschen, die
-     * Blätter als helles Zischeln darüber, und ab und zu ein Vogel.
+     * **Der erste Entwurf klang nach Meer.** Nataly: „Das klingt eher wie das
+     * Meer anstatt einen Wald. Das ist definitiv zu viel Rauschen." Sie hat den
+     * Finger genau auf den Fehler gelegt: Dort lag ein durchgehendes,
+     * tiefpassgefiltertes Rauschen, das langsam an- und abschwoll — und
+     * langsames An- und Abschwellen von Breitbandrauschen ist die Signatur von
+     * Wellen. Man kann daraus keinen Wald machen, indem man leiser dreht.
      *
-     * **Die Schleife ist das eigentlich Schwierige.** Ein Ambiente darf nicht
-     * hörbar von vorn anfangen, sonst zählt das Ohr innerhalb einer Minute mit.
-     * Zwei Vorkehrungen dagegen: Alle langsamen Schwankungen haben Perioden,
-     * die ganzzahlig in die Länge passen — sie stehen am Ende genau dort, wo
-     * sie am Anfang standen. Und der Schluss wird über den Beginn geblendet
-     * (siehe [Synth.crossfadeLoop]), womit auch das Rauschen ohne Naht
-     * schließt.
+     * **Was einen Wald ausmacht, sind Ereignisse mit Stille dazwischen.** Die
+     * See hört nie auf; ein Wald raschelt in Stößen, und zwischen zwei Böen
+     * passiert nichts. Deshalb ist die Bauweise hier eine andere:
      *
-     * Die Vögel sitzen bewusst weit von den Rändern entfernt. Einer, der über
-     * die Naht liefe, würde abgeschnitten — und ein abgeschnittener Vogelruf
-     * ist genau das Geräusch, an dem man eine Schleife erkennt.
+     * - Die Grundschicht ist fast nichts — sehr leise, ohne Schwankung. Nur so
+     *   viel, dass es nicht tot klingt. Sie schwillt bewusst **nicht** an.
+     * - Darüber einzelne **Raschler**: kurze, helle Stöße zu unregelmäßigen
+     *   Zeiten, jeder mit eigener Länge und Lautstärke. Sie sind das, was man
+     *   als Blätter hört.
+     * - Und **Vögel**, mehr und verschiedener als vorher. Sie sind das
+     *   stärkste Erkennungszeichen eines Waldes; Wasser hat keine.
+     *
+     * Nachmessen lässt sich der Unterschied am Verhältnis von Spitze zu
+     * mittlerer Lautheit: Gleichmäßiges Rauschen liegt bei etwa drei bis vier,
+     * eine Klanglandschaft aus Einzelereignissen deutlich darüber. Der Test
+     * prüft das.
      */
-    fun waldrauschen(sekunden: Float = 14f): FloatArray {
+    fun waldrauschen(sekunden: Float = 16f): FloatArray {
         val laenge = Synth.secondsToSamples(sekunden)
         val zufall = Random(20260810)
 
-        // Wind: tiefes Rauschen, langsam an- und abschwellend.
-        val wind = FloatArray(laenge)
+        // Die Grundschicht: kaum wahrnehmbar, ohne jede Schwankung. Sie füllt
+        // nur die Stille, damit zwischen zwei Raschlern kein Loch klafft.
+        //
+        // **Der Faktor ist ausgemessen, nicht geschätzt.** Bei 0,9 blieb in
+        // vierzehn Sekunden kein einziger ruhiger Abschnitt übrig — die
+        // Grundschicht deckte alles zu, und genau das klang nach Brandung. Die
+        // Reihe: 0,30 → 0 % Ruhe, 0,15 → 22 %, 0,12 → 57 %, 0,08 → 77 %. Bei
+        // 0,08 wirkt der Wald tot, bei 0,12 atmet er.
+        val luft = FloatArray(laenge)
         var tief = 0f
         for (i in 0 until laenge) {
-            val roh = zufall.nextFloat() * 2f - 1f
-            // Einfacher Tiefpass — er nimmt dem Rauschen die Schärfe und macht
-            // daraus Wind statt Zischen.
-            tief += (roh - tief) * 0.02f
-            val t = i.toFloat() / laenge
-            val schwellen = 0.55f + 0.45f * sin(2f * PI.toFloat() * 2f * t)
-            wind[i] = tief * schwellen * 3.2f
+            tief += ((zufall.nextFloat() * 2f - 1f) - tief) * 0.012f
+            luft[i] = tief * 0.12f
         }
 
-        // Blätter: helleres Rauschen, schneller moduliert, deutlich leiser.
-        val blaetter = FloatArray(laenge)
-        var vorher = 0f
-        for (i in 0 until laenge) {
-            val roh = zufall.nextFloat() * 2f - 1f
-            // Hochpass durch Differenzbildung: Was bleibt, ist das Zischeln.
-            val hell = roh - vorher
-            vorher = roh
-            val t = i.toFloat() / laenge
-            val boeen = 0.35f + 0.65f * abs(sin(2f * PI.toFloat() * 3f * t))
-            blaetter[i] = hell * boeen * 0.16f
+        val schichten = mutableListOf(0f to luft)
+
+        // Die Raschler. Unregelmäßig verteilt — gleichmäßige Abstände klängen
+        // nach Maschine.
+        var zeit = 0.4f
+        while (zeit < sekunden - 2.0f) {
+            val dauer = 0.12f + zufall.nextFloat() * 0.35f
+            val staerke = 0.09f + zufall.nextFloat() * 0.13f
+            schichten += zeit to raschler(dauer, staerke, zufall.nextInt())
+            // Zwischen 0,5 und 2,3 Sekunden Ruhe. Die Stille gehört dazu.
+            zeit += 0.5f + zufall.nextFloat() * 1.8f
         }
 
-        val schichten = mutableListOf(0f to wind, 0f to blaetter)
-
-        // Vögel: kurze Rufe, weit von den Rändern entfernt.
-        val rufe = listOf(2.1f, 5.4f, 6.0f, 9.7f, 11.2f)
+        // Vögel: zwei Sorten, damit es nicht nach einem einzelnen Tier klingt.
+        // Nah und deutlich, oder fern und leise mit Nachhall.
+        val rufe = listOf(1.6f, 3.1f, 4.9f, 7.2f, 8.4f, 10.6f, 12.3f, 13.8f)
         rufe.forEachIndexed { nummer, zeitpunkt ->
-            val hoehe = 2200f + zufall.nextFloat() * 1400f
-            schichten += zeitpunkt to Synth.tone(
-                durationSeconds = 0.16f,
-                frequencyAt = { fortschritt -> hoehe * (1f + 0.22f * sin(fortschritt * 9f)) },
-                amplitudeAt = Synth.pluck(decay = 16f, peak = 0.13f),
-                harmonics = listOf(1f to 1f, 2f to 0.15f),
-                vibratoHz = 14f,
-                vibratoDepth = 0.03f,
-            )
-            // Jeder zweite Ruf bekommt ein kurzes Echo — das macht den Wald tief.
-            if (nummer % 2 == 0) {
-                schichten += (zeitpunkt + 0.19f) to Synth.tone(
-                    durationSeconds = 0.13f,
-                    frequencyAt = { hoehe * 0.97f },
-                    amplitudeAt = Synth.pluck(decay = 20f, peak = 0.05f),
+            val fern = nummer % 3 == 2
+            val hoehe = 1900f + zufall.nextFloat() * 1900f
+            val pegel = if (fern) 0.05f else 0.14f
+            val toene = if (nummer % 2 == 0) 2 else 1
+
+            repeat(toene) { ton ->
+                val versatz = ton * 0.13f
+                schichten += (zeitpunkt + versatz) to Synth.tone(
+                    durationSeconds = 0.15f,
+                    frequencyAt = { fortschritt ->
+                        // Ein Ruf steigt und fällt; zwei Töne hintereinander
+                        // liegen etwas auseinander.
+                        val grund = hoehe * (1f + 0.06f * ton)
+                        grund * (1f + 0.18f * sin(fortschritt * 7f))
+                    },
+                    amplitudeAt = Synth.pluck(decay = 15f, peak = pegel),
+                    harmonics = listOf(1f to 1f, 2f to 0.12f),
+                    vibratoHz = 16f,
+                    vibratoDepth = 0.035f,
+                )
+            }
+            if (fern) {
+                schichten += (zeitpunkt + 0.22f) to Synth.tone(
+                    durationSeconds = 0.18f,
+                    frequencyAt = { hoehe * 0.98f },
+                    amplitudeAt = Synth.pluck(decay = 22f, peak = pegel * 0.5f),
                     harmonics = listOf(1f to 1f),
                 )
             }
         }
 
-        val gemischt = Synth.normalize(Synth.mix(*schichten.toTypedArray()), target = 0.42f)
-
-        // Schluss über den Anfang blenden — erst danach schließt die Schleife
-        // wirklich ohne Naht.
-        val geschlossen = Synth.crossfadeLoop(Synth.toPcm16(gemischt), seconds = 1.2f)
+        val gemischt = Synth.normalize(Synth.mix(*schichten.toTypedArray()), target = 0.5f)
+        val geschlossen = Synth.crossfadeLoop(Synth.toPcm16(gemischt), seconds = 1.4f)
         return FloatArray(geschlossen.size) { geschlossen[it] / Short.MAX_VALUE.toFloat() }
+    }
+
+    /**
+     * Ein einzelner Raschler — trockene Blätter, kurz bewegt.
+     *
+     * Zwei Dinge unterscheiden ihn von Rauschen. Erstens ist er **hell**: Die
+     * Differenz aufeinanderfolgender Zufallswerte nimmt die tiefen Anteile
+     * heraus, und ohne die klingt es nach Blatt statt nach Brandung. Zweitens
+     * ist er **körnig**: Eine schnelle, zufällige Zweithüllkurve zerhackt ihn in
+     * viele winzige Anschläge — ein Blätterhaufen besteht aus einzelnen
+     * Blättern, kein gleichmäßiges Zischen.
+     */
+    private fun raschler(sekunden: Float, pegel: Float, saat: Int): FloatArray {
+        val laenge = Synth.secondsToSamples(sekunden)
+        val zufall = Random(saat)
+        var vorher = 0f
+        var koernung = 0f
+        return FloatArray(laenge) { i ->
+            val roh = zufall.nextFloat() * 2f - 1f
+            val hell = roh - vorher
+            vorher = roh
+            // Körnung: springt zufällig und fällt schnell zurück.
+            if (zufall.nextFloat() < 0.004f) koernung = 1f
+            koernung *= 0.9993f
+            val t = i.toFloat() / laenge
+            // Schneller Einsatz, langes Ausklingen.
+            val huelle = (t / 0.08f).coerceAtMost(1f) * kotlin.math.exp(-3.2f * t)
+            hell * (0.35f + 0.65f * koernung) * huelle * pegel
+        }
     }
 
     /** Gefiltertes Rauschen fester Länge, mit eigener Hüllkurve. */
