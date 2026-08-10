@@ -125,8 +125,13 @@ object FairySounds {
      * Stimmen in derselben Pentatonik, in der das ganze Spiel klingt, jede mit
      * ihrer eigenen sehr langsamen Schwellung. Weil die Schwellungen
      * verschieden lang sind, treffen sie nie zweimal gleich zusammen — so
-     * entsteht Bewegung ohne einzelne Ereignisse. Darüber ein paar Vogelrufe,
-     * sparsam.
+     * entsteht Bewegung ohne einzelne Ereignisse.
+     *
+     * **Ohne Vögel.** Sie waren im Entwurf dabei und sind auf Natalys Wunsch
+     * wieder verschwunden: „Nimm die Vögel bitte raus." Sie hatten dieselbe
+     * Schwäche wie zuvor das Rauschen — sie sind Ereignisse, und Ereignisse
+     * ziehen Aufmerksamkeit. Ein Hintergrund, den man bemerkt, ist keiner. Was
+     * bleibt, ist eine Fläche, die nur atmet.
      *
      * **Die Schleife schließt von selbst, ohne Überblendung.** Jede Stimme hat
      * eine Frequenz in ganzen Hertz, jede Schwellung eine ganzzahlige Anzahl
@@ -134,9 +139,7 @@ object FairySounds {
      * dasselbe wie am Anfang. Das ist sauberer als jedes Überblenden, weil es
      * mathematisch stimmt und nicht nur ungefähr.
      */
-    fun waldstimmung(sekunden: Float = 32f, dichte: Float = 1.5f): FloatArray {
-        val zufall = Random(20260810)
-
+    fun waldstimmung(sekunden: Float = 44f): FloatArray {
         /** Eine Schwellung, die am Anfang und am Ende bei null steht. */
         fun schwellung(durchlaeufe: Int, staerke: Float): (Float) -> Float = { t ->
             staerke * (0.5f - 0.5f * kotlin.math.cos(2f * PI.toFloat() * durchlaeufe * t))
@@ -160,7 +163,7 @@ object FairySounds {
             )
         }.toMutableList()
 
-        // Ein Schimmer weit oben — er macht aus dem Akkord einen Wald.
+        // Ein Schimmer weit oben — er nimmt dem Akkord die Schwere.
         schichten += 0f to Synth.tone(
             durationSeconds = sekunden,
             frequencyAt = { 1320f },
@@ -168,33 +171,9 @@ object FairySounds {
             harmonics = listOf(1f to 1f),
         )
 
-        // Vögel, sparsam. Weit von den Rändern, damit keiner die Naht kreuzt.
-        var zeit = 2.5f
-        var nummer = 0
-        while (zeit < sekunden - 2.5f) {
-            val hoehe = 1800f + zufall.nextFloat() * 1600f
-            val pegel = if (nummer % 3 == 2) 0.05f else 0.11f
-            val toene = if (nummer % 2 == 0) 2 else 1
-            repeat(toene) { ton ->
-                schichten += (zeit + ton * 0.16f) to Synth.tone(
-                    durationSeconds = 0.2f,
-                    frequencyAt = { fortschritt ->
-                        hoehe * (1f + 0.06f * ton) * (1f + 0.16f * sin(fortschritt * 5f))
-                    },
-                    amplitudeAt = Synth.pluck(decay = 11f, peak = pegel),
-                    harmonics = listOf(1f to 1f, 2f to 0.1f),
-                    vibratoHz = 12f,
-                    vibratoDepth = 0.04f,
-                )
-            }
-            zeit += (2.2f + zufall.nextFloat() * 2.4f) / dichte
-            nummer++
-        }
-
-        // **Leise.** Nataly: „es soll aber recht leise eingebaut werden."
-        // Das ist kein Regler, sondern der eingebaute Pegel: Die Stimmung soll
-        // auch dann im Hintergrund bleiben, wenn jemand die Musik ganz
-        // aufdreht. Ein Viertel dessen, was die Effekte erreichen.
+        // **Leise.** Nataly: „es soll aber recht leise eingebaut werden." Das
+        // ist kein Regler, sondern der eingebaute Pegel: Die Stimmung soll auch
+        // dann im Hintergrund bleiben, wenn jemand die Musik ganz aufdreht.
         return Synth.normalize(Synth.mix(*schichten.toTypedArray()), target = 0.22f)
     }
 

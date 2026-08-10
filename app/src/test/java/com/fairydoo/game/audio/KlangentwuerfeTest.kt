@@ -23,8 +23,10 @@ class KlangentwuerfeTest {
     fun `Entwuerfe schreiben und pruefen`() {
         val entwuerfe = mapOf(
             "aufschrei" to Klangentwuerfe.aufschrei(),
-            "wald-ruhig" to Klangentwuerfe.waldstimmung(dichte = 0.7f),
-            "wald-belebt" to Klangentwuerfe.waldstimmung(dichte = 1.5f),
+            // Die Waldstimmung ist abgenommen und steht in FairySounds. Sie
+            // wird hier trotzdem mitgeschrieben — zum Gegenhören nach jeder
+            // Änderung, und weil die Prüfungen darunter an ihr hängen.
+            "waldstimmung" to FairySounds.waldstimmung(),
         )
 
         for ((name, samples) in entwuerfe) {
@@ -38,7 +40,7 @@ class KlangentwuerfeTest {
             File(ziel, "$name.wav").writeBytes(Synth.toWavBytes(samples))
         }
 
-        val wald = entwuerfe.getValue("wald-ruhig")
+        val wald = entwuerfe.getValue("waldstimmung")
 
         /**
          * Die Naht der Schleife.

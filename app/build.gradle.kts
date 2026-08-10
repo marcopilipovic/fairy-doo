@@ -34,8 +34,8 @@ android {
         // Hersteller-Installer verweigern die Aktualisierung dann kommentarlos.
         // Man musste die App erst deinstallieren — und verlor dabei den
         // Spielstand.
-        versionCode = 4
-        versionName = "0.3.0"
+        versionCode = 5
+        versionName = "0.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

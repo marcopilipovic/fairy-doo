@@ -1,12 +1,14 @@
 package com.fairydoo.game.audio
 
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * Entwürfe für die beiden Klänge, die noch aus Dateien kommen.
+ * Entwürfe für Klänge, die noch aus Dateien kommen.
+ *
+ * Die Waldstimmung stand hier ebenfalls, bis Nataly sie abgenommen hat — dann
+ * ist sie nach [FairySounds] gewandert. Ein Entwurf, der auch nach der Abnahme
+ * hier liegen bliebe, wäre eine zweite Kopie, und zwei Kopien laufen
+ * auseinander.
  *
  * **Warum sie hier stehen und nicht in [FairySounds].** Nataly will sie hören,
  * bevor sie ins Spiel wandern: „Berechne es synthetischerweise, aber bau es
@@ -61,93 +63,6 @@ object Klangentwuerfe {
         return Synth.normalize(Synth.concat(luft, ruck), target = 0.55f)
     }
 
-
-    /**
-     * Die Stimmung des Feenwalds — getragen, ohne Rauschen.
-     *
-     * **Zwei Versuche waren falsch, und beide auf dieselbe Weise.** Der erste
-     * war ein an- und abschwellendes Breitbandrauschen: „Das klingt eher wie
-     * das Meer." Der zweite bestand aus einzelnen Raschlern — weniger Rauschen,
-     * aber immer noch Rauschen, nur zerhackt: „Das klingt echt komisch. Du
-     * musst noch mehr Rauschen rausnehmen. Es muss langgezogener werden."
-     *
-     * Der Denkfehler war, einen Wald **abbilden** zu wollen. Eine Feldaufnahme
-     * besteht nun einmal aus Rauschen, und jeder Versuch, sie nachzubauen,
-     * endet bei Rauschen. Das Spiel spielt aber nicht im Wald, sondern in einem
-     * *Feenwald* — dort darf die Luft klingen statt zu rascheln.
-     *
-     * Deshalb hier **kein Rauschen mehr**, sondern getragene Töne: wenige leise
-     * Stimmen in derselben Pentatonik, in der das ganze Spiel klingt, jede mit
-     * ihrer eigenen sehr langsamen Schwellung. Weil die Schwellungen
-     * verschieden lang sind, treffen sie nie zweimal gleich zusammen — so
-     * entsteht Bewegung ohne einzelne Ereignisse. Darüber ein paar Vogelrufe,
-     * sparsam.
-     *
-     * **Die Schleife schließt von selbst, ohne Überblendung.** Jede Stimme hat
-     * eine Frequenz in ganzen Hertz, jede Schwellung eine ganzzahlige Anzahl
-     * Durchläufe — bei einer Länge in ganzen Sekunden steht am Ende damit genau
-     * dasselbe wie am Anfang. Das ist sauberer als jedes Überblenden, weil es
-     * mathematisch stimmt und nicht nur ungefähr.
-     */
-    fun waldstimmung(sekunden: Float = 32f, dichte: Float = 1f): FloatArray {
-        val zufall = Random(20260810)
-
-        /** Eine Schwellung, die am Anfang und am Ende bei null steht. */
-        fun schwellung(durchlaeufe: Int, staerke: Float): (Float) -> Float = { t ->
-            staerke * (0.5f - 0.5f * kotlin.math.cos(2f * PI.toFloat() * durchlaeufe * t))
-        }
-
-        // Die tragenden Stimmen. Ganze Hertz, damit die Schleife aufgeht.
-        val stimmen = listOf(
-            Triple(220f, 2, 0.30f),
-            Triple(330f, 3, 0.22f),
-            Triple(440f, 2, 0.16f),
-            Triple(554f, 5, 0.11f),
-            Triple(660f, 3, 0.08f),
-        )
-        val schichten = stimmen.map { (frequenz, durchlaeufe, staerke) ->
-            0f to Synth.tone(
-                durationSeconds = sekunden,
-                frequencyAt = { frequenz },
-                amplitudeAt = schwellung(durchlaeufe, staerke),
-                // Wenige, weiche Obertöne: Der Klang soll tragen, nicht stechen.
-                harmonics = listOf(1f to 1f, 2f to 0.10f, 3f to 0.04f),
-            )
-        }.toMutableList()
-
-        // Ein Schimmer weit oben — er macht aus dem Akkord einen Wald.
-        schichten += 0f to Synth.tone(
-            durationSeconds = sekunden,
-            frequencyAt = { 1320f },
-            amplitudeAt = schwellung(7, 0.05f),
-            harmonics = listOf(1f to 1f),
-        )
-
-        // Vögel, sparsam. Weit von den Rändern, damit keiner die Naht kreuzt.
-        var zeit = 2.5f
-        var nummer = 0
-        while (zeit < sekunden - 2.5f) {
-            val hoehe = 1800f + zufall.nextFloat() * 1600f
-            val pegel = if (nummer % 3 == 2) 0.05f else 0.11f
-            val toene = if (nummer % 2 == 0) 2 else 1
-            repeat(toene) { ton ->
-                schichten += (zeit + ton * 0.16f) to Synth.tone(
-                    durationSeconds = 0.2f,
-                    frequencyAt = { fortschritt ->
-                        hoehe * (1f + 0.06f * ton) * (1f + 0.16f * sin(fortschritt * 5f))
-                    },
-                    amplitudeAt = Synth.pluck(decay = 11f, peak = pegel),
-                    harmonics = listOf(1f to 1f, 2f to 0.1f),
-                    vibratoHz = 12f,
-                    vibratoDepth = 0.04f,
-                )
-            }
-            zeit += (2.2f + zufall.nextFloat() * 2.4f) / dichte
-            nummer++
-        }
-
-        return Synth.normalize(Synth.mix(*schichten.toTypedArray()), target = 0.45f)
-    }
 
     /** Gefiltertes Rauschen fester Länge, mit eigener Hüllkurve. */
     private fun rauschen(
