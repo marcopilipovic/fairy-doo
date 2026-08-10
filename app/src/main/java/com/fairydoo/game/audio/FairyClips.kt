@@ -7,7 +7,7 @@ import com.fairydoo.game.R
  *
  * Nur der Aufschrei kommt noch als echte Aufnahme ins Spiel. Die Ausrufe der
  * richtig gesetzten Feen liefen früher ebenfalls über Aufnahmen, sind aber auf
- * die Sprachausgabe umgestellt (siehe [FairyVoice.exclaim]) — keine Aufnahme
+ * einen berechneten Klick umgestellt (siehe `FairySounds.place`) — keine Aufnahme
  * ohne geklärte Rechte im Spiel. Alle übrigen Klänge (Jubel, Ticks,
  * Fähigkeiten, Musik) werden weiterhin berechnet, siehe [FairySounds].
  */

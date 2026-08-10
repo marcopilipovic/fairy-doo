@@ -5,22 +5,26 @@ import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.OnInitListener
 import android.util.Log
-import com.fairydoo.game.game.FairySpecies
 import java.util.Locale
 import kotlin.random.Random
 
 /**
- * Die Stimme des Waldes: lobt nach einem gelösten Rätsel und lässt jede Fee
- * beim Setzen ihren eigenen kurzen Ausruf hören.
+ * Die Stimme des Waldes: das Lob nach einem gelösten Rätsel.
  *
- * Nutzt die Sprachausgabe des Geräts statt aufgenommener Sprache — beim Lob,
- * damit es den Spielstand nennen kann („Level 4 geschafft"), bei den
- * Ausrufen, damit keine Aufnahmen mit unklaren Rechten im Spiel landen.
+ * Nutzt die Sprachausgabe des Geräts statt aufgenommener Sprache, damit das
+ * Lob den Spielstand nennen kann — „Level 4 geschafft" lässt sich nicht
+ * aufnehmen, es gibt zu viele Level.
+ *
+ * **Sie spricht nur noch hier.** Bis dahin rief die Sprachausgabe auch bei
+ * jeder richtig gesetzten Fee ein Wort — „Juhuu!", „Jippie!", je Art ein
+ * anderes. Beim Spielen setzt man dutzende Feen, und ein gesprochenes Wort
+ * verträgt diese Wiederholung nicht; an ihre Stelle ist ein kurzer berechneter
+ * Klick getreten (siehe `FairySounds.place`). Ein einmaliges Lob am Levelende
+ * ist etwas anderes — es kommt selten und darf deshalb sprechen.
  *
  * Hohe Tonlage und leicht erhöhtes Tempo lassen die Systemstimme nach Fee
- * klingen; jeder Ausruf hat zusätzlich seine eigene Tonhöhe/Tempo (siehe
- * [FairyExclamations]). Fehlt auf dem Gerät eine deutsche Stimme, bleibt sie
- * still — das Spiel funktioniert auch ohne.
+ * klingen. Fehlt auf dem Gerät eine deutsche Stimme, bleibt sie still — das
+ * Spiel funktioniert auch ohne.
  */
 class FairyVoice(context: Context) {
 
@@ -61,30 +65,9 @@ class FairyVoice(context: Context) {
         val params = Bundle().apply {
             putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume.coerceIn(0f, 1f))
         }
-        // Tonhöhe/Tempo explizit zurücksetzen — ein zuvor gesetzter Feen-Ausruf
-        // (siehe [exclaim]) hätte sie sonst auf den letzten Ausruf stehen
-        // lassen.
         engine?.setPitch(FAIRY_PITCH)
         engine?.setSpeechRate(FAIRY_RATE)
         engine?.speak(phrase, TextToSpeech.QUEUE_FLUSH, params, "praise-$level")
-    }
-
-    /**
-     * Der kurze, artspezifische Ausruf beim Setzen einer Fee — siehe
-     * [FairyExclamations]. `QUEUE_ADD` statt `QUEUE_FLUSH`, damit beim
-     * schnellen Setzen mehrerer Feen jeder Ausruf zu Ende gesprochen wird,
-     * statt vom nächsten abgeschnitten zu werden.
-     */
-    fun exclaim(species: FairySpecies, volume: Float = 1f) {
-        if (!ready) return
-
-        val line = FairyExclamations.of(species)
-        val params = Bundle().apply {
-            putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume.coerceIn(0f, 1f))
-        }
-        engine?.setPitch(line.pitch)
-        engine?.setSpeechRate(line.rate)
-        engine?.speak(line.text, TextToSpeech.QUEUE_ADD, params, "exclaim-${species.name}")
     }
 
     fun stop() {

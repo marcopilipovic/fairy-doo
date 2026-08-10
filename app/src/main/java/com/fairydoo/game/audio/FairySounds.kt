@@ -7,11 +7,14 @@ import kotlin.random.Random
 /**
  * Die berechnete Klangwelt des Feenwalds.
  *
- * Die Feenstimmen selbst — Kichern und Aufschrei — sind **keine** Synthese
- * mehr, sondern echte Aufnahmen aus `res/raw` (siehe [FairyClips]). Berechnet
- * wird hier alles Übrige: Jubel, Fähigkeiten, Ticks und die Musik. Für
- * Instrumente und Ambiente ist Synthese ideal, für eine Stimme nicht — deren
- * Klangfarbe lässt sich aus Sinustönen nicht überzeugend bauen.
+ * Berechnet wird alles Kurze: der Klick beim Setzen, Ticks, Fähigkeiten, Jubel
+ * und die Musik. Aus `res/raw` kommt nur noch der Aufschrei beim Falschsetzen
+ * (siehe [FairyClips]).
+ *
+ * **Die gesprochenen Feenausrufe sind entfallen.** Sie liefen über die
+ * Sprachausgabe des Geräts und sagten je Feenart ein anderes Wort. Beim
+ * Spielen setzt man dutzende Feen, und ein gesprochenes Wort verträgt das
+ * nicht — siehe [place].
  */
 object FairySounds {
 
@@ -102,6 +105,47 @@ object FairySounds {
     }
 
     /** Das Setzen eines Merkzeichens: ein leiser, trockener Tick. */
+    /**
+     * Der Klick beim Setzen einer Fee.
+     *
+     * **Er ersetzt die gesprochenen Ausrufe.** Bis hierher sagte die
+     * Sprachausgabe bei jeder richtig gesetzten Fee „Juhuu!" oder „Jippie!" —
+     * je Art ein anderes Wort. Beim Spielen nutzt sich das ab: Man setzt in
+     * einer Partie dutzende Feen, und ein gesprochenes Wort ist beim
+     * dreißigsten Mal keine Freude mehr, sondern ein Grund, den Ton
+     * abzuschalten. Nataly: „die müssen durch einfache irgendwelche
+     * Klickgeräusche ersetzt werden."
+     *
+     * Ein Klick verträgt Wiederholung, ein Wort nicht.
+     *
+     * Kürzer und trockener als [tick]: Der Merkzeichen-Tick darf nachklingen,
+     * dieser hier soll nur bestätigen. Sechzig Millisekunden, steiler Abfall,
+     * ein bisschen Obertonglanz, damit es nach Feenwald klingt und nicht nach
+     * Schreibmaschine.
+     *
+     * Dass jede Feenart trotzdem anders klingt, kostet keinen zweiten Klang:
+     * Der SoundPool kann denselben schneller oder langsamer abspielen. Siehe
+     * `FairyAudio.rateFor`.
+     */
+    fun place(): FloatArray = Synth.normalize(
+        Synth.mix(
+            0f to Synth.tone(
+                durationSeconds = 0.06f,
+                frequencyAt = { progress -> 2100f - 900f * progress },
+                amplitudeAt = Synth.pluck(decay = 42f, peak = 0.34f),
+                harmonics = listOf(1f to 1f, 2f to 0.22f),
+            ),
+            // Ein hoher Funke obendrauf — er macht aus dem Klick ein Glitzern.
+            0.005f to Synth.tone(
+                durationSeconds = 0.05f,
+                frequencyAt = { 3600f },
+                amplitudeAt = Synth.pluck(decay = 60f, peak = 0.16f),
+                harmonics = listOf(1f to 1f),
+            ),
+        ),
+        target = 0.32f,
+    )
+
     fun tick(): FloatArray = Synth.normalize(
         Synth.tone(
             durationSeconds = 0.09f,

@@ -8,6 +8,7 @@ import android.media.SoundPool
 import android.util.Log
 import com.fairydoo.game.R
 import com.fairydoo.game.data.PlayerProfile
+import com.fairydoo.game.game.FairySpecies
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -46,9 +47,9 @@ class FairyAudio(context: Context) {
      * Für den aufgenommenen Aufschrei bei falsch gesetzten Feen.
      *
      * SoundPool statt AudioTrack, weil es MP3 selbst dekodiert und mehrere
-     * Clips gleichzeitig mischen kann. Die Ausrufe der richtig gesetzten Feen
-     * laufen dagegen über die Sprachausgabe (siehe [FairyVoice.exclaim]),
-     * nicht über diesen Pool — keine Aufnahme, deren Rechte zu klären wären.
+     * Clips gleichzeitig mischen kann. Das Setzen einer richtig platzierten Fee
+     * läuft dagegen über einen berechneten Klick (siehe `FairySounds.place`) —
+     * dafür braucht es keine Aufnahme, deren Rechte zu klären wären.
      */
     private val clipPool: SoundPool = SoundPool.Builder()
         .setMaxStreams(MAX_CLIP_STREAMS)
@@ -124,6 +125,7 @@ class FairyAudio(context: Context) {
         // Effekte zuerst: Sie sind billiger als die Musikschleife, und ein
         // stummer Tastendruck fällt eher auf als fehlende Hintergrundmusik.
         val builders: Map<String, () -> FloatArray> = mapOf(
+            KEY_PLACE to FairySounds::place,
             KEY_TICK to FairySounds::tick,
             KEY_UNDO to FairySounds::undo,
             KEY_SPARKLE to FairySounds::sparkle,
@@ -254,10 +256,6 @@ class FairyAudio(context: Context) {
         // Bereitschaftsprüfung — beides unabhängig von den berechneten
         // Klängen spielbereit, deshalb wird hier nicht auf `prepared` gewartet.
         when (event) {
-            is SoundEvent.FairyPlaced -> {
-                val volume = voiceVolume
-                if (volume > 0f) voice.exclaim(event.species, volume)
-            }
             SoundEvent.FairyStartled -> playClip(startledId)
             else -> Unit
         }
@@ -265,7 +263,8 @@ class FairyAudio(context: Context) {
         if (!prepared) return
 
         when (event) {
-            is SoundEvent.FairyPlaced, SoundEvent.FairyStartled -> Unit
+            is SoundEvent.FairyPlaced -> playEffect(KEY_PLACE, rate = rateFor(event.species))
+            SoundEvent.FairyStartled -> Unit
             SoundEvent.Ward -> playEffect(KEY_TICK)
             SoundEvent.Undo -> playEffect(KEY_UNDO)
             SoundEvent.FairyDustUsed -> playEffect(KEY_SPARKLE)
@@ -369,17 +368,36 @@ class FairyAudio(context: Context) {
         }
     }
 
-    private fun playEffect(key: String) {
+    private fun playEffect(key: String, rate: Float = 1f) {
         val volume = soundVolume
         if (volume <= 0f) return
         val sampleId = effects[key] ?: return
         if (sampleId !in loadedClips) return
 
         runCatching {
-            clipPool.play(sampleId, volume, volume, 1, 0, 1f)
+            clipPool.play(sampleId, volume, volume, 1, 0, rate)
         }.onFailure { error ->
             Log.w(TAG, "Klang $key konnte nicht abgespielt werden", error)
         }
+    }
+
+    /**
+     * Wie hoch der Setz-Klick für diese Feenart klingt.
+     *
+     * Ein einziger Klang, zehn Tonhöhen: Der SoundPool kann dieselbe Aufnahme
+     * schneller oder langsamer abspielen, und schneller heißt höher. Das
+     * erspart zehn berechnete Klänge im Speicher und klingt trotzdem je Fee
+     * anders — dieselbe Absicht wie bei den früheren gesprochenen Ausrufen,
+     * die jeder Art ihre eigene Tonhöhe gaben.
+     *
+     * Der Bereich ist bewusst eng. SoundPool lässt zwischen 0,5 und 2,0 zu,
+     * aber weit auseinanderliegende Tonhöhen klängen wie verschiedene
+     * Geräusche statt wie dieselbe Fee mit anderer Stimme.
+     */
+    private fun rateFor(species: FairySpecies): Float {
+        val stufen = FairySpecies.entries.size.coerceAtLeast(2)
+        val platz = FairySpecies.entries.indexOf(species).coerceAtLeast(0)
+        return 0.88f + (platz.toFloat() / (stufen - 1)) * 0.44f
     }
 
     private suspend fun startMusic() {
@@ -450,6 +468,7 @@ class FairyAudio(context: Context) {
         const val KEY_SPARKLE = "sparkle"
         const val KEY_SHIELD = "shield"
         const val KEY_FREEZE = "freeze"
+        const val KEY_PLACE = "place"
         const val KEY_TICK = "tick"
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"

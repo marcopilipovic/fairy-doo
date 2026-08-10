@@ -104,9 +104,13 @@ fun SoundSettingsOverlay(
                 value = soundVolume,
                 onChange = onSoundChange,
             )
+            // Hieß „Feenstimme", solange die Sprachausgabe bei jeder gesetzten
+            // Fee ein Wort rief. Das tut sie nicht mehr — geblieben ist das Lob
+            // am Levelende. Ein Regler, der etwas anderes verspricht als er
+            // tut, ist schlimmer als ein unscheinbar benannter.
             VolumeRow(
                 glyph = "🗣",
-                label = "Feenstimme",
+                label = "Lob",
                 value = voiceVolume,
                 onChange = onVoiceChange,
             )
