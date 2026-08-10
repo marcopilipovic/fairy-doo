@@ -146,12 +146,20 @@ object FairySounds {
         }
 
         // Die tragenden Stimmen. Ganze Hertz, damit die Schleife aufgeht.
+        //
+        // **Der Boden liegt eine Quinte höher als im ersten Einbau.** Nataly:
+        // „kannst du es ein wenig höher machen? Also die tiefen Laute?" Unten
+        // stand ein A bei 220 Hz; auf einem Handylautsprecher wird daraus kein
+        // Ton, sondern ein Wummern — kleine Lautsprecher geben so tief kaum
+        // etwas her und drücken den Rest weg. Jetzt beginnt es bei 330.
+        //
+        // Die Stufen bleiben dieselben wie im ganzen Spiel: A-Dur-Pentatonik.
         val stimmen = listOf(
-            Triple(220f, 2, 0.30f),
-            Triple(330f, 3, 0.22f),
-            Triple(440f, 2, 0.16f),
-            Triple(554f, 5, 0.11f),
-            Triple(660f, 3, 0.08f),
+            Triple(330f, 2, 0.30f),
+            Triple(440f, 3, 0.22f),
+            Triple(554f, 2, 0.16f),
+            Triple(660f, 5, 0.11f),
+            Triple(880f, 3, 0.08f),
         )
         val schichten = stimmen.map { (frequenz, durchlaeufe, staerke) ->
             0f to Synth.tone(
@@ -166,15 +174,21 @@ object FairySounds {
         // Ein Schimmer weit oben — er nimmt dem Akkord die Schwere.
         schichten += 0f to Synth.tone(
             durationSeconds = sekunden,
-            frequencyAt = { 1320f },
+            frequencyAt = { 1760f },
             amplitudeAt = schwellung(7, 0.05f),
             harmonics = listOf(1f to 1f),
         )
 
-        // **Leise.** Nataly: „es soll aber recht leise eingebaut werden." Das
-        // ist kein Regler, sondern der eingebaute Pegel: Die Stimmung soll auch
-        // dann im Hintergrund bleiben, wenn jemand die Musik ganz aufdreht.
-        return Synth.normalize(Synth.mix(*schichten.toTypedArray()), target = 0.22f)
+        // **Leise, und beim zweiten Mal deutlich leiser.** Nataly: „es soll
+        // aber recht leise eingebaut werden" — und nach dem Anhören: „deutlich
+        // leiser einbauen. auf jeden Fall."
+        //
+        // Das ist kein Regler, sondern der eingebaute Pegel: Die Stimmung soll
+        // auch dann im Hintergrund bleiben, wenn jemand die Musik ganz
+        // aufdreht. Von 0,45 im Entwurf über 0,22 auf 0,12 — ein Viertel des
+        // ursprünglichen Pegels und rund ein Sechstel dessen, was die Effekte
+        // erreichen.
+        return Synth.normalize(Synth.mix(*schichten.toTypedArray()), target = 0.12f)
     }
 
     /**
