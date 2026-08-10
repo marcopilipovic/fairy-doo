@@ -7,7 +7,7 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 /**
- * Schreibt die beiden Entwürfe als WAV zum Anhören heraus.
+ * Schreibt die Entwürfe als WAV zum Anhören heraus.
  *
  * Sie ersetzen noch nichts — das Spiel spielt weiterhin die Dateien aus
  * `res/raw`. Erst wenn Nataly sie gehört und für gut befunden hat, wandern sie
@@ -23,7 +23,8 @@ class KlangentwuerfeTest {
     fun `Entwuerfe schreiben und pruefen`() {
         val entwuerfe = mapOf(
             "aufschrei" to Klangentwuerfe.aufschrei(),
-            "waldrauschen" to Klangentwuerfe.waldrauschen(),
+            "wald-ruhig" to Klangentwuerfe.waldstimmung(dichte = 0.7f),
+            "wald-belebt" to Klangentwuerfe.waldstimmung(dichte = 1.5f),
         )
 
         for ((name, samples) in entwuerfe) {
@@ -37,55 +38,49 @@ class KlangentwuerfeTest {
             File(ziel, "$name.wav").writeBytes(Synth.toWavBytes(samples))
         }
 
+        val wald = entwuerfe.getValue("wald-ruhig")
+
         /**
          * Die Naht der Schleife.
          *
          * Ein Ambiente wird endlos wiederholt; springt der Pegel an der
-         * Nahtstelle, hört man bei jedem Durchlauf ein Knacken. Geprüft wird
-         * deshalb, dass der letzte Abtastwert nahe genug am ersten liegt —
-         * genau das leistet das Überblenden in [Synth.crossfadeLoop], und genau
-         * das würde beim Ändern der Klangschichten leicht wieder kaputtgehen.
+         * Nahtstelle, hört man bei jedem Durchlauf ein Knacken.
+         *
+         * Hier schließt sie ohne Überblendung: Jede Stimme hat eine Frequenz in
+         * ganzen Hertz und eine Schwellung mit ganzzahliger Anzahl Durchläufe,
+         * bei einer Länge in ganzen Sekunden steht am Ende also genau dasselbe
+         * wie am Anfang. Diese Prüfung hält fest, dass das so bleibt — es geht
+         * verloren, sobald jemand eine krumme Frequenz einträgt.
          */
-        val wald = entwuerfe.getValue("waldrauschen")
-        val sprung = abs(wald.last() - wald.first())
-        assertTrue("Die Schleife hat eine hörbare Naht (Sprung $sprung)", sprung < 0.08f)
+        val naht = abs(wald.last() - wald.first())
+        assertTrue("Die Schleife hat eine hörbare Naht (Sprung $naht)", naht < 0.02f)
 
         /**
-         * Wald oder Meer?
+         * Wie viel Rauschen steckt noch drin?
          *
-         * **Diese Prüfung ist die zweite.** Die erste maß das Verhältnis von
-         * Spitze zu mittlerer Lautheit und ließ eine Fassung durch, die
-         * weiterhin nach Brandung klang: Sie kam auf 7 gegenüber 5,9 vorher —
-         * ein Unterschied, der nichts bewies. Die Zahl war einfach das falsche
-         * Maß.
+         * **Die dritte Prüfung an dieser Stelle, und die ersten beiden waren
+         * die falschen.** Erst maß ich Spitze zu mittlerer Lautheit — die Zahl
+         * bewegte sich kaum, obwohl das Ergebnis noch nach Brandung klang. Dann
+         * den Anteil ruhiger Abschnitte — der fand zwar den zugedeckten Wald,
+         * sagte aber nichts darüber, ob das Übrige rauscht oder klingt.
          *
-         * Was Wald von See unterscheidet, ist **Stille**. Die See hört nie auf;
-         * ein Wald hat zwischen zwei Böen Abschnitte, in denen fast nichts
-         * passiert. Also wird das gemessen: Wie viel der Zeit liegt deutlich
-         * unter der mittleren Lautheit?
+         * Nataly hat zweimal dasselbe bemängelt: zu viel Rauschen. Also wird
+         * genau das gemessen und nichts anderes. Rauschen springt von einem
+         * Abtastwert zum nächsten weit; ein getragener Ton wandert. Der mittlere
+         * Sprung im Verhältnis zur Lautheit trennt beides zuverlässig — weißes
+         * Rauschen liegt bei etwa 1,4, ein reiner Sinuston nahe null.
          *
-         * Beim Entwurf, der nach Meer klang, waren es **null Prozent**. Die
-         * Grundschicht deckte jede Lücke zu. Ausgemessen wurde dann die Reihe
-         * 0,30 → 0 %, 0,15 → 22 %, 0,12 → 57 %, 0,08 → 77 %; bei 0,08 wirkt der
-         * Wald tot, gewählt ist 0,12.
-         *
-         * Das beweist nicht, dass es nach Wald klingt — das kann kein Test.
-         * Aber es fängt den Rückfall ins Dauerrauschen, und der ist beim
-         * Nachjustieren der wahrscheinlichste Fehler.
+         * Der Grenzwert lässt Vogelrufe und Obertöne zu, schlägt aber an,
+         * sobald wieder eine Rauschschicht hineingerät.
          */
-        val wald2 = entwuerfe.getValue("waldrauschen")
-        val lautheit = sqrt(wald2.sumOf { (it * it).toDouble() } / wald2.size).toFloat()
-        val block = Synth.SAMPLE_RATE / 20
-        val bloecke = wald2.toList().chunked(block).filter { it.size == block }
-        val ruhig = bloecke.count { teil ->
-            sqrt(teil.sumOf { (it * it).toDouble() } / block) < 0.35 * lautheit
-        }
-        val anteil = 100 * ruhig / bloecke.size
-        println("  Wald: ruhige Abschnitte $anteil %")
+        val lautheit = sqrt(wald.sumOf { (it * it).toDouble() } / wald.size).toFloat()
+        val sprung = (1 until wald.size)
+            .sumOf { abs(wald[it] - wald[it - 1]).toDouble() } / (wald.size - 1)
+        val rauschanteil = (sprung / lautheit).toFloat()
+        println("  Wald: Rauschanteil %.3f, Naht %.4f".format(rauschanteil, naht))
         assertTrue(
-            "Der Wald rauscht durchgehend und klingt wieder nach Meer " +
-                "($anteil % ruhig, erwartet mindestens 30)",
-            anteil >= 30,
+            "Es ist wieder Rauschen im Wald (Anteil $rauschanteil, erlaubt bis 0,3)",
+            rauschanteil < 0.3f,
         )
 
         println("KLANGENTWÜRFE in ${ziel.absolutePath}")

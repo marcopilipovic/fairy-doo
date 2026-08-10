@@ -61,132 +61,92 @@ object Klangentwuerfe {
         return Synth.normalize(Synth.concat(luft, ruck), target = 0.55f)
     }
 
+
     /**
-     * Der Wald als Schleife.
+     * Die Stimmung des Feenwalds — getragen, ohne Rauschen.
      *
-     * **Der erste Entwurf klang nach Meer.** Nataly: „Das klingt eher wie das
-     * Meer anstatt einen Wald. Das ist definitiv zu viel Rauschen." Sie hat den
-     * Finger genau auf den Fehler gelegt: Dort lag ein durchgehendes,
-     * tiefpassgefiltertes Rauschen, das langsam an- und abschwoll — und
-     * langsames An- und Abschwellen von Breitbandrauschen ist die Signatur von
-     * Wellen. Man kann daraus keinen Wald machen, indem man leiser dreht.
+     * **Zwei Versuche waren falsch, und beide auf dieselbe Weise.** Der erste
+     * war ein an- und abschwellendes Breitbandrauschen: „Das klingt eher wie
+     * das Meer." Der zweite bestand aus einzelnen Raschlern — weniger Rauschen,
+     * aber immer noch Rauschen, nur zerhackt: „Das klingt echt komisch. Du
+     * musst noch mehr Rauschen rausnehmen. Es muss langgezogener werden."
      *
-     * **Was einen Wald ausmacht, sind Ereignisse mit Stille dazwischen.** Die
-     * See hört nie auf; ein Wald raschelt in Stößen, und zwischen zwei Böen
-     * passiert nichts. Deshalb ist die Bauweise hier eine andere:
+     * Der Denkfehler war, einen Wald **abbilden** zu wollen. Eine Feldaufnahme
+     * besteht nun einmal aus Rauschen, und jeder Versuch, sie nachzubauen,
+     * endet bei Rauschen. Das Spiel spielt aber nicht im Wald, sondern in einem
+     * *Feenwald* — dort darf die Luft klingen statt zu rascheln.
      *
-     * - Die Grundschicht ist fast nichts — sehr leise, ohne Schwankung. Nur so
-     *   viel, dass es nicht tot klingt. Sie schwillt bewusst **nicht** an.
-     * - Darüber einzelne **Raschler**: kurze, helle Stöße zu unregelmäßigen
-     *   Zeiten, jeder mit eigener Länge und Lautstärke. Sie sind das, was man
-     *   als Blätter hört.
-     * - Und **Vögel**, mehr und verschiedener als vorher. Sie sind das
-     *   stärkste Erkennungszeichen eines Waldes; Wasser hat keine.
+     * Deshalb hier **kein Rauschen mehr**, sondern getragene Töne: wenige leise
+     * Stimmen in derselben Pentatonik, in der das ganze Spiel klingt, jede mit
+     * ihrer eigenen sehr langsamen Schwellung. Weil die Schwellungen
+     * verschieden lang sind, treffen sie nie zweimal gleich zusammen — so
+     * entsteht Bewegung ohne einzelne Ereignisse. Darüber ein paar Vogelrufe,
+     * sparsam.
      *
-     * Nachmessen lässt sich der Unterschied am Verhältnis von Spitze zu
-     * mittlerer Lautheit: Gleichmäßiges Rauschen liegt bei etwa drei bis vier,
-     * eine Klanglandschaft aus Einzelereignissen deutlich darüber. Der Test
-     * prüft das.
+     * **Die Schleife schließt von selbst, ohne Überblendung.** Jede Stimme hat
+     * eine Frequenz in ganzen Hertz, jede Schwellung eine ganzzahlige Anzahl
+     * Durchläufe — bei einer Länge in ganzen Sekunden steht am Ende damit genau
+     * dasselbe wie am Anfang. Das ist sauberer als jedes Überblenden, weil es
+     * mathematisch stimmt und nicht nur ungefähr.
      */
-    fun waldrauschen(sekunden: Float = 16f): FloatArray {
-        val laenge = Synth.secondsToSamples(sekunden)
+    fun waldstimmung(sekunden: Float = 24f, dichte: Float = 1f): FloatArray {
         val zufall = Random(20260810)
 
-        // Die Grundschicht: kaum wahrnehmbar, ohne jede Schwankung. Sie füllt
-        // nur die Stille, damit zwischen zwei Raschlern kein Loch klafft.
-        //
-        // **Der Faktor ist ausgemessen, nicht geschätzt.** Bei 0,9 blieb in
-        // vierzehn Sekunden kein einziger ruhiger Abschnitt übrig — die
-        // Grundschicht deckte alles zu, und genau das klang nach Brandung. Die
-        // Reihe: 0,30 → 0 % Ruhe, 0,15 → 22 %, 0,12 → 57 %, 0,08 → 77 %. Bei
-        // 0,08 wirkt der Wald tot, bei 0,12 atmet er.
-        val luft = FloatArray(laenge)
-        var tief = 0f
-        for (i in 0 until laenge) {
-            tief += ((zufall.nextFloat() * 2f - 1f) - tief) * 0.012f
-            luft[i] = tief * 0.12f
+        /** Eine Schwellung, die am Anfang und am Ende bei null steht. */
+        fun schwellung(durchlaeufe: Int, staerke: Float): (Float) -> Float = { t ->
+            staerke * (0.5f - 0.5f * kotlin.math.cos(2f * PI.toFloat() * durchlaeufe * t))
         }
 
-        val schichten = mutableListOf(0f to luft)
+        // Die tragenden Stimmen. Ganze Hertz, damit die Schleife aufgeht.
+        val stimmen = listOf(
+            Triple(220f, 2, 0.30f),
+            Triple(330f, 3, 0.22f),
+            Triple(440f, 2, 0.16f),
+            Triple(554f, 5, 0.11f),
+            Triple(660f, 3, 0.08f),
+        )
+        val schichten = stimmen.map { (frequenz, durchlaeufe, staerke) ->
+            0f to Synth.tone(
+                durationSeconds = sekunden,
+                frequencyAt = { frequenz },
+                amplitudeAt = schwellung(durchlaeufe, staerke),
+                // Wenige, weiche Obertöne: Der Klang soll tragen, nicht stechen.
+                harmonics = listOf(1f to 1f, 2f to 0.10f, 3f to 0.04f),
+            )
+        }.toMutableList()
 
-        // Die Raschler. Unregelmäßig verteilt — gleichmäßige Abstände klängen
-        // nach Maschine.
-        var zeit = 0.4f
-        while (zeit < sekunden - 2.0f) {
-            val dauer = 0.12f + zufall.nextFloat() * 0.35f
-            val staerke = 0.09f + zufall.nextFloat() * 0.13f
-            schichten += zeit to raschler(dauer, staerke, zufall.nextInt())
-            // Zwischen 0,5 und 2,3 Sekunden Ruhe. Die Stille gehört dazu.
-            zeit += 0.5f + zufall.nextFloat() * 1.8f
-        }
+        // Ein Schimmer weit oben — er macht aus dem Akkord einen Wald.
+        schichten += 0f to Synth.tone(
+            durationSeconds = sekunden,
+            frequencyAt = { 1320f },
+            amplitudeAt = schwellung(7, 0.05f),
+            harmonics = listOf(1f to 1f),
+        )
 
-        // Vögel: zwei Sorten, damit es nicht nach einem einzelnen Tier klingt.
-        // Nah und deutlich, oder fern und leise mit Nachhall.
-        val rufe = listOf(1.6f, 3.1f, 4.9f, 7.2f, 8.4f, 10.6f, 12.3f, 13.8f)
-        rufe.forEachIndexed { nummer, zeitpunkt ->
-            val fern = nummer % 3 == 2
-            val hoehe = 1900f + zufall.nextFloat() * 1900f
-            val pegel = if (fern) 0.05f else 0.14f
+        // Vögel, sparsam. Weit von den Rändern, damit keiner die Naht kreuzt.
+        var zeit = 2.5f
+        var nummer = 0
+        while (zeit < sekunden - 2.5f) {
+            val hoehe = 1800f + zufall.nextFloat() * 1600f
+            val pegel = if (nummer % 3 == 2) 0.05f else 0.11f
             val toene = if (nummer % 2 == 0) 2 else 1
-
             repeat(toene) { ton ->
-                val versatz = ton * 0.13f
-                schichten += (zeitpunkt + versatz) to Synth.tone(
-                    durationSeconds = 0.15f,
+                schichten += (zeit + ton * 0.16f) to Synth.tone(
+                    durationSeconds = 0.2f,
                     frequencyAt = { fortschritt ->
-                        // Ein Ruf steigt und fällt; zwei Töne hintereinander
-                        // liegen etwas auseinander.
-                        val grund = hoehe * (1f + 0.06f * ton)
-                        grund * (1f + 0.18f * sin(fortschritt * 7f))
+                        hoehe * (1f + 0.06f * ton) * (1f + 0.16f * sin(fortschritt * 5f))
                     },
-                    amplitudeAt = Synth.pluck(decay = 15f, peak = pegel),
-                    harmonics = listOf(1f to 1f, 2f to 0.12f),
-                    vibratoHz = 16f,
-                    vibratoDepth = 0.035f,
+                    amplitudeAt = Synth.pluck(decay = 11f, peak = pegel),
+                    harmonics = listOf(1f to 1f, 2f to 0.1f),
+                    vibratoHz = 12f,
+                    vibratoDepth = 0.04f,
                 )
             }
-            if (fern) {
-                schichten += (zeitpunkt + 0.22f) to Synth.tone(
-                    durationSeconds = 0.18f,
-                    frequencyAt = { hoehe * 0.98f },
-                    amplitudeAt = Synth.pluck(decay = 22f, peak = pegel * 0.5f),
-                    harmonics = listOf(1f to 1f),
-                )
-            }
+            zeit += (2.2f + zufall.nextFloat() * 2.4f) / dichte
+            nummer++
         }
 
-        val gemischt = Synth.normalize(Synth.mix(*schichten.toTypedArray()), target = 0.5f)
-        val geschlossen = Synth.crossfadeLoop(Synth.toPcm16(gemischt), seconds = 1.4f)
-        return FloatArray(geschlossen.size) { geschlossen[it] / Short.MAX_VALUE.toFloat() }
-    }
-
-    /**
-     * Ein einzelner Raschler — trockene Blätter, kurz bewegt.
-     *
-     * Zwei Dinge unterscheiden ihn von Rauschen. Erstens ist er **hell**: Die
-     * Differenz aufeinanderfolgender Zufallswerte nimmt die tiefen Anteile
-     * heraus, und ohne die klingt es nach Blatt statt nach Brandung. Zweitens
-     * ist er **körnig**: Eine schnelle, zufällige Zweithüllkurve zerhackt ihn in
-     * viele winzige Anschläge — ein Blätterhaufen besteht aus einzelnen
-     * Blättern, kein gleichmäßiges Zischen.
-     */
-    private fun raschler(sekunden: Float, pegel: Float, saat: Int): FloatArray {
-        val laenge = Synth.secondsToSamples(sekunden)
-        val zufall = Random(saat)
-        var vorher = 0f
-        var koernung = 0f
-        return FloatArray(laenge) { i ->
-            val roh = zufall.nextFloat() * 2f - 1f
-            val hell = roh - vorher
-            vorher = roh
-            // Körnung: springt zufällig und fällt schnell zurück.
-            if (zufall.nextFloat() < 0.004f) koernung = 1f
-            koernung *= 0.9993f
-            val t = i.toFloat() / laenge
-            // Schneller Einsatz, langes Ausklingen.
-            val huelle = (t / 0.08f).coerceAtMost(1f) * kotlin.math.exp(-3.2f * t)
-            hell * (0.35f + 0.65f * koernung) * huelle * pegel
-        }
+        return Synth.normalize(Synth.mix(*schichten.toTypedArray()), target = 0.45f)
     }
 
     /** Gefiltertes Rauschen fester Länge, mit eigener Hüllkurve. */
