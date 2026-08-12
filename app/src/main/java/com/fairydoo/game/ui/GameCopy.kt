@@ -167,12 +167,12 @@ object GameCopy {
             ENTWURF – keine Rechtsberatung. Vorlage mit Pflichtangaben; bitte alle Felder in [eckigen Klammern] ausfüllen und vor Veröffentlichung prüfen lassen. Nicht zutreffende Punkte (z. B. USt-IdNr.) können entfallen.
 
             Angaben gemäß § 5 DDG
-            [Firmenname / Rechtsform]
-            [Straße und Hausnummer]
-            [PLZ und Ort]
+            App HUMB UG (haftungsbeschränkt)
+            Parkstraße 9
+            31188 Holle
 
             Vertreten durch
-            [Name der Geschäftsführung]
+            Marco Pilipovic
 
             Kontakt
             Telefon: [Telefonnummer]
@@ -180,24 +180,24 @@ object GameCopy {
 
             Registereintrag
             Eintragung im Handelsregister
-            Registergericht: [Amtsgericht / Ort]
-            Registernummer: [HRB-Nummer]
+            Registergericht: Amtsgericht Hildesheim
+            Registernummer: HRB 208491
 
             Umsatzsteuer-ID
             Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:
             [USt-IdNr., falls vorhanden – sonst diesen Abschnitt entfernen]
 
             Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
-            [Name]
-            [Anschrift wie oben]
+            Marco Pilipovic
+            Parkstraße 9, 31188 Holle
 
             Verbraucherstreitbeilegung
             Wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
 
             Hinweis: Dieser Text ist ein Entwurf und bedarf vor Veröffentlichung noch der Überarbeitung und rechtlichen Prüfung.
         """.trimIndent()
-        // Entwurf, kein geprüfter Rechtstext — [Firmenname], [Anschrift] und
-        // [Monat Jahr] sind von Nataly auszufüllen. Gegenüber der Vorlage
+        // Entwurf, kein geprüfter Rechtstext — App HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle und
+        // August 2026 sind von Nataly auszufüllen. Gegenüber der Vorlage
         // zweifach an das tatsächliche Spiel angepasst: kein Elternschutz
         // (§ 4, § 8 — bewusst nicht gebaut, siehe Zielgruppen-Anpassung im
         // Play Store) und keine Google-Play-Games-Rangliste (§ 6 — Bestleistung
@@ -220,7 +220,7 @@ object GameCopy {
             ENTWURF – keine Rechtsberatung. Dieser Text ist eine sorgfältige Vorlage, ersetzt aber keine anwaltliche Prüfung. Da die App werbefinanziert ist und auch von Jugendlichen genutzt wird, sollte ein Fachanwalt (IT-/Datenschutzrecht) den Text vor Veröffentlichung freigeben. Alle Angaben in [eckigen Klammern] bitte ausfüllen.
 
             § 1 Geltungsbereich und Anbieter
-            Diese Nutzungsbedingungen gelten für die Nutzung der mobilen App „Fairydoku" (nachfolgend „App"), angeboten von [Firmenname / Rechtsform], [Anschrift] (nachfolgend „Anbieter"). Mit der Installation und Nutzung der App erkennst du diese Bedingungen an.
+            Diese Nutzungsbedingungen gelten für die Nutzung der mobilen App „Fairydoku" (nachfolgend „App"), angeboten von App HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle (nachfolgend „Anbieter"). Mit der Installation und Nutzung der App erkennst du diese Bedingungen an.
 
             § 2 Gegenstand
             Die App ist ein kostenloses Logikrätselspiel. Der Anbieter stellt die App zur privaten, nicht-kommerziellen Nutzung zur Verfügung.
@@ -264,11 +264,11 @@ object GameCopy {
             § 13 Schlussbestimmungen
             Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Zwingende verbraucherschützende Vorschriften des Staates, in dem du deinen gewöhnlichen Aufenthalt hast, bleiben unberührt. Sollte eine Bestimmung dieser Bedingungen unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt. Der Anbieter ist nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
 
-            Stand: [Monat Jahr]
+            Stand: August 2026
 
             Hinweis: Dieser Text ist ein Entwurf und bedarf vor Veröffentlichung noch der Überarbeitung und rechtlichen Prüfung.
         """.trimIndent()
-        // Entwurf, kein geprüfter Rechtstext — [Firmenname] usw. sind von
+        // Entwurf, kein geprüfter Rechtstext — App HUMB UG (haftungsbeschränkt) usw. sind von
         // Nataly auszufüllen. Gegenüber der Vorlage an das tatsächliche Spiel
         // angepasst: keine Google-Play-Games-Rangliste (Abschnitt 2 + 4 —
         // Bestleistung liegt nur lokal auf dem Gerät), kein Firebase Remote
@@ -299,11 +299,11 @@ object GameCopy {
 
             1. Verantwortlicher
             Verantwortlich für die Datenverarbeitung im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
-            [Firmenname / Rechtsform]
-            [Straße und Hausnummer]
-            [PLZ und Ort]
+            App HUMB UG (haftungsbeschränkt)
+            Parkstraße 9
+            31188 Holle
             E-Mail: [E-Mail-Adresse]
-            Vertretungsberechtigt: [Name der Geschäftsführung]
+            Vertretungsberechtigt: Marco Pilipovic
 
             2. Grundsatz der Datensparsamkeit
             Fairydoku ist ein reines Logikspiel und kostenlos nutzbar. Wir erheben selbst keine personenbezogenen Daten und betreiben keine eigene Nutzerverwaltung. Eine Anmeldung findet nicht statt. Eine Datenverarbeitung erfolgt im Wesentlichen nur durch den eingebundenen Google-Dienst für Werbung, der im Folgenden beschrieben wird.
@@ -352,7 +352,7 @@ Für Nutzerinnen und Nutzer im Europäischen Wirtschaftsraum und im Vereinigten 
             11. Änderungen dieser Datenschutzerklärung
             Wir passen diese Datenschutzerklärung an, wenn Änderungen an der App oder der Rechtslage dies erforderlich machen. Es gilt die jeweils in der App bzw. im Play Store verlinkte Fassung.
 
-            Stand: [Monat Jahr]
+            Stand: August 2026
 
             Hinweis: Dieser Text ist ein Entwurf und bedarf vor Veröffentlichung noch der Überarbeitung und rechtlichen Prüfung.
         """.trimIndent()
