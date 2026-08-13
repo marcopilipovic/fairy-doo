@@ -185,7 +185,7 @@ object GameCopy {
 
             Umsatzsteuer-ID
             Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:
-            [USt-IdNr., falls vorhanden – sonst diesen Abschnitt entfernen]
+            DE359950076
 
             Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
             Marco Pilipovic
