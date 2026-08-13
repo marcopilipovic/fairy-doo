@@ -20,12 +20,12 @@ plugins {
 
 android {
     namespace = "com.fairydoo.game"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.fairydoo.game"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         // Muss bei jeder Auslieferung steigen — der Play Store nimmt keinen
         // Upload mit gleicher oder kleinerer Nummer an.
         //
