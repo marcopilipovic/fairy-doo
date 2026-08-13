@@ -176,7 +176,7 @@ object GameCopy {
 
             Kontakt
             Telefon: [Telefonnummer]
-            E-Mail: [E-Mail-Adresse]
+            E-Mail: info@humb.ug
 
             Registereintrag
             Eintragung im Handelsregister
@@ -302,7 +302,7 @@ object GameCopy {
             App HUMB UG (haftungsbeschränkt)
             Parkstraße 9
             31188 Holle
-            E-Mail: [E-Mail-Adresse]
+            E-Mail: info@humb.ug
             Vertretungsberechtigt: Marco Pilipovic
 
             2. Grundsatz der Datensparsamkeit
