@@ -10,6 +10,7 @@ import com.fairydoo.game.R
 import com.fairydoo.game.data.PlayerProfile
 import com.fairydoo.game.game.FairySpecies
 import kotlinx.coroutines.CoroutineScope
+import kotlin.math.pow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -394,10 +395,35 @@ class FairyAudio(context: Context) {
      * aber weit auseinanderliegende Tonhöhen klängen wie verschiedene
      * Geräusche statt wie dieselbe Fee mit anderer Stimme.
      */
+    /**
+     * Die Tonhöhe des Klicks — je Fee eine eigene.
+     *
+     * **Vorher war der Abstand gleichmäßig, und genau das war der Fehler.** Die
+     * zehn Feen lagen linear zwischen 0,88 und 1,32; das klingt nach einer
+     * sauberen Verteilung, ist aber keine. Tonhöhe wird nicht linear
+     * wahrgenommen, sondern logarithmisch — gleich große Schritte im Faktor
+     * ergeben ungleiche Intervalle, und die meisten davon liegen zwischen den
+     * Tönen einer Leiter. Zwei Feen kurz nacheinander klangen deshalb
+     * regelmäßig schief, und je schneller man spielte, desto mehr.
+     *
+     * Nataly über den alten Stand: „Das war der erste Versuch, und der ist dann
+     * so nach und nach kaputt gebaut."
+     *
+     * Jetzt sitzen die zehn auf einer **Leiter ohne Halbtonschritte** — den
+     * Stufen 0, 2, 4, 7, 9, 12, 14, 16, 19, 21 in Halbtönen, also einer
+     * Pentatonik über knapp zwei Oktaven. Aus dieser Leiter klingen zwei
+     * beliebige Töne nie schief, auch wenn sie übereinanderfallen. Dieselbe
+     * Regel trägt die Klangwelt der Hundespiele und des Weltraumspiels; sie ist
+     * bei einem Spiel, das man in schneller Folge antippt, keine Feinheit,
+     * sondern die Bedingung.
+     *
+     * Die neunte Stufe steht auf 1,0 — dort klingt der Klick unverändert so,
+     * wie er berechnet wurde.
+     */
     private fun rateFor(species: FairySpecies): Float {
-        val stufen = FairySpecies.entries.size.coerceAtLeast(2)
         val platz = FairySpecies.entries.indexOf(species).coerceAtLeast(0)
-        return 0.88f + (platz.toFloat() / (stufen - 1)) * 0.44f
+        val stufe = PENTATONIK[platz % PENTATONIK.size]
+        return 2f.pow((stufe - 9) / 12f)
     }
 
     private suspend fun startMusic() {
@@ -461,6 +487,9 @@ class FairyAudio(context: Context) {
     }
 
     private companion object {
+        /** Halbtonschritte einer C-Dur-Pentatonik über knapp zwei Oktaven. */
+        private val PENTATONIK = intArrayOf(0, 2, 4, 7, 9, 12, 14, 16, 19, 21)
+
         const val TAG = "FairyAudio"
         const val BYTES_PER_SAMPLE = 2
 
