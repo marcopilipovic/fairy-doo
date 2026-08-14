@@ -330,6 +330,18 @@ fun GameScreen(
         }
     }
 
+    // **Der Waldteppich läuft nur auf der Levelkarte, nicht im Rätsel.**
+    //
+    // Nataly: „Im Level reichen die Klicktöne, wir brauchen nur etwas bei dem
+    // Pfad." Sie hat damit übertragen, was bei Lotte und Balu gilt: Im Garten
+    // singen die Vögel, im Level nicht. Der Grund ist derselbe — im Rätsel
+    // tippt man ständig und bekommt bei jedem Tipp einen Ton; ein Teppich
+    // darunter trägt dann nichts mehr bei und ist trotzdem im Weg. Auf der
+    // Karte schaut und entscheidet man, und dort wirkt Stille tot.
+    LaunchedEffect(showLevelSelect) {
+        if (showLevelSelect) audio.resume() else audio.pause()
+    }
+
     // Wandert die App in den Hintergrund, wird pausiert statt weitergespielt.
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, audio) {
@@ -343,7 +355,9 @@ fun GameScreen(
                     // Steht die Levelkarte oder die Anleitung offen, bleibt
                     // das Spiel pausiert.
                     if (!showLevelSelect && !tutorialOpen) viewModel.resume()
-                    audio.resume()
+                    // Auch hier nur auf der Karte — sonst käme der Teppich
+                    // nach jedem Wechsel in den Hintergrund im Level zurück.
+                    if (showLevelSelect) audio.resume()
                 }
                 else -> Unit
             }
