@@ -62,7 +62,6 @@ class FairyAudio(context: Context) {
         )
         .build()
 
-    private var startledId = 0
 
     /** Geladene Clips; vorher abgespielt liefert SoundPool nur Stille. */
     private val loadedClips = mutableSetOf<Int>()
@@ -103,7 +102,6 @@ class FairyAudio(context: Context) {
             }
         }
 
-        startledId = clipPool.load(appContext, FairyClips.startled, 1)
     }
 
     /**
@@ -127,6 +125,7 @@ class FairyAudio(context: Context) {
         // stummer Tastendruck fällt eher auf als fehlende Hintergrundmusik.
         val builders: Map<String, () -> FloatArray> = mapOf(
             KEY_PLACE to FairySounds::place,
+            KEY_STARTLED to FairySounds::startled,
             KEY_TICK to FairySounds::tick,
             KEY_UNDO to FairySounds::undo,
             KEY_SPARKLE to FairySounds::sparkle,
@@ -257,7 +256,12 @@ class FairyAudio(context: Context) {
         // Bereitschaftsprüfung — beides unabhängig von den berechneten
         // Klängen spielbereit, deshalb wird hier nicht auf `prepared` gewartet.
         when (event) {
-            SoundEvent.FairyStartled -> playClip(startledId)
+            // **Berechnet statt aufgenommen.** Hier lief `fairy_startled.mp3`,
+            // eine Aufnahme mit ungeklaerter Lizenz — und damit ein Riegel vor
+            // der Veroeffentlichung. Der neue Klang faellt bewusst aus der
+            // Leiter der zehn Feentoene heraus: Die sagen „richtig", dieser
+            // sagt „falsch", und man hoert es ohne hinzusehen.
+            SoundEvent.FairyStartled -> playEffect(KEY_STARTLED)
             else -> Unit
         }
 
@@ -498,6 +502,7 @@ class FairyAudio(context: Context) {
         const val KEY_SHIELD = "shield"
         const val KEY_FREEZE = "freeze"
         const val KEY_PLACE = "place"
+        const val KEY_STARTLED = "startled"
         const val KEY_TICK = "tick"
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"

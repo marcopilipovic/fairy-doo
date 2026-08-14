@@ -181,4 +181,40 @@ object FairySounds {
         return Synth.normalize(Synth.mix(*layers.toTypedArray()), target = 0.7f)
     }
 
+
+    /**
+     * Eine Fee wurde falsch gesetzt und erschrickt.
+     *
+     * **Er muss aus der Leiter fallen — das ist seine ganze Aufgabe.** Die zehn
+     * Feentöne stehen auf einer Pentatonik und klingen nie schief; sie sagen
+     * „richtig". Ein Fehlerklang, der ebenfalls hineinpasste, sagte gar nichts.
+     * Deshalb gleitet dieser hier **stufenlos nach oben**, statt eine Stufe zu
+     * treffen, und trägt Rauschen darüber. Man hört den Unterschied, ohne
+     * hinzusehen und ohne dass jemand es erklären muss.
+     *
+     * Ersetzt `fairy_startled.mp3` — die letzte Aufnahme im Spiel neben dem
+     * Waldteppich. Ein Klang, den niemand aufgenommen hat, gehört dem, der ihn
+     * berechnet.
+     */
+    fun startled(): FloatArray {
+        val random = kotlin.random.Random(4711)
+        return Synth.normalize(
+            Synth.mix(
+                // Das Aufschrecken: die Tonhöhe steigt, kurz und hell.
+                0f to Synth.tone(
+                    durationSeconds = 0.45f,
+                    frequencyAt = { progress -> 760f + 1_500f * progress },
+                    amplitudeAt = Synth.pluck(decay = 7f, peak = 0.85f),
+                    harmonics = listOf(1f to 1f, 2.76f to 0.28f),
+                ),
+                // Der Flügelschlag: schmales Rauschen, das schnell verklingt.
+                0f to Synth.bandpass(
+                    Synth.noise(0.45f, Synth.pluck(decay = 10f, peak = 0.5f), random),
+                    centerHz = 2_600f,
+                    guete = 3.5f,
+                ),
+            ),
+            target = 0.7f,
+        )
+    }
 }

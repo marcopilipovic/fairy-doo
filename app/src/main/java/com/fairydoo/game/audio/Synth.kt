@@ -109,6 +109,55 @@ object Synth {
     }
 
     /** Hüllkurve mit weichem Ein- und Ausklang; verhindert Knacken an den Rändern. */
+    /**
+     * Rauschen — der Baustein, den reine Sinustöne nicht ersetzen können.
+     *
+     * Alles Tonale lässt sich aus Sinustönen bauen, alles Geräuschhafte nicht:
+     * ein Flügelschlag, ein Windstoß, ein Erschrecken bestehen zum großen Teil
+     * aus Rauschen. Ohne dieses klingt jeder Versuch nach Blasinstrument.
+     *
+     * Der Zufall kommt von außen herein, damit derselbe Aufruf immer dasselbe
+     * Rauschen liefert — sonst klänge das Spiel bei jedem Start anders.
+     */
+    fun noise(
+        durationSeconds: Float,
+        amplitudeAt: (progress: Float) -> Float,
+        random: kotlin.random.Random,
+    ): FloatArray {
+        val length = secondsToSamples(durationSeconds)
+        return FloatArray(length) { index ->
+            val progress = index.toFloat() / length
+            (random.nextFloat() * 2f - 1f) * amplitudeAt(progress)
+        }
+    }
+
+    /**
+     * Ein schmales Band aus dem Rauschen herausgreifen.
+     *
+     * Rohes Rauschen klingt nach Fernsehschnee. Erst ein Filter macht daraus
+     * etwas, das nach einer Sache klingt — hoch und schmal nach Flügeln, tief
+     * und breit nach Wind. Zwei Durchgänge, damit die Flanken steil genug sind.
+     */
+    fun bandpass(samples: FloatArray, centerHz: Float, guete: Float): FloatArray {
+        val w = 2.0 * Math.PI * centerHz / SAMPLE_RATE
+        val alpha = kotlin.math.sin(w) / (2.0 * guete)
+        val b0 = alpha
+        val b2 = -alpha
+        val a0 = 1.0 + alpha
+        val a1 = -2.0 * kotlin.math.cos(w)
+        val a2 = 1.0 - alpha
+
+        val out = FloatArray(samples.size)
+        var x1 = 0.0; var x2 = 0.0; var y1 = 0.0; var y2 = 0.0
+        for (i in samples.indices) {
+            val x0 = samples[i].toDouble()
+            val y0 = (b0 * x0 + b2 * x2 - a1 * y1 - a2 * y2) / a0
+            out[i] = y0.toFloat()
+            x2 = x1; x1 = x0; y2 = y1; y1 = y0
+        }
+        return out
+    }
+
     fun envelope(
         attack: Float = 0.02f,
         release: Float = 0.3f,
