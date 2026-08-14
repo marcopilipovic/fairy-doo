@@ -81,13 +81,47 @@ class FairyVoice(context: Context) {
         ready = false
     }
 
+    /**
+     * Was eine Fee sagt, wenn ein Level geschafft ist.
+     *
+     * **Zwanzig statt sechs.** Bei sechs sah man jeden Satz nach zwanzig Leveln
+     * dreimal — und ab dem zweiten Mal ist ein Lob keins mehr, sondern eine
+     * Quittung. Bei einem Spiel ohne letztes Level fällt das schnell auf.
+     *
+     * **Und keine Zahlen mehr.** Zwei der alten Sätze nannten die Levelnummer
+     * und den Punktestand — beides steht im selben Fenster schon da, einmal in
+     * der Überschrift und einmal in Grün darunter. Ein Satz, der wiederholt,
+     * was daneben steht, hat seine Aufgabe verfehlt: Er soll etwas sagen, das
+     * sonst nirgends steht.
+     *
+     * Sie werden **vorgelesen**, nicht nur angezeigt. Deshalb keine Zeichen,
+     * die eine Sprachausgabe stolpern lassen, keine Klammern, keine Ziffern —
+     * und Sätze, die gesprochen ebenso tragen wie gelesen.
+     *
+     * Der Ton ist der des Spiels: Nachtwald, Mondlicht, Tau, Glühwürmchen.
+     * Nicht kindlich — Fairydoku ist für die ganze Bandbreite gedacht.
+     */
     private fun praisePhrases(level: Int, score: Int): List<String> = listOf(
-        "Wunderbar! Alle Feen leben in Harmonie.",
-        "Großartig gemacht, Hüterin des Waldes!",
-        "Level $level geschafft. Der Wald leuchtet für dich!",
-        "Zauberhaft! Schon $score Punkte.",
+        "Wunderbar. Alle Feen leben in Harmonie.",
+        "Großartig gemacht, Hüterin des Waldes.",
+        "Der Wald leuchtet für dich.",
         "Du hast ein feines Gespür für Feen.",
-        "Perfekt platziert! Weiter so.",
+        "Perfekt platziert. Weiter so.",
+        "Kein Flügel zu viel, kein Platz zu wenig.",
+        "So ruhig war die Lichtung lange nicht.",
+        "Jede steht genau dort, wo sie hingehört.",
+        "Die Glühwürmchen haben dir zugesehen.",
+        "Das war klug gedacht.",
+        "Der Tau glitzert, als hätte er darauf gewartet.",
+        "Ordnung im Wald, und du hast sie gemacht.",
+        "Keine einzige musste zweimal überlegen.",
+        "Der Mond steht günstig für dich.",
+        "Die Feen tuscheln. Es klingt nach Anerkennung.",
+        "Sauber gelöst, ohne ein Blatt zu verrücken.",
+        "Du liest die Lichtung wie ein Buch.",
+        "Still geworden. So klingt es, wenn es stimmt.",
+        "Da hat jemand aufgepasst.",
+        "Der Wald atmet auf.",
     )
 
     private companion object {
