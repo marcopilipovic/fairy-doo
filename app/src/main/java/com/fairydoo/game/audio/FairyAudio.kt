@@ -182,11 +182,15 @@ class FairyAudio(context: Context) {
             }
         }
 
-        val decoded = MusicDecoder.decodeToMono(appContext, R.raw.ambient_forest)
-        // Kurzes Überblenden von Schluss auf Anfang: MP3 trägt kodierungsbedingt
-        // etwas Stille an den Rändern, die beim Wiederholen als Lücke hörbar
-        // wäre.
-        val samples = Synth.crossfadeLoop(decoded, seconds = LOOP_CROSSFADE_SECONDS)
+        // **Berechnet statt entpackt.** Hier lag `ambient_forest.mp3`, die
+        // letzte Aufnahme im Spiel — mit ungeklaerter Lizenz und damit ein
+        // Riegel vor der Veroeffentlichung.
+        //
+        // Ueberblenden braucht es dabei nicht mehr: Die berechnete Schleife ist
+        // ein Kreis, was hinten hinausklingt, sitzt vorn schon drin. Beim MP3
+        // war das Ueberblenden noetig, weil die Kodierung Stille an die Raender
+        // legt.
+        val samples = Synth.toPcm16(FairySounds.forest())
 
         runCatching {
             val bytes = ByteArray(samples.size * 2)
@@ -219,14 +223,20 @@ class FairyAudio(context: Context) {
      */
     private fun musicFingerprint(): Long = runCatching {
         val checksum = CRC32()
-        appContext.resources.openRawResource(R.raw.ambient_forest).use { input ->
-            val buffer = ByteArray(FINGERPRINT_BUFFER_BYTES)
-            while (true) {
-                val read = input.read(buffer)
-                if (read <= 0) break
-                checksum.update(buffer, 0, read)
-            }
+        // **Die Pruefsumme des berechneten Klangs, nicht mehr einer Datei.**
+        // Sie erfuellt denselben Zweck: Aendert sich der Klang, aendert sich
+        // der Name des Zwischenspeichers von allein, und niemand muss daran
+        // denken, eine Nummer hochzusetzen. Ohne das spielte ein Geraet, auf
+        // dem das Spiel schon lief, weiter die alte Schleife — ein Fehler, der
+        // von aussen nicht zu erkennen ist, weil ja Ton da ist, nur der
+        // falsche. Genau das ist hier schon einmal passiert.
+        val samples = Synth.toPcm16(FairySounds.forest())
+        val buffer = ByteArray(samples.size * 2)
+        samples.forEachIndexed { index, value ->
+            buffer[index * 2] = (value.toInt() and 0xFF).toByte()
+            buffer[index * 2 + 1] = (value.toInt() shr 8).toByte()
         }
+        checksum.update(buffer, 0, buffer.size)
         checksum.value
     }.getOrElse { error ->
         Log.w(TAG, "Prüfsumme der Musik nicht ermittelbar", error)

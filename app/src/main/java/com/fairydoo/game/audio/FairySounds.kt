@@ -217,4 +217,68 @@ object FairySounds {
             target = 0.7f,
         )
     }
+
+    /**
+     * Der Waldteppich für den Pfad.
+     *
+     * **Ersetzt `ambient_forest.mp3`** — die letzte Aufnahme im Spiel. Ein
+     * Klang, den niemand aufgenommen hat, gehört dem, der ihn berechnet; damit
+     * ist die Lizenzfrage nicht geklärt, sondern gegenstandslos.
+     *
+     * **Kein stehender Klang.** Das ist die Lehre aus dem Weltraumspiel: Ein
+     * gehaltener Akkord klingt nach Orgel und fällt aus einer Welt heraus, in
+     * der alles angeschlagen wird. Hier sind es tiefe, weiche Anschläge, die
+     * lange ausklingen und sich immer überlappen — eine Fläche, die atmet.
+     *
+     * **Die Schleife schließt ohne Naht, weil sie ein Kreis ist.** Was am Ende
+     * über den Rand hinausklingt, wird vorn wieder eingesetzt. Dadurch gibt es
+     * keinen Punkt, an dem etwas anfängt oder aufhört — anders als beim
+     * Überblenden, das immer ein Stück Klang kostet und bei getragenen Tönen
+     * ein Schweben erzeugt.
+     *
+     * Dieselbe Leiter wie die zehn Feentöne, nur zwei Oktaven tiefer: Der
+     * Teppich liegt unter ihnen und stört sie nie.
+     */
+    fun forest(): FloatArray {
+        val laenge = Synth.secondsToSamples(LOOP_SEKUNDEN)
+        val aus = FloatArray(laenge)
+
+        // Anschlag und Stufe. Unregelmäßig, damit sich kein Takt einstellt —
+        // ein Wald hat keinen.
+        val anschlaege = listOf(
+            0.0f to 0, 2.3f to 2, 4.1f to 1, 6.4f to 3,
+            8.0f to 0, 9.7f to 2, 11.2f to 4,
+        )
+        val leiter = floatArrayOf(130.81f, 164.81f, 196.00f, 220.00f, 261.63f)
+
+        anschlaege.forEach { (zeit, stufe) ->
+            val ton = waldton(leiter[stufe])
+            val beginn = Synth.secondsToSamples(zeit)
+            for (i in ton.indices) {
+                aus[(beginn + i) % laenge] += ton[i]
+            }
+        }
+        return Synth.normalize(aus, target = 0.45f)
+    }
+
+    private fun waldton(frequenz: Float): FloatArray = Synth.tone(
+        durationSeconds = 5.5f,
+        frequencyAt = { frequenz },
+        amplitudeAt = { fortschritt ->
+            val anschlag = 0.22f
+            val huelle = if (fortschritt < anschlag) {
+                fortschritt / anschlag
+            } else {
+                Math.E.toFloat().let { e -> Math.pow(e.toDouble(), (-1.7f * fortschritt).toDouble()).toFloat() }
+            }
+            val schluss = 0.8f
+            if (fortschritt <= schluss) huelle else huelle * (1f - (fortschritt - schluss) / 0.2f)
+        },
+        // Weniger unrein als die Feen: Der Teppich soll tragen, nicht klirren.
+        // Ein Hauch Unreinheit bleibt, damit er zur selben Welt gehört.
+        harmonics = listOf(1f to 1f, 2.02f to 0.2f, 3.11f to 0.06f),
+    )
+
+    /** Wie lang die Waldschleife ist. Zwölf Sekunden, siehe [forest]. */
+    const val LOOP_SEKUNDEN = 12f
 }
