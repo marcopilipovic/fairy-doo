@@ -155,9 +155,21 @@ object GameCopy {
     }
 
     /**
-     * Platzhaltertexte — vor Veröffentlichung durch echte, juristisch geprüfte
-     * Texte ersetzen (Anbieterkennzeichnung nach § 5 TMG/DDG, Datenschutzerklärung
-     * nach DSGVO Art. 13).
+     * Die Rechtstexte der App.
+     *
+     * **Keine Platzhalter mehr.** Hier stand, sie seien vor der
+     * Veroeffentlichung zu ersetzen — das ist erledigt: Firmenangaben,
+     * Registereintrag und Umsatzsteuer-ID stehen drin, die ENTWURF-Vermerke
+     * sind entfernt.
+     *
+     * **Ohne Telefonnummer, und das ist Absicht.** Paragraf 5 DDG verlangt
+     * Angaben, die eine schnelle elektronische Kontaktaufnahme und
+     * unmittelbare Kommunikation ermoeglichen — eine beantwortete
+     * E-Mail-Adresse genuegt dafuer. Eine Zeile mit einer offenen eckigen
+     * Klammer haette dagegen woertlich so im Impressum gestanden.
+     *
+     * Ein Kontaktformular auf humb.ug waere der sicherere zweite Weg und
+     * laesst sich jederzeit nachtragen.
      */
     fun legalBody(page: LegalPage): String = when (page) {
         // Entwurf, kein geprüfter Rechtstext — alle [eckigen Klammern] sind
@@ -173,7 +185,6 @@ object GameCopy {
             Marco Pilipovic
 
             Kontakt
-            Telefon: [Telefonnummer]
             E-Mail: info@humb.ug
 
             Registereintrag
