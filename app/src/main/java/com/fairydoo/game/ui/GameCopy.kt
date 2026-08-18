@@ -164,8 +164,6 @@ object GameCopy {
         // von Nataly auszufüllen; nicht zutreffende Punkte (z. B. USt-IdNr.)
         // kann sie beim Ausfüllen entfernen.
         LegalPage.Impressum -> """
-            ENTWURF – keine Rechtsberatung. Vorlage mit Pflichtangaben; bitte alle Felder in [eckigen Klammern] ausfüllen und vor Veröffentlichung prüfen lassen. Nicht zutreffende Punkte (z. B. USt-IdNr.) können entfallen.
-
             Angaben gemäß § 5 DDG
             App HUMB UG (haftungsbeschränkt)
             Parkstraße 9
@@ -217,8 +215,6 @@ object GameCopy {
         // RECHTSTEXTE-RANGLISTE.md — dieser Text hier beschreibt die App, wie
         // sie heute ist.
         LegalPage.Agb -> """
-            ENTWURF – keine Rechtsberatung. Dieser Text ist eine sorgfältige Vorlage, ersetzt aber keine anwaltliche Prüfung. Da die App werbefinanziert ist und auch von Jugendlichen genutzt wird, sollte ein Fachanwalt (IT-/Datenschutzrecht) den Text vor Veröffentlichung freigeben. Alle Angaben in [eckigen Klammern] bitte ausfüllen.
-
             § 1 Geltungsbereich und Anbieter
             Diese Nutzungsbedingungen gelten für die Nutzung der mobilen App „Fairydoku" (nachfolgend „App"), angeboten von App HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle (nachfolgend „Anbieter"). Mit der Installation und Nutzung der App erkennst du diese Bedingungen an.
 
@@ -293,8 +289,6 @@ object GameCopy {
         // der Familienrichtlinien. Der Entwurf für die spätere Fassung mit
         // Online-Rangliste liegt in RECHTSTEXTE-RANGLISTE.md.
         LegalPage.Datenschutz -> """
-            ENTWURF – keine Rechtsberatung. Dieser Text ist eine sorgfältige Vorlage, ersetzt aber keine anwaltliche Prüfung. Da die App werbefinanziert ist und auch von Jugendlichen genutzt wird, sollte ein Fachanwalt (IT-/Datenschutzrecht) den Text vor Veröffentlichung freigeben. Alle Angaben in [eckigen Klammern] bitte ausfüllen.
-
             Der Schutz deiner Daten ist uns wichtig. Diese Datenschutzerklärung informiert dich darüber, welche Daten bei der Nutzung der App „Fairydoku" verarbeitet werden. Grundsatz: Fairydoku erhebt so wenige Daten wie möglich. Es gibt keine Registrierung und kein Nutzerkonto.
 
             1. Verantwortlicher
