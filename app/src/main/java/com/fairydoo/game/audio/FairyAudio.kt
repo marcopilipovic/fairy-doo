@@ -165,9 +165,16 @@ class FairyAudio(context: Context) {
 
         // Was eine frühere Fassung hinterlassen hat, wird nicht mehr gefunden —
         // es läge sonst für immer da und belegte Platz.
+        //
+        // Entscheidend ist die Versionsnummer, nicht der Dateiname: Wer hier
+        // alles löscht, was gerade *nicht* geladen wird, wirft bei jedem
+        // Bildschirmwechsel das andere Stück weg. Dann rechnet die App bei
+        // jedem Wechsel eine halbe Minute Musik neu, und während sie das tut,
+        // reißt die Tonausgabe hörbar ab.
+        val endung = "-v$MUSIC_VERSION.pcm"
         runCatching {
             cacheDir.listFiles()
-                ?.filter { it.name.startsWith("musik-") && it.name != name }
+                ?.filter { it.name.startsWith("musik-") && !it.name.endsWith(endung) }
                 ?.forEach { it.delete() }
         }
 
