@@ -141,30 +141,25 @@ object GameCopy {
      *
      * ## Was hier bewusst anders steht als in der Vorlage
      *
-     * Die Vorlage beschrieb eine Einwilligungsabfrage über Googles User
-     * Messaging Platform und einen Menüpunkt „Datenschutz-Einstellungen
-     * ändern". **Beides gibt es in dieser App nicht** — kein UMP-SDK, kein
-     * Dialog, kein solcher Menüpunkt. Ein Datenschutztext, der eine Abfrage
-     * verspricht, die nie erscheint, wäre schlechter als gar keiner. Die
-     * betreffenden Abschnitte beschreiben deshalb, was tatsächlich passiert.
+     * Die Vorlage sprach von „eingeblendeter" Werbung. Die App hat weder Banner
+     * noch Anzeigen, die von selbst erscheinen — Werbung läuft ausschließlich
+     * als Videoanzeige, die der Spieler selbst startet, um dafür eine
+     * Spielhilfe zu erhalten (siehe [com.fairydoo.game.ads.RewardedAdManager]).
      *
-     * Ebenso angepasst: Die Vorlage sprach von „eingeblendeter" Werbung. Die
-     * App hat weder Banner noch Anzeigen, die von selbst erscheinen — Werbung
-     * läuft ausschließlich als Videoanzeige, die der Spieler selbst startet,
-     * um dafür eine Spielhilfe zu erhalten (siehe
-     * [com.fairydoo.game.ads.RewardedAdManager]). Das Werbe-SDK lädt
-     * allerdings schon beim App-Start eine Anzeige vor, und genau das steht
-     * jetzt auch da.
+     * Wichtiger noch: Bis zum ersten Druck auf einen Werbe-Knopf wird das
+     * Werbe-SDK gar nicht erst gestartet. Wer nie ein Video ansieht, bei dem
+     * gehen in diesem Zusammenhang keine Daten an Google — und genau das steht
+     * jetzt auch da. Ein Datenschutztext, der eine Verarbeitung beschreibt, die
+     * bei den meisten Spielern nie stattfindet, wäre unnötig abschreckend.
      *
-     * ## Offen und von außen zu klären
+     * ## Diese Texte und der Code müssen zusammen geändert werden
      *
-     * Als Rechtsgrundlage für die Auslieferung nicht personalisierter Werbung
-     * steht hier das berechtigte Interesse (Art. 6 Abs. 1 lit. f DSGVO). Ob
-     * das im EWR ohne Einwilligungsabfrage trägt, ist eine Rechtsfrage — die
-     * EU-Nutzereinwilligungsrichtlinie von Google verlangt in der Regel eine
-     * Abfrage. Diese eine Stelle gehört vor der Veröffentlichung geprüft.
-     * Wird später UMP eingebaut, wird daraus lit. a (Einwilligung), und die
-     * Abschnitte 3 und 10 sind entsprechend zu ändern.
+     * Abschnitt 3 und 10 beschreiben die Einwilligungsabfrage über Googles User
+     * Messaging Platform und den Menüpunkt „Datenschutz-Einstellungen ändern".
+     * Beides existiert — in [com.fairydoo.game.ads.RewardedAdManager] und im
+     * [com.fairydoo.game.ui.components.SettingsOverlay]. Wer eines davon
+     * ausbaut, muss hier mit ändern; ein Text, der eine Abfrage verspricht, die
+     * nie erscheint, wäre schlechter als gar keiner.
      */
     fun legalBody(page: LegalPage): String = when (page) {
         LegalPage.Impressum -> """
@@ -262,13 +257,17 @@ object GameCopy {
             3. Werbung (Google AdMob)
             Zur Finanzierung der kostenlosen App ist Google AdMob (Google Ireland Limited bzw. Google LLC) eingebunden.
 
-            Es gibt keine Werbebanner und keine Anzeigen, die von selbst erscheinen. Werbung läuft ausschließlich als Videoanzeige, die du selbst startest, um dafür eine Spielhilfe oder ein Leben zu erhalten. Wer das nicht nutzt, bekommt in der App keine Werbung zu sehen.
+            Es gibt keine Werbebanner und keine Anzeigen, die von selbst erscheinen. Werbung läuft ausschließlich als Videoanzeige, die du selbst startest, um dafür eine Spielhilfe oder ein Leben zu erhalten.
 
-            Das Werbe-SDK wird jedoch beim Start der App geladen und hält eine Anzeige bereit. Dabei können durch Google Geräte- und Nutzungsinformationen sowie eine Werbekennung (Advertising ID) verarbeitet werden, um eine Anzeige auszuliefern und Missbrauch (z. B. Klickbetrug) zu verhindern. Diese Verarbeitung beginnt also bereits mit dem Start der App, nicht erst beim Ansehen eines Videos.
+            Solange du das nicht tust, passiert nichts: Das Werbe-SDK wird gar nicht erst gestartet, es wird keine Anzeige geladen, und es gehen keine Daten an Google. Wer nie ein Werbevideo ansieht, bei dem verlässt in diesem Zusammenhang nichts das Gerät.
+
+            Drückst du zum ersten Mal auf einen Werbe-Knopf, fragen wir zuvor deine Einwilligung ab. Dafür ist das von Google zertifizierte Einwilligungswerkzeug (User Messaging Platform) eingebunden. Erst nach erteilter Einwilligung startet das Werbe-SDK und lädt eine Anzeige. Ohne Einwilligung wird keine Anzeige angefragt; die App bleibt vollständig spielbar, es entfällt lediglich die Möglichkeit, für eine Belohnung ein Video anzusehen.
+
+            Bei der Auslieferung können durch Google Geräte- und Nutzungsinformationen sowie eine Werbekennung (Advertising ID) verarbeitet werden, um die Anzeige auszuliefern und Missbrauch (z. B. Klickbetrug) zu verhindern.
 
             Jede Anzeigenanfrage ist ausdrücklich als nicht personalisiert gekennzeichnet, und die maximale Inhaltsfreigabe ist auf „G" gesetzt. Eine auf Interessen basierende Werbung findet nicht statt, es werden keine Nutzerprofile gebildet, und Werbung mit Glücksspiel-, Gewalt- oder sexuellen Inhalten ist ausgeschlossen.
 
-            Rechtsgrundlage ist unser berechtigtes Interesse an der Finanzierung der kostenlos bereitgestellten App (Art. 6 Abs. 1 lit. f DSGVO). Weitere Informationen findest du in der Datenschutzerklärung von Google.
+            Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit mit Wirkung für die Zukunft ändern oder zurücknehmen — siehe Abschnitt 10. Weitere Informationen findest du in der Datenschutzerklärung von Google.
 
             4. Spielstand, Tageswertung und Bestleistungen
             Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden ausschließlich lokal auf deinem Gerät gespeichert. Es findet keine Übermittlung an uns oder an Dritte statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
@@ -299,8 +298,10 @@ object GameCopy {
             Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)
             Zur Ausübung genügt eine Nachricht an die oben genannte Kontaktadresse. Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
 
-            10. Werbung widersprechen oder einschränken
-            Einen Einwilligungsdialog zeigt die App nicht, weil ausschließlich nicht personalisierte Werbung ausgeliefert wird. Möchtest du der Verarbeitung durch Google widersprechen, wende dich an die oben genannte Kontaktadresse.
+            10. Einwilligung ändern oder zurücknehmen
+            Deine Wahl zur Werbung kannst du jederzeit ändern: in den Einstellungen der App unter „Datenschutz-Einstellungen ändern". Der Punkt erscheint dort, sobald eine Einwilligung abgefragt wurde. Nimmst du sie zurück, wird ab diesem Zeitpunkt keine Werbung mehr ausgeliefert.
+
+            Möchtest du der Verarbeitung darüber hinaus widersprechen, wende dich an die oben genannte Kontaktadresse.
 
             Unabhängig davon kannst du die Werbekennung deines Geräts jederzeit selbst löschen oder zurücksetzen: in den Android-Einstellungen unter „Datenschutz" bzw. „Google" im Punkt „Anzeigen". Apps erhalten danach keine Werbekennung mehr.
 

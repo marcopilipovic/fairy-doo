@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fairydoo.game.ads.AdOffer
 import com.fairydoo.game.ui.theme.CardBottom
 import com.fairydoo.game.ui.theme.CardTop
 import com.fairydoo.game.game.FairySpecies
@@ -372,7 +373,7 @@ fun GameOverOverlay(
     onRetry: () -> Unit,
     onShowLevelMap: () -> Unit,
     adsUnlocked: Boolean,
-    adReady: Boolean,
+    adOffer: AdOffer,
     onWatchAd: () -> Unit,
     onOpenGift: () -> Unit,
 ) {
@@ -442,11 +443,15 @@ fun GameOverOverlay(
             GoldButton(label = "Level neu starten", onClick = onRetry)
         } else if (adsUnlocked) {
             GoldButton(
-                label = if (adReady) "📺 Werbung ansehen (+1 Leben)" else "Werbung lädt…",
-                onClick = if (adReady) onWatchAd else ({}),
+                label = when (adOffer) {
+                    AdOffer.Available -> "📺 Werbung ansehen (+1 Leben)"
+                    AdOffer.Preparing -> "Werbung lädt…"
+                    AdOffer.Unavailable -> "Werbung nicht verfügbar"
+                },
+                onClick = if (adOffer == AdOffer.Available) onWatchAd else ({}),
             )
         } else {
-            // Vor Level 11 gibt es noch keine Werbung — ein leerer Vorrat
+            // Vor der Werbe-Schwelle gibt es keine Werbung — ein leerer Vorrat
             // wartet nicht auf den Countdown, sondern lässt sich sofort per
             // Geschenk auffüllen.
             GoldButton(label = "🎁 Geschenk annehmen", onClick = onOpenGift)

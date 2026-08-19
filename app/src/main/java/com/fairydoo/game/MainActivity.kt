@@ -25,11 +25,15 @@ class MainActivity : ComponentActivity() {
         // Repository ist, wäre Hilt/Koin nur Zeremonie.
         val preferences = GamePreferencesRepository(applicationContext)
 
-        // Läuft app-weit unabhängig vom Compose-Baum: Eine Anzeige darf über
-        // einen Level- oder Bildschirmwechsel hinweg vorgeladen bleiben, sonst
-        // wartet man nach jedem Wechsel erneut auf das Laden.
+        // Läuft app-weit unabhängig vom Compose-Baum: Eine einmal geladene
+        // Anzeige darf über einen Level- oder Bildschirmwechsel hinweg
+        // bereitstehen, sonst wartet man nach jedem Wechsel erneut.
+        //
+        // Hier wird nur das Objekt angelegt, nichts gestartet: Werbe-SDK und
+        // Einwilligung kommen erst, wenn zum ersten Mal ein Werbe-Knopf
+        // gedrückt wird. Wer nie Werbung ansieht, bei dem verlässt nichts das
+        // Gerät.
         val ads = RewardedAdManager(applicationContext)
-        ads.init()
 
         setContent {
             FairyDooTheme {

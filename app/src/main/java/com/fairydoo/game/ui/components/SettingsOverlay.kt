@@ -71,6 +71,8 @@ fun SettingsOverlay(
     selectedAvatar: FairySpecies,
     onPlayerNameChange: (String) -> Unit,
     onAvatarSelected: (FairySpecies) -> Unit,
+    privacyOptionsAvailable: Boolean,
+    onOpenPrivacyOptions: () -> Unit,
     onClose: () -> Unit,
 ) {
     Box(
@@ -143,6 +145,33 @@ fun SettingsOverlay(
                         onClick = { onAvatarSelected(species) },
                     )
                 }
+            }
+
+            // Nur, wenn es tatsächlich etwas zu ändern gibt: Außerhalb des EWR
+            // wird nie eine Einwilligung abgefragt, und vor dem ersten
+            // Werbe-Knopf gibt es noch keine. Ein Menüpunkt, der ein leeres
+            // Formular öffnet, verwirrt mehr, als er hilft.
+            if (privacyOptionsAvailable) {
+                Spacer(Modifier.height(16.dp))
+
+                SectionLabel("Datenschutz")
+
+                Spacer(Modifier.height(6.dp))
+
+                Text(
+                    text = "Datenschutz-Einstellungen ändern",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontSize = 13.sp,
+                    color = GoldLight,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onOpenPrivacyOptions,
+                        )
+                        .padding(vertical = 6.dp),
+                )
             }
 
             Spacer(Modifier.height(14.dp))

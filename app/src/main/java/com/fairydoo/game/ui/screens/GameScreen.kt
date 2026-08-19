@@ -67,6 +67,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.app.Activity
+import com.fairydoo.game.ads.AdOffer
 import com.fairydoo.game.ads.RewardedAdManager
 import com.fairydoo.game.audio.FairyAudio
 import com.fairydoo.game.audio.MusicTrack
@@ -269,7 +270,8 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     val fairyDust by viewModel.fairyDust.collectAsStateWithLifecycle()
     val irrlicht by viewModel.irrlicht.collectAsStateWithLifecycle()
     val adsUnlocked by viewModel.adsUnlocked.collectAsStateWithLifecycle()
-    val adReady by ads.isReady.collectAsStateWithLifecycle()
+    val adOffer by ads.offer.collectAsStateWithLifecycle()
+    val privacyOptionsAvailable by ads.privacyOptionsAvailable.collectAsStateWithLifecycle()
     val showLevelSelect by viewModel.showLevelSelect.collectAsStateWithLifecycle()
     val tutorialOpen by viewModel.tutorialOpen.collectAsStateWithLifecycle()
     val tutorialStep by viewModel.tutorialStep.collectAsStateWithLifecycle()
@@ -277,9 +279,9 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     // Der Activity-Bezug wird erst hier gebraucht, direkt beim Zeigen der
     // Anzeige — der ViewModel bleibt dadurch Activity-unabhängig.
     val activity = LocalContext.current as Activity
-    val onWatchAdForFairyDust = { ads.show(activity) { viewModel.grantFairyDust() } }
-    val onWatchAdForIrrlicht = { ads.show(activity) { viewModel.grantIrrlicht() } }
-    val onWatchAdForLife = { ads.show(activity) { viewModel.grantGlobalLife() } }
+    val onWatchAdForFairyDust = { ads.onAdRequested(activity) { viewModel.grantFairyDust() } }
+    val onWatchAdForIrrlicht = { ads.onAdRequested(activity) { viewModel.grantIrrlicht() } }
+    val onWatchAdForLife = { ads.onAdRequested(activity) { viewModel.grantGlobalLife() } }
 
     // Bis zur Werbe-Schwelle tritt an die Stelle der Werbung ein Geschenk-Popup, das
     // sofort auffüllt — welche Zauberhilfe bzw. welches Leben gerade dran ist,
@@ -378,7 +380,9 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                 onSoundChange = viewModel::setSoundVolume,
                 onVoiceChange = viewModel::setVoiceVolume,
                 adsUnlocked = adsUnlocked,
-                adReady = adReady,
+                adOffer = adOffer,
+                privacyOptionsAvailable = privacyOptionsAvailable,
+                onOpenPrivacyOptions = { ads.showPrivacyOptions(activity) },
                 onWatchAdForLife = onWatchAdForLife,
                 onOpenGiftForLife = onOpenGiftForLifeOnMap,
             )
@@ -405,7 +409,7 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                 nextIrrlichtInMillis = (irrlicht.nextAtMillis - System.currentTimeMillis())
                     .coerceAtLeast(0L),
                 adsUnlocked = adsUnlocked,
-                adReady = adReady,
+                adOffer = adOffer,
                 onWatchAdForFairyDust = onWatchAdForFairyDust,
                 onWatchAdForIrrlicht = onWatchAdForIrrlicht,
                 onWatchAdForLife = onWatchAdForLife,
@@ -474,7 +478,7 @@ private fun GameContent(
     nextDustInMillis: Long,
     nextIrrlichtInMillis: Long,
     adsUnlocked: Boolean,
-    adReady: Boolean,
+    adOffer: AdOffer,
     onWatchAdForFairyDust: () -> Unit,
     onWatchAdForIrrlicht: () -> Unit,
     onWatchAdForLife: () -> Unit,
@@ -546,7 +550,7 @@ private fun GameContent(
             onUseFairyDust = onUseFairyDust,
             onUseIrrlicht = onUseIrrlicht,
             adsUnlocked = adsUnlocked,
-            adReady = adReady,
+            adOffer = adOffer,
             onWatchAdForFairyDust = onWatchAdForFairyDust,
             onWatchAdForIrrlicht = onWatchAdForIrrlicht,
             onOpenGiftForFairyDust = onOpenGiftForFairyDust,
@@ -604,7 +608,7 @@ private fun GameContent(
                 onRetry = { onRetryLevel(state.level) },
                 onShowLevelMap = onOpenLevelSelect,
                 adsUnlocked = adsUnlocked,
-                adReady = adReady,
+                adOffer = adOffer,
                 onWatchAd = onWatchAdForLife,
                 onOpenGift = onOpenGiftForLife,
             )

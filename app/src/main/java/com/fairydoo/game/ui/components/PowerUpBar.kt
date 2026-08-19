@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fairydoo.game.ads.AdOffer
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.ui.GameCopy
 import com.fairydoo.game.ui.theme.Gold
@@ -68,7 +69,7 @@ fun PowerUpBar(
     onUseFairyDust: () -> Unit,
     onUseIrrlicht: () -> Unit,
     adsUnlocked: Boolean,
-    adReady: Boolean,
+    adOffer: AdOffer,
     onWatchAdForFairyDust: () -> Unit,
     onWatchAdForIrrlicht: () -> Unit,
     onOpenGiftForFairyDust: () -> Unit,
@@ -95,7 +96,7 @@ fun PowerUpBar(
                 else -> "✨"
             },
             label = when {
-                offerAdForFairyDust -> if (adReady) "Werbung\nansehen" else "Werbung\nlädt…"
+                offerAdForFairyDust -> werbeLabel(adOffer)
                 offerGiftForFairyDust -> "Geschenk\nannehmen"
                 state.fairyDust > 0 || nextDustInMillis <= 0L -> "Feenstaub\ndeckt Fee auf"
                 else -> "Feenstaub\nin ${GameCopy.formatWaitTime((nextDustInMillis / 1000L).toInt())}"
@@ -104,7 +105,7 @@ fun PowerUpBar(
             accent = Gold,
             badgeTextColor = Color(0xFF2A1C05),
             active = false,
-            enabled = if (offerAdForFairyDust) adReady else true,
+            enabled = if (offerAdForFairyDust) adOffer == AdOffer.Available else true,
             onClick = when {
                 offerAdForFairyDust -> onWatchAdForFairyDust
                 offerGiftForFairyDust -> onOpenGiftForFairyDust
@@ -118,7 +119,7 @@ fun PowerUpBar(
                 else -> "🔮"
             },
             label = when {
-                offerAdForIrrlicht -> if (adReady) "Werbung\nansehen" else "Werbung\nlädt…"
+                offerAdForIrrlicht -> werbeLabel(adOffer)
                 offerGiftForIrrlicht -> "Geschenk\nannehmen"
                 state.irrlicht > 0 || nextIrrlichtInMillis <= 0L -> "Irrlicht\ndeckt X auf"
                 else -> "Irrlicht\nin ${GameCopy.formatWaitTime((nextIrrlichtInMillis / 1000L).toInt())}"
@@ -127,7 +128,7 @@ fun PowerUpBar(
             accent = StatusPurple,
             badgeTextColor = Color(0xFF241C42),
             active = false,
-            enabled = if (offerAdForIrrlicht) adReady else true,
+            enabled = if (offerAdForIrrlicht) adOffer == AdOffer.Available else true,
             onClick = when {
                 offerAdForIrrlicht -> onWatchAdForIrrlicht
                 offerGiftForIrrlicht -> onOpenGiftForIrrlicht
@@ -248,4 +249,17 @@ private fun PowerUpButton(
             textAlign = TextAlign.Center,
         )
     }
+}
+
+/**
+ * Beschriftung des Werbe-Knopfes.
+ *
+ * Drei Zustände statt zwei: „lädt…" wäre falsch, wenn jemand die Einwilligung
+ * abgelehnt hat — dann kommt nämlich nie etwas, und der Knopf würde ewig
+ * warten lassen.
+ */
+private fun werbeLabel(offer: AdOffer): String = when (offer) {
+    AdOffer.Available -> "Werbung\nansehen"
+    AdOffer.Preparing -> "Werbung\nlädt…"
+    AdOffer.Unavailable -> "Werbung\nnicht da"
 }

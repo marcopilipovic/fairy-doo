@@ -55,6 +55,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import com.fairydoo.game.ads.AdOffer
 import com.fairydoo.game.data.PlayerProfile
 import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GlobalLives
@@ -136,7 +137,9 @@ fun LevelSelectScreen(
     onSoundChange: (Float) -> Unit,
     onVoiceChange: (Float) -> Unit,
     adsUnlocked: Boolean,
-    adReady: Boolean,
+    adOffer: AdOffer,
+    privacyOptionsAvailable: Boolean,
+    onOpenPrivacyOptions: () -> Unit,
     onWatchAdForLife: () -> Unit,
     onOpenGiftForLife: () -> Unit,
 ) {
@@ -158,7 +161,7 @@ fun LevelSelectScreen(
             ForestLivesBadge(
                 state = globalLives,
                 adsUnlocked = adsUnlocked,
-                adReady = adReady,
+                adOffer = adOffer,
                 onWatchAd = onWatchAdForLife,
                 onOpenGift = onOpenGiftForLife,
             )
@@ -271,6 +274,8 @@ fun LevelSelectScreen(
                 selectedAvatar = profile.selectedAvatar,
                 onPlayerNameChange = onSetPlayerName,
                 onAvatarSelected = onSetAvatar,
+                privacyOptionsAvailable = privacyOptionsAvailable,
+                onOpenPrivacyOptions = onOpenPrivacyOptions,
                 onClose = { showSettings = false },
             )
         }
@@ -745,7 +750,7 @@ private fun LevelNode(
 private fun ForestLivesBadge(
     state: GlobalLivesState,
     adsUnlocked: Boolean,
-    adReady: Boolean,
+    adOffer: AdOffer,
     onWatchAd: () -> Unit,
     onOpenGift: () -> Unit,
 ) {
@@ -767,13 +772,17 @@ private fun ForestLivesBadge(
         if (state.lives == 0 && adsUnlocked) {
             Spacer(Modifier.height(4.dp))
             Text(
-                text = if (adReady) "📺 Werbung ansehen (+1 Leben)" else "Werbung lädt…",
+                text = when (adOffer) {
+                    AdOffer.Available -> "📺 Werbung ansehen (+1 Leben)"
+                    AdOffer.Preparing -> "Werbung lädt…"
+                    AdOffer.Unavailable -> "Werbung nicht verfügbar"
+                },
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 12.sp,
                 color = GoldLight,
                 modifier = Modifier
                     .clickable(
-                        enabled = adReady,
+                        enabled = adOffer == AdOffer.Available,
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         onClick = onWatchAd,
