@@ -66,10 +66,13 @@ eigener Farbe und eigenem Klang.
 WENN ES KLEMMT
 
 Der Feenstaub setzt eine Fee auf ein garantiert sicheres Feld. Das Irrlicht
-deckt umgekehrt ein Feld auf, auf dem keine sitzt. Beides wächst von selbst
-nach — du musst nichts kaufen und nichts freischalten.
+deckt umgekehrt ein Feld auf, auf dem keine sitzt. Von beidem hast du bis zu
+drei; verbrauchtes wächst von selbst nach — du musst nichts kaufen und nichts
+freischalten.
 
-Drei Leben hat der Wald. Sie kommen mit der Zeit zurück.
+In einem Level hast du drei Versuche. Geht eins verloren, kostet das eines von
+fünf Wald-Leben, und alle zwei Stunden kommt eines zurück. Wer nicht warten
+will, sieht sich freiwillig ein kurzes Video an.
 
 DER FEENPFAD
 
@@ -91,7 +94,8 @@ FAIR UND OHNE HAKEN
 • keine Werbebanner, keine Anzeigen, die von selbst erscheinen
 • Werbung nur, wenn du selbst ein Video startest, um eine Spielhilfe zu bekommen
 • keine Anmeldung, kein Konto
-• dein Spielstand bleibt auf deinem Gerät
+• wir sammeln nichts über dich — der Spielstand liegt auf deinem Gerät und,
+  wenn du Androids Datensicherung nutzt, in deinem eigenen Google-Konto
 • offline spielbar
 
 Fairydoku ist ein Angebot für Personen ab 13 Jahren. Die Inhalte sind
