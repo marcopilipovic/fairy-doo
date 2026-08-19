@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Der Nachthimmel hinter der Fee — zwei Lagen.
+
+    Unten der Verlauf: dieselben drei Farbstufen wie in der ersten Entwurfs-
+    vorlage, aus ihr gemessen. Die mittlere ist die Farbe, die vorher allein
+    hier stand (#172A3F) — das Symbol wurde heller, nicht anders.
+
+    Darüber ein warmer Schein in der Bildmitte, genau dort, wo die Fee steht.
+    Ohne ihn steht eine goldene Figur auf dunklem Grund einfach nur da; mit ihm
+    sieht es aus, als ginge das Licht von ihr aus. Der Schein gehört in den
+    Hintergrund und nicht in die Figur: Launcher verschieben die beiden Ebenen
+    beim Wischen leicht gegeneinander, und dabei soll das Licht liegen bleiben,
+    während die Fee sich bewegt.
+
+    Gezeichnet statt als Bild: scharf in jeder Größe, keine fünf Dichtestufen,
+    zusammen keine 700 Byte.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:type="linear"
+                android:startColor="#0A2032"
+                android:centerColor="#172B48"
+                android:endColor="#422962" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.5"
+                android:centerY="0.46"
+                android:gradientRadius="40%p"
+                android:startColor="#A6FFD070"
+                android:centerColor="#2EFFD070"
+                android:endColor="#00FFD070" />
+        </shape>
+    </item>
+
+</layer-list>

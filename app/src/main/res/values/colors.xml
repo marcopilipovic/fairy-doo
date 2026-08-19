@@ -8,5 +8,4 @@
     <!-- Der Nachtwald-Ton rund um das Symbol aus dem Design-Paket.
          Er muss der Farbe neben dem Motiv entsprechen, sonst zeichnet sich
          der Bildausschnitt als Kante gegen den Icon-Hintergrund ab. -->
-    <color name="ic_launcher_background">#FF172A3F</color>
 </resources>
