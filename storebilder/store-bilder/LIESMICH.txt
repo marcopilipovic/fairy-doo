@@ -1,0 +1,37 @@
+FAIRYDOKU — BILDSCHIRMFOTOS FÜR DEN PLAY STORE
+
+In dieser Reihenfolge hochladen. Die ersten beiden erscheinen in der
+Suchliste — oft ohne dass jemand den Eintrag überhaupt öffnet.
+
+  1-Spielbrett       6×6, drei Feen gesetzt, viele ✕
+                     Zeigt in einer Sekunde, was man tut.
+
+  2-Feenpfad         Der Weg durch den Wald, Level 8 bis 11 offen
+                     Das eigenständigste Bild — so sieht sonst
+                     keine Rätsel-App aus. Oben mitzusehen: Leben,
+                     Nachwachs-Countdown und Punktestand.
+
+  3-Level-geschafft  +1600 Punkte, Ausblick auf das nächste Gitter
+                     Der Moment, für den man spielt.
+
+  4-Grosses-Gitter   8×8, drei Feen, sechzehn ✕
+                     Der Beleg, dass es anspruchsvoller wird.
+
+  6-Anleitung        Die Regel in einem Bild
+                     Nimmt die Sorge, es sei kompliziert.
+
+Alle 1080 × 2090, JPEG, Hochformat — passt zu den Anforderungen des
+Play Store (mindestens 2, höchstens 8 Bilder).
+
+Uhrzeit, Akku und Navigationsleiste sind bei allen weggeschnitten:
+oben 140, unten 170 Bildpunkte vom 1080 × 2400 großen Bildschirmfoto.
+
+Aufgenommen am 19. August 2026 aus der Release-APK auf einem Pixel-5-
+Emulator, mit den neuen Feen, dem neuen App-Symbol und der berechneten
+Musik.
+
+Nummer 5 hieß früher "Tageswertung" und zeigte einen eigenen Bildschirm
+mit Countdown und Belohnungsvorschau. Den gibt es so nicht mehr —
+Punkte, Leben und Countdown stehen jetzt oben auf der Levelkarte und
+sind in Bild 2 zu sehen. An seine Stelle ist Bild 4 getreten, das
+größere Gitter, das in der alten Fassung bewusst gefehlt hatte.
