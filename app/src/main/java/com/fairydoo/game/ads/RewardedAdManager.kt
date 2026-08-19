@@ -99,14 +99,19 @@ class RewardedAdManager(private val appContext: Context) {
      * SDK starten, eine Anzeige laden, sie zeigen. Liegt schon eine bereit,
      * läuft nur der letzte Schritt.
      */
-    fun onAdRequested(activity: Activity, onReward: () -> Unit) {
-        rewardedAd?.let { show(activity, it, onReward) ; return }
+    fun onAdRequested(
+        activity: Activity,
+        onReward: () -> Unit,
+        onFinished: () -> Unit = {},
+    ) {
+        rewardedAd?.let { show(activity, it, onReward, onFinished) ; return }
         if (_offer.value == AdOffer.Preparing) return
 
         _offer.value = AdOffer.Preparing
         ensureConsent(activity) { erlaubt ->
             if (!erlaubt) {
                 _offer.value = AdOffer.Unavailable
+                onFinished()
                 return@ensureConsent
             }
             startSdk()
@@ -114,11 +119,13 @@ class RewardedAdManager(private val appContext: Context) {
                 if (geladen) {
                     // Der Spieler wartet seit seinem Tippen — die Anzeige
                     // kommt jetzt von selbst, ohne dass er erneut drücken muss.
-                    rewardedAd?.let { show(activity, it, onReward) }
+                    val ad = rewardedAd
+                    if (ad != null) show(activity, ad, onReward, onFinished) else onFinished()
                 } else {
                     // Kein Netz, kein Inventar: beim nächsten Tippen neu
                     // versuchen, statt den Knopf dauerhaft auszuschalten.
                     _offer.value = AdOffer.Available
+                    onFinished()
                 }
             }
         }
@@ -237,19 +244,30 @@ class RewardedAdManager(private val appContext: Context) {
      * Zeigt die Anzeige und ruft [onReward] auf, sobald sie zu Ende gesehen
      * wurde. Lädt danach sofort die nächste nach, damit das nächste Tippen
      * nicht wieder warten muss.
+     *
+     * [onFinished] meldet, dass der Spieler wieder vor dem Spiel sitzt — egal,
+     * ob er die Anzeige zu Ende gesehen oder weggetippt hat. Daran hängt, dass
+     * die Uhr weiterläuft, die für die Dauer der Anzeige stillstand.
      */
-    private fun show(activity: Activity, ad: RewardedAd, onReward: () -> Unit) {
+    private fun show(
+        activity: Activity,
+        ad: RewardedAd,
+        onReward: () -> Unit,
+        onFinished: () -> Unit,
+    ) {
         _offer.value = AdOffer.Available
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
                 rewardedAd = null
                 load()
+                onFinished()
             }
 
             override fun onAdFailedToShowFullScreenContent(error: AdError) {
                 rewardedAd = null
                 Log.w(TAG, "Anzeige nicht zeigbar: ${error.message}")
                 load()
+                onFinished()
             }
         }
         ad.show(activity) { onReward() }

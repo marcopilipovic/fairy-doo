@@ -279,9 +279,24 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     // Der Activity-Bezug wird erst hier gebraucht, direkt beim Zeigen der
     // Anzeige — der ViewModel bleibt dadurch Activity-unabhängig.
     val activity = LocalContext.current as Activity
-    val onWatchAdForFairyDust = { ads.onAdRequested(activity) { viewModel.grantFairyDust() } }
-    val onWatchAdForIrrlicht = { ads.onAdRequested(activity) { viewModel.grantIrrlicht() } }
-    val onWatchAdForLife = { ads.onAdRequested(activity) { viewModel.grantGlobalLife() } }
+    // Die Uhr steht still, solange die Anzeige läuft — und zwar vom Tippen an,
+    // nicht erst, wenn das Video anfängt: Einwilligung einholen und Anzeige
+    // laden kostet beim ersten Mal ein paar Sekunden.
+    //
+    // Ohne das lief die Uhr weiter, während man sich die Werbung ansah. Wer ein
+    // Helferlein wollte, verlor darüber das Level — genau die Erfahrung, nach
+    // der man sich Werbung nie wieder ansieht.
+    val werbung = { onReward: () -> Unit ->
+        viewModel.pause()
+        ads.onAdRequested(
+            activity = activity,
+            onReward = onReward,
+            onFinished = { if (!showLevelSelect && !tutorialOpen) viewModel.resume() },
+        )
+    }
+    val onWatchAdForFairyDust = { werbung { viewModel.grantFairyDust() } }
+    val onWatchAdForIrrlicht = { werbung { viewModel.grantIrrlicht() } }
+    val onWatchAdForLife = { werbung { viewModel.grantGlobalLife() } }
 
     // Bis zur Werbe-Schwelle tritt an die Stelle der Werbung ein Geschenk-Popup, das
     // sofort auffüllt — welche Zauberhilfe bzw. welches Leben gerade dran ist,
