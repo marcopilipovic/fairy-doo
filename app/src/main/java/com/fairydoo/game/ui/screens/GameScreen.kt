@@ -281,24 +281,26 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     val onWatchAdForIrrlicht = { ads.show(activity) { viewModel.grantIrrlicht() } }
     val onWatchAdForLife = { ads.show(activity) { viewModel.grantGlobalLife() } }
 
-    // Vor Level 11 tritt an die Stelle der Werbung ein Geschenk-Popup, das
+    // Bis zur Werbe-Schwelle tritt an die Stelle der Werbung ein Geschenk-Popup, das
     // sofort auffüllt — welche Zauberhilfe bzw. welches Leben gerade dran ist,
     // hält dieser Zustand fest, solange das Popup offen ist. Das letzte
-    // Geschenk ist an Level 10 geknüpft — beim Antippen im laufenden Spiel
-    // zählt das gerade gespielte Level (auch beim Wiederholen älterer Level
-    // bleibt so korrekt, dass nur Level 10 selbst als "letztes" gilt und
-    // nicht schon jedes Level, sobald Level 10 insgesamt freigeschaltet ist);
+    // Geschenk ist an die Werbe-Schwelle geknüpft — beim Antippen im
+    // laufenden Spiel zählt das gerade gespielte Level (auch beim Wiederholen
+    // älterer Level bleibt so korrekt, dass nur das Schwellenlevel selbst als
+    // "letztes" gilt und nicht schon jedes Level, sobald die Schwelle
+    // insgesamt überschritten ist);
     // auf der Levelkarte gibt es kein laufendes Level, dort zählt stattdessen
     // das höchste freigeschaltete Level, weil das dem nächsten Levelstart am
     // nächsten kommt.
     var giftKind by rememberSaveable { mutableStateOf<GiftKind?>(null) }
     var giftIsLast by rememberSaveable { mutableStateOf(false) }
-    val onOpenGiftForFairyDust = { giftKind = GiftKind.FairyDust; giftIsLast = state.level == 10 }
-    val onOpenGiftForIrrlicht = { giftKind = GiftKind.Irrlicht; giftIsLast = state.level == 10 }
-    val onOpenGiftForLifeInGame = { giftKind = GiftKind.Life; giftIsLast = state.level == 10 }
+    val letztesGeschenk = { state.level == GameViewModel.ADS_UNLOCK_AFTER_LEVEL }
+    val onOpenGiftForFairyDust = { giftKind = GiftKind.FairyDust; giftIsLast = letztesGeschenk() }
+    val onOpenGiftForIrrlicht = { giftKind = GiftKind.Irrlicht; giftIsLast = letztesGeschenk() }
+    val onOpenGiftForLifeInGame = { giftKind = GiftKind.Life; giftIsLast = letztesGeschenk() }
     val onOpenGiftForLifeOnMap = {
         giftKind = GiftKind.Life
-        giftIsLast = profile.highestLevelUnlocked == 10
+        giftIsLast = profile.highestLevelUnlocked == GameViewModel.ADS_UNLOCK_AFTER_LEVEL
     }
 
     // Die Klangwelt lebt so lange wie der Bildschirm; beim Verlassen wird sie

@@ -110,9 +110,9 @@ class GameViewModel(
     )
 
     /**
-     * Werbung wird erst angeboten, nachdem die ersten zehn Level geschafft
-     * sind — wer gerade erst anfängt, soll nicht gleich mit Werbeangeboten
-     * begrüßt werden.
+     * Werbung wird erst angeboten, nachdem die ersten Level geschafft sind —
+     * wer gerade erst anfängt, soll nicht mit Werbeangeboten begrüßt werden.
+     * Bis dahin tritt an ihre Stelle ein Geschenk.
      */
     val adsUnlocked: StateFlow<Boolean> = profile
         .map { it.highestLevelUnlocked > ADS_UNLOCK_AFTER_LEVEL }
@@ -404,8 +404,20 @@ class GameViewModel(
         /** Willkommen, Berührungsregel, Antippen&Halten, Zauberhilfen, Leben. */
         const val TUTORIAL_STEP_COUNT = 5
 
-        /** Werbung erst nach dem geschafften Level 10 — siehe [adsUnlocked]. */
-        private const val ADS_UNLOCK_AFTER_LEVEL = 10
+        /**
+         * Ab wann die Werbe-Knöpfe erscheinen — siehe [adsUnlocked].
+         *
+         * Drei Level, nicht zehn wie in den anderen Spielen des Hauses: Ein
+         * Fairydoku-Level dauert Minuten, kein paar Sekunden. Bis Level zehn
+         * wäre der Spieler eine halbe Stunde unterwegs, und so lange gäbe es
+         * keine Möglichkeit, einen leeren Vorrat aufzufüllen — die Hilfe käme
+         * an, wenn man sie längst nicht mehr braucht.
+         *
+         * An dieser Zahl hängt auch, wann das letzte Geschenk verteilt wird
+         * (siehe `giftIsLast` im GameScreen). Deshalb steht sie hier einmal
+         * und wird von dort geholt, statt zweimal dazustehen.
+         */
+        const val ADS_UNLOCK_AFTER_LEVEL = 3
 
         /** Für `viewModel(factory = GameViewModel.factory(repository))`. */
         fun factory(preferences: GamePreferencesRepository): ViewModelProvider.Factory =
