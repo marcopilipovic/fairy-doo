@@ -69,8 +69,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import android.app.Activity
 import com.fairydoo.game.ads.RewardedAdManager
 import com.fairydoo.game.audio.FairyAudio
+import com.fairydoo.game.audio.MusicTrack
 import com.fairydoo.game.data.GamePreferencesRepository
 import com.fairydoo.game.data.PlayerProfile
+import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameInput
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GameStatus
@@ -89,6 +91,9 @@ import com.fairydoo.game.ui.components.PowerUpBar
 import com.fairydoo.game.ui.components.SoundMenuButton
 import com.fairydoo.game.ui.components.SoundSettingsOverlay
 import com.fairydoo.game.ui.components.TutorialOverlay
+import com.fairydoo.game.ui.sprites.FairyImage
+import com.fairydoo.game.ui.sprites.fairyInlineContent
+import com.fairydoo.game.ui.sprites.fairyText
 import com.fairydoo.game.ui.theme.BlossomPink
 import com.fairydoo.game.ui.theme.DangerPink
 import com.fairydoo.game.ui.theme.GlowBlue
@@ -309,6 +314,14 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
         audio.setMusicVolume(profile.musicVolume)
         audio.setSoundVolume(profile.soundVolume)
         audio.setVoiceVolume(profile.voiceVolume)
+    }
+
+    // Jeder Bildschirm hat sein Stück: der Wald trägt die Konzentration beim
+    // Rätseln, der Feenpfad ist der Atemzug dazwischen. Vorher lief überall
+    // dasselbe, und die Karte fühlte sich dadurch an wie eine Unterbrechung
+    // des Spiels statt wie ein Teil davon.
+    LaunchedEffect(showLevelSelect) {
+        audio.setMusicTrack(if (showLevelSelect) MusicTrack.Path else MusicTrack.Forest)
     }
 
     // Spielgeschehen hörbar machen. Level und Punktestand gehen mit, damit die
@@ -643,7 +656,12 @@ private fun StatusMessageLine(text: String) {
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = text,
+            text = fairyText(text),
+            // Etwas höher als die Schrift: Die Feen sind hochformatig und
+            // schmal, auf reiner Zeilenhöhe verschwänden sie neben den
+            // Buchstaben. Die eine Meldung mit Fee ist ein Einzeiler — die
+            // zweite reservierte Zeile fängt den Zuschlag auf.
+            inlineContent = fairyInlineContent(FairySpecies.Nebula, style.fontSize * 1.6f),
             style = style,
             color = StatusPurple,
             textAlign = TextAlign.Center,
@@ -714,7 +732,14 @@ internal fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-/** „Fairydoku" zwischen zwei schwebenden Feen. */
+/**
+ * „Fairydoku" zwischen zwei schwebenden Feen.
+ *
+ * Zwei verschiedene Arten statt zweimal derselben: Nebula trägt den Nachthimmel
+ * in den Flügeln und steht deshalb ruhig vor dem dunklen Kopfbereich, Nixies
+ * Türkis setzt sich rechts davon ab. Zweimal dieselbe Figur sähe gespiegelt
+ * aus, und gerade im Titel fällt das auf.
+ */
 @Composable
 private fun TitleRow() {
     val transition = rememberInfiniteTransition(label = "floaty")
@@ -744,9 +769,9 @@ private fun TitleRow() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
-            text = "🧚‍♀️",
-            fontSize = 32.sp,
+        FairyImage(
+            species = FairySpecies.Nebula,
+            height = 40.dp,
             modifier = Modifier.graphicsLayer { translationY = leftOffset },
         )
         Text(text = "✦", fontSize = 16.sp, color = GoldLight)
@@ -766,9 +791,9 @@ private fun TitleRow() {
             maxLines = 1,
         )
         Text(text = "✦", fontSize = 16.sp, color = GoldLight)
-        Text(
-            text = "🧚",
-            fontSize = 32.sp,
+        FairyImage(
+            species = FairySpecies.Nixie,
+            height = 40.dp,
             modifier = Modifier.graphicsLayer { translationY = rightOffset },
         )
     }

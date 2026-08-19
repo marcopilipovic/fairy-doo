@@ -7,9 +7,15 @@ import com.fairydoo.game.game.FairySpecies
 /**
  * Die Bilder der zehn Feen.
  *
- * Gezeichnete Pixel-Art, aus einer gemeinsamen Vorlage freigestellt und
- * einheitlich in ein 256×256-Feld eingepasst — alle Figuren stehen auf
- * derselben Grundlinie und sind gleich hoch, damit das Brett ruhig wirkt.
+ * Vektorzeichnungen aus dem Handoff „Feen schlicht": flache Farbflächen, eine
+ * Kontur, ein Gesicht aus zwei Punkten und einem Bogen. Alle im selben Raster
+ * (120 × 164), damit die Figuren auf dem Brett gleich hoch stehen und auf
+ * derselben Grundlinie sitzen.
+ *
+ * Jede Fee trägt ihre eigene Farbe — nicht die ihrer Zone. Das ist Absicht:
+ * [com.fairydoo.game.game.GameState.speciesForZone] dreht die Feen über die
+ * Level so durch, dass jede einmal in jeder Zone vorkommt. Wäre die Farbe die
+ * der Zone, wäre die Fee als Figur nicht wiedererkennbar.
  *
  * Die Zuordnung ist ein `when` über alle Enum-Werte statt einer Map: Kommt eine
  * elfte Fee dazu, bricht der Compiler an genau dieser Stelle, statt dass zur
