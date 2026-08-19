@@ -35,13 +35,28 @@ class RewardedAdManager(private val appContext: Context) {
 
     /** Einmal beim App-Start: initialisiert das SDK und lädt die erste Anzeige vor. */
     fun init() {
-        // Fairydoku ist für alle Altersstufen freigegeben — "G" filtert
-        // Glücksspiel-, Gewalt- und sexuelle Werbeinhalte schon auf
-        // Anzeigen-Ebene heraus, unabhängig von der Zielgruppen-Einstufung im
-        // Play-Store-Konsolen-Fragebogen.
+        // Zwei Einstellungen, die zwei verschiedene Dinge regeln — und die man
+        // leicht verwechselt.
+        //
+        // "G" begrenzt, *was* an Werbung kommen darf: Glücksspiel-, Gewalt- und
+        // sexuelle Inhalte sind damit schon auf Anzeigen-Ebene ausgeschlossen.
+        // Das gilt unabhängig davon, an wen sich die App richtet, und bleibt so
+        // — die Inhalte des Spiels sind für jedes Alter unbedenklich.
+        //
+        // Die zweite Einstellung sagt Google, *an wen* sich die App richtet.
+        // Fairydoku ist ausdrücklich ab 13 Jahren und damit kein an Kinder
+        // gerichtetes Angebot im Sinne der Play-Store-Familienrichtlinien;
+        // genau so steht es auch in AGB und Datenschutzerklärung
+        // (siehe [com.fairydoo.game.ui.GameCopy.legalBody]). Bisher war das
+        // Feld schlicht nicht gesetzt, also unbestimmt. Ein Rechtstext, der
+        // eine Zielgruppe behauptet, und ein Werbe-SDK, das dazu schweigt,
+        // sind zwei Aussagen, wo eine reichen muss.
         MobileAds.setRequestConfiguration(
             RequestConfiguration.Builder()
                 .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G)
+                .setTagForChildDirectedTreatment(
+                    RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE,
+                )
                 .build(),
         )
         MobileAds.initialize(appContext) {}

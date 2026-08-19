@@ -134,59 +134,71 @@ object GameCopy {
     }
 
     /**
-     * Platzhaltertexte — vor Veröffentlichung durch echte, juristisch geprüfte
-     * Texte ersetzen (Anbieterkennzeichnung nach § 5 TMG/DDG, Datenschutzerklärung
-     * nach DSGVO Art. 13).
+     * Die drei Rechtsseiten, wie sie in der App stehen.
+     *
+     * Die Angaben stammen aus dem Rechtstext-Bestand der Webseite (Stand
+     * 18. August 2026) und sind vollständig — keine Platzhalter mehr.
+     *
+     * ## Was hier bewusst anders steht als in der Vorlage
+     *
+     * Die Vorlage beschrieb eine Einwilligungsabfrage über Googles User
+     * Messaging Platform und einen Menüpunkt „Datenschutz-Einstellungen
+     * ändern". **Beides gibt es in dieser App nicht** — kein UMP-SDK, kein
+     * Dialog, kein solcher Menüpunkt. Ein Datenschutztext, der eine Abfrage
+     * verspricht, die nie erscheint, wäre schlechter als gar keiner. Die
+     * betreffenden Abschnitte beschreiben deshalb, was tatsächlich passiert.
+     *
+     * Ebenso angepasst: Die Vorlage sprach von „eingeblendeter" Werbung. Die
+     * App hat weder Banner noch Anzeigen, die von selbst erscheinen — Werbung
+     * läuft ausschließlich als Videoanzeige, die der Spieler selbst startet,
+     * um dafür eine Spielhilfe zu erhalten (siehe
+     * [com.fairydoo.game.ads.RewardedAdManager]). Das Werbe-SDK lädt
+     * allerdings schon beim App-Start eine Anzeige vor, und genau das steht
+     * jetzt auch da.
+     *
+     * ## Offen und von außen zu klären
+     *
+     * Als Rechtsgrundlage für die Auslieferung nicht personalisierter Werbung
+     * steht hier das berechtigte Interesse (Art. 6 Abs. 1 lit. f DSGVO). Ob
+     * das im EWR ohne Einwilligungsabfrage trägt, ist eine Rechtsfrage — die
+     * EU-Nutzereinwilligungsrichtlinie von Google verlangt in der Regel eine
+     * Abfrage. Diese eine Stelle gehört vor der Veröffentlichung geprüft.
+     * Wird später UMP eingebaut, wird daraus lit. a (Einwilligung), und die
+     * Abschnitte 3 und 10 sind entsprechend zu ändern.
      */
     fun legalBody(page: LegalPage): String = when (page) {
-        // Entwurf, kein geprüfter Rechtstext — alle [eckigen Klammern] sind
-        // von Nataly auszufüllen; nicht zutreffende Punkte (z. B. USt-IdNr.)
-        // kann sie beim Ausfüllen entfernen.
         LegalPage.Impressum -> """
-            ENTWURF – keine Rechtsberatung. Vorlage mit Pflichtangaben; bitte alle Felder in [eckigen Klammern] ausfüllen und vor Veröffentlichung prüfen lassen. Nicht zutreffende Punkte (z. B. USt-IdNr.) können entfallen.
-
             Angaben gemäß § 5 DDG
-            [Firmenname / Rechtsform]
-            [Straße und Hausnummer]
-            [PLZ und Ort]
+            App HUMB UG (haftungsbeschränkt)
+            Parkstraße 9
+            31188 Holle
 
             Vertreten durch
-            [Name der Geschäftsführung]
+            Marco Pilipovic
 
             Kontakt
-            Telefon: [Telefonnummer]
-            E-Mail: [E-Mail-Adresse]
+            E-Mail: info@humb.ug
 
             Registereintrag
             Eintragung im Handelsregister
-            Registergericht: [Amtsgericht / Ort]
-            Registernummer: [HRB-Nummer]
+            Registergericht: Amtsgericht Hildesheim
+            Registernummer: HRB 208491
 
             Umsatzsteuer-ID
             Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:
-            [USt-IdNr., falls vorhanden – sonst diesen Abschnitt entfernen]
+            DE359950076
 
             Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
-            [Name]
-            [Anschrift wie oben]
+            Marco Pilipovic
+            Parkstraße 9, 31188 Holle
 
             Verbraucherstreitbeilegung
             Wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
-
-            Hinweis: Dieser Text ist ein Entwurf und bedarf vor Veröffentlichung noch der Überarbeitung und rechtlichen Prüfung.
         """.trimIndent()
-        // Entwurf, kein geprüfter Rechtstext — [Firmenname], [Anschrift] und
-        // [Monat Jahr] sind von Nataly auszufüllen. Gegenüber der Vorlage
-        // zweifach an das tatsächliche Spiel angepasst: kein Elternschutz
-        // (§ 4, § 8 — bewusst nicht gebaut, siehe Zielgruppen-Anpassung im
-        // Play Store) und keine Google-Play-Games-Rangliste (§ 6 — Bestleistung
-        // liegt nur lokal auf dem Gerät, es gibt keine geräteübergreifende
-        // oder geteilte Rangliste).
-        LegalPage.Agb -> """
-            ENTWURF – keine Rechtsberatung. Dieser Text ist eine sorgfältige Vorlage, ersetzt aber keine anwaltliche Prüfung. Da sich die App auch an Kinder richtet, sollte ein Fachanwalt (IT-/Datenschutzrecht) den Text vor Veröffentlichung freigeben. Alle Angaben in [eckigen Klammern] bitte ausfüllen.
 
+        LegalPage.Agb -> """
             § 1 Geltungsbereich und Anbieter
-            Diese Nutzungsbedingungen gelten für die Nutzung der mobilen App „Fairydoku" (nachfolgend „App"), angeboten von [Firmenname / Rechtsform], [Anschrift] (nachfolgend „Anbieter"). Mit der Installation und Nutzung der App erkennst du diese Bedingungen an.
+            Diese Nutzungsbedingungen gelten für die Nutzung der mobilen App „Fairydoku" (nachfolgend „App"), angeboten von App HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle (nachfolgend „Anbieter"). Mit der Installation und Nutzung der App erkennst du diese Bedingungen an.
 
             § 2 Gegenstand
             Die App ist ein kostenloses Logikrätselspiel. Der Anbieter stellt die App zur privaten, nicht-kommerziellen Nutzung zur Verfügung.
@@ -195,19 +207,25 @@ object GameCopy {
             Der Anbieter räumt dir ein einfaches, nicht übertragbares und widerrufliches Recht ein, die App auf deinen Geräten für private Zwecke zu nutzen. Eine Bearbeitung, Vervielfältigung, Verbreitung oder das Zugänglichmachen der App oder ihrer Inhalte über die private Nutzung hinaus ist nicht gestattet.
 
             § 4 Kosten und Werbung
-            Die Nutzung der App ist kostenlos. Die App finanziert sich über Werbung. Zusätzlich kann der Nutzer freiwillig kurze Werbevideos ansehen, um Spielhilfen oder ein Leben zu erhalten (Belohnungsvideos). Diese Option wird angeboten, sobald Level 10 abgeschlossen ist. Eine Verpflichtung, Werbung anzusehen, besteht nicht.
+            Die Nutzung der App ist kostenlos. Die App finanziert sich über Werbung. Werbung erscheint nicht von selbst: Du kannst freiwillig ein kurzes Werbevideo ansehen, um dafür eine Spielhilfe oder ein Leben zu erhalten. Eine Verpflichtung, Werbung anzusehen, besteht nicht, und ohne Werbung ist die App vollständig spielbar.
 
             § 5 Virtuelle Gegenstände (Spielhilfen und Leben)
             Innerhalb der App gibt es virtuelle Elemente wie Spielhilfen („Feenstaub", „Irrlicht") und Leben. Diese haben keinen Geldwert, sind nicht in echtes Geld umwandelbar, nicht übertragbar und können nicht ausgezahlt werden. Ein Anspruch auf eine bestimmte Menge oder eine dauerhafte Verfügbarkeit besteht nicht; der Anbieter kann die Regeln zu Erhalt und Nachwachsen dieser Elemente anpassen.
 
-            § 6 Spielstand
-            Dein Punktestand und deine bisherige Bestleistung werden lokal auf deinem Gerät gespeichert. Es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+            § 6 Spielstand und Tageswertung
+            Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden lokal auf deinem Gerät gespeichert. Es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+
+            Die Tageswertung sammelt Punkte bis zu einem festen täglichen Stichtag. Danach verfallen die gesammelten Punkte, und es wird eine Belohnung in virtuellen Spielhilfen gutgeschrieben. Ein Anspruch auf den Erhalt gesammelter Punkte über den Stichtag hinaus besteht nicht. Der Anbieter kann Zeitpunkt des Stichtags, Punkteberechnung und Belohnungsstufen anpassen.
+
+            Löschst du die App oder die App-Daten, gehen Spielstand, Tageswertung und Bestleistungen verloren; eine Wiederherstellung ist nicht möglich.
 
             § 7 Pflichten des Nutzers
             Du verpflichtest dich, die App nicht missbräuchlich zu nutzen, keine Sicherheitsmechanismen zu umgehen und nicht in die Software einzugreifen (z. B. durch Reverse Engineering), soweit dies nicht gesetzlich ausdrücklich erlaubt ist.
 
-            § 8 Nutzung durch Minderjährige
-            Die App ist für alle Altersstufen geeignet. Minderjährige dürfen die App nur mit Zustimmung ihrer Erziehungsberechtigten nutzen. Erziehungsberechtigte sind für die Nutzung durch ihre Kinder verantwortlich.
+            § 8 Zielgruppe und Nutzung durch Minderjährige
+            Die Inhalte der App sind gewaltfrei und für jedes Alter unbedenklich; die Alterseinstufung im Store weist die niedrigste Stufe aus. Die App richtet sich mit ihrem Angebot jedoch an Personen ab 13 Jahren und ist kein an Kinder gerichtetes Angebot im Sinne der Play-Store-Familienrichtlinien.
+
+            Minderjährige dürfen die App nur mit Zustimmung ihrer Erziehungsberechtigten nutzen. Erziehungsberechtigte sind für die Nutzung durch ihre Kinder verantwortlich.
 
             § 9 Verfügbarkeit und Änderungen
             Der Anbieter ist bemüht, die App störungsfrei bereitzustellen, schuldet jedoch keine ununterbrochene Verfügbarkeit. Der Anbieter darf die App weiterentwickeln, ändern, einschränken oder den Betrieb einstellen, soweit dies für dich zumutbar ist.
@@ -224,50 +242,46 @@ object GameCopy {
             § 13 Schlussbestimmungen
             Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Zwingende verbraucherschützende Vorschriften des Staates, in dem du deinen gewöhnlichen Aufenthalt hast, bleiben unberührt. Sollte eine Bestimmung dieser Bedingungen unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt. Der Anbieter ist nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
 
-            Stand: [Monat Jahr]
-
-            Hinweis: Dieser Text ist ein Entwurf und bedarf vor Veröffentlichung noch der Überarbeitung und rechtlichen Prüfung.
+            Stand: August 2026
         """.trimIndent()
-        // Entwurf, kein geprüfter Rechtstext — [Firmenname] usw. sind von
-        // Nataly auszufüllen. Gegenüber der Vorlage an das tatsächliche Spiel
-        // angepasst: keine Google-Play-Games-Rangliste (Abschnitt 2 + 4 —
-        // Bestleistung liegt nur lokal auf dem Gerät), kein Firebase Remote
-        // Config (Abschnitt 5 — Werbe-Freischaltung ist fest im Code
-        // verdrahtet), kein Elternschutz (Abschnitt 6 — bewusst nicht gebaut)
-        // und kein Einwilligungsdialog/keine Einwilligungseinstellungen
-        // (Abschnitt 3 + 10 — es gibt kein Google-UMP-SDK im Code, nur
-        // durchgehend nicht personalisierte Werbung).
-        LegalPage.Datenschutz -> """
-            ENTWURF – keine Rechtsberatung. Dieser Text ist eine sorgfältige Vorlage, ersetzt aber keine anwaltliche Prüfung. Da sich die App auch an Kinder richtet, sollte ein Fachanwalt (IT-/Datenschutzrecht) den Text vor Veröffentlichung freigeben. Alle Angaben in [eckigen Klammern] bitte ausfüllen.
 
+        LegalPage.Datenschutz -> """
             Der Schutz deiner Daten ist uns wichtig. Diese Datenschutzerklärung informiert dich darüber, welche Daten bei der Nutzung der App „Fairydoku" verarbeitet werden. Grundsatz: Fairydoku erhebt so wenige Daten wie möglich. Es gibt keine Registrierung und kein Nutzerkonto.
 
             1. Verantwortlicher
             Verantwortlich für die Datenverarbeitung im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
-            [Firmenname / Rechtsform]
-            [Straße und Hausnummer]
-            [PLZ und Ort]
-            E-Mail: [E-Mail-Adresse]
-            Vertretungsberechtigt: [Name der Geschäftsführung]
+            App HUMB UG (haftungsbeschränkt)
+            Parkstraße 9
+            31188 Holle
+            E-Mail: info@humb.ug
+            Vertretungsberechtigt: Marco Pilipovic
 
             2. Grundsatz der Datensparsamkeit
             Fairydoku ist ein reines Logikspiel und kostenlos nutzbar. Wir erheben selbst keine personenbezogenen Daten und betreiben keine eigene Nutzerverwaltung. Eine Anmeldung findet nicht statt. Eine Datenverarbeitung erfolgt im Wesentlichen nur durch den eingebundenen Google-Dienst für Werbung, der im Folgenden beschrieben wird.
 
             3. Werbung (Google AdMob)
-            Zur Finanzierung der kostenlosen App wird Werbung über Google AdMob (Google Ireland Limited bzw. Google LLC) eingeblendet. Dabei können durch Google Geräte- und Nutzungsinformationen sowie ggf. eine Werbekennung (Advertising ID) verarbeitet werden, um Werbung auszuliefern und Missbrauch (z. B. Klickbetrug) zu verhindern.
+            Zur Finanzierung der kostenlosen App ist Google AdMob (Google Ireland Limited bzw. Google LLC) eingebunden.
 
-            Da sich Fairydoku auch an Kinder richtet, ist AdMob so konfiguriert, dass ausschließlich nicht personalisierte, kindgerechte Werbung ausgeliefert wird (maximale Inhaltsfreigabe „G"). Eine auf Interessen basierende (personalisierte) Werbung findet nicht statt.
+            Es gibt keine Werbebanner und keine Anzeigen, die von selbst erscheinen. Werbung läuft ausschließlich als Videoanzeige, die du selbst startest, um dafür eine Spielhilfe oder ein Leben zu erhalten. Wer das nicht nutzt, bekommt in der App keine Werbung zu sehen.
 
-            Rechtsgrundlage ist unser berechtigtes Interesse an der Finanzierung der kostenlosen App (Art. 6 Abs. 1 lit. f DSGVO). Da ausschließlich nicht personalisierte Werbung ausgeliefert wird, ist derzeit kein gesonderter Einwilligungsdialog vorgeschaltet; ob das für die Veröffentlichung ausreicht, sollte rechtlich geprüft werden. Weitere Informationen: Google-Datenschutzerklärung.
+            Das Werbe-SDK wird jedoch beim Start der App geladen und hält eine Anzeige bereit. Dabei können durch Google Geräte- und Nutzungsinformationen sowie eine Werbekennung (Advertising ID) verarbeitet werden, um eine Anzeige auszuliefern und Missbrauch (z. B. Klickbetrug) zu verhindern. Diese Verarbeitung beginnt also bereits mit dem Start der App, nicht erst beim Ansehen eines Videos.
 
-            4. Spielstand und Bestleistung
-            Dein Punktestand und deine bisherige Bestleistung werden ausschließlich lokal auf deinem Gerät gespeichert. Es findet keine Übermittlung an uns oder an Dritte statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+            Jede Anzeigenanfrage ist ausdrücklich als nicht personalisiert gekennzeichnet, und die maximale Inhaltsfreigabe ist auf „G" gesetzt. Eine auf Interessen basierende Werbung findet nicht statt, es werden keine Nutzerprofile gebildet, und Werbung mit Glücksspiel-, Gewalt- oder sexuellen Inhalten ist ausgeschlossen.
+
+            Rechtsgrundlage ist unser berechtigtes Interesse an der Finanzierung der kostenlos bereitgestellten App (Art. 6 Abs. 1 lit. f DSGVO). Weitere Informationen findest du in der Datenschutzerklärung von Google.
+
+            4. Spielstand, Tageswertung und Bestleistungen
+            Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden ausschließlich lokal auf deinem Gerät gespeichert. Es findet keine Übermittlung an uns oder an Dritte statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+
+            Die Tageswertung speichert dazu, wie viele Punkte am laufenden Tag gesammelt wurden, das beste Tagesergebnis und den Zeitpunkt des letzten Tageswechsels. Auch diese Angaben verlassen dein Gerät nicht. Ein Anzeigename und eine Avatar-Fee lassen sich in den Einstellungen hinterlegen; beides wird ebenfalls nur lokal gespeichert und niemandem angezeigt.
 
             5. Technische Bereitstellung
             Beim Betrieb der App können technisch notwendige Informationen (z. B. Geräteinformationen) anfallen, soweit dies für Auslieferung und Betrieb erforderlich ist. Wir setzen keine Analyse-, Tracking- oder Absturzberichtsdienste ein.
 
-            6. Hinweise für Kinder und Eltern
-            Fairydoku ist für alle Altersstufen freigegeben und auch für Kinder gedacht. Es wird keine personalisierte Werbung an Kinder ausgeliefert. Erziehungsberechtigte können sich bei Fragen jederzeit an die oben genannte Kontaktadresse wenden.
+            6. Zielgruppe sowie Hinweise für Eltern
+            Die Inhalte der App sind gewaltfrei und für jedes Alter unbedenklich. Als Angebot richtet sich Fairydoku an Personen ab 13 Jahren; es handelt sich nicht um ein an Kinder gerichtetes Angebot im Sinne der Play-Store-Familienrichtlinien, und die App nimmt nicht am Programm „Designed for Families" teil.
+
+            Unabhängig davon wird niemandem personalisierte Werbung ausgeliefert, und es werden keine Profile gebildet. Erziehungsberechtigte können sich bei Fragen jederzeit an die oben genannte Kontaktadresse wenden.
 
             7. Empfänger und Datenübermittlung in Drittländer
             Empfänger der oben genannten Daten ist Google. Dabei kann es zu einer Übermittlung von Daten in Länder außerhalb der EU/des EWR (insbesondere USA) kommen. Google stützt solche Übermittlungen auf geeignete Garantien (z. B. EU-Standardvertragsklauseln bzw. das EU-US Data Privacy Framework).
@@ -285,15 +299,15 @@ object GameCopy {
             Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)
             Zur Ausübung genügt eine Nachricht an die oben genannte Kontaktadresse. Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
 
-            10. Widerspruch gegen Werbung
-            Da ausschließlich nicht personalisierte Werbung ausgeliefert wird, ist derzeit keine gesonderte Einwilligung einzuholen oder zu widerrufen. Möchtest du der Werbung dennoch grundsätzlich widersprechen, wende dich an die oben genannte Kontaktadresse.
+            10. Werbung widersprechen oder einschränken
+            Einen Einwilligungsdialog zeigt die App nicht, weil ausschließlich nicht personalisierte Werbung ausgeliefert wird. Möchtest du der Verarbeitung durch Google widersprechen, wende dich an die oben genannte Kontaktadresse.
+
+            Unabhängig davon kannst du die Werbekennung deines Geräts jederzeit selbst löschen oder zurücksetzen: in den Android-Einstellungen unter „Datenschutz" bzw. „Google" im Punkt „Anzeigen". Apps erhalten danach keine Werbekennung mehr.
 
             11. Änderungen dieser Datenschutzerklärung
             Wir passen diese Datenschutzerklärung an, wenn Änderungen an der App oder der Rechtslage dies erforderlich machen. Es gilt die jeweils in der App bzw. im Play Store verlinkte Fassung.
 
-            Stand: [Monat Jahr]
-
-            Hinweis: Dieser Text ist ein Entwurf und bedarf vor Veröffentlichung noch der Überarbeitung und rechtlichen Prüfung.
+            Stand: August 2026
         """.trimIndent()
     }
 }
