@@ -285,7 +285,17 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     //
     // Ohne das lief die Uhr weiter, während man sich die Werbung ansah. Wer ein
     // Helferlein wollte, verlor darüber das Level — genau die Erfahrung, nach
-    // der man sich Werbung nie wieder ansieht.
+    // der man sich Werbung nie wieder ansieht. Damit stünde die Werbung gegen
+    // ihren eigenen Zweck.
+    //
+    // Auf dem Gerät nachgemessen, über Einwilligungsdialog und vollständige
+    // Anzeige hinweg: 2:53 vor dem Antippen, 2:49 nach der Rückkehr. Die
+    // verbliebenen Sekunden sind der Weg vom Tippen bis zum Anhalten.
+    //
+    // Der Lebenszyklus allein reicht dafür nicht: Ob eine Anzeige den
+    // Bildschirm überhaupt in ON_STOP schickt, hängt davon ab, wie das
+    // Werbe-SDK sie zeigt. Deshalb wird hier ausdrücklich angehalten, statt
+    // sich darauf zu verlassen.
     val werbung = { onReward: () -> Unit ->
         viewModel.pause()
         ads.onAdRequested(
