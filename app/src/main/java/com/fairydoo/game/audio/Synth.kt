@@ -172,28 +172,33 @@ object Synth {
     }
 
     /**
-     * Blendet das Ende über den Anfang, damit eine Schleife ohne Naht schließt.
+     * Mischt Klänge in eine Schleife fester Länge — was hinten übersteht, läuft
+     * vorne weiter.
      *
-     * Anders als ein Ausblenden an beiden Rändern — das erzeugt bei einer
-     * Wiederholung ein hörbares Loch. Hier wandert der Schluss über den Beginn,
-     * und das überlappende Stück wird abgeschnitten: Der letzte Abtastwert geht
-     * dadurch nahtlos in den ersten über.
+     * Bis hierher wurde die Naht überblendet: Schluss über Anfang, Überhang
+     * abgeschnitten. Das nahm dem Übergang das Knacken, aber nicht das
+     * Stolpern — an der Naht schoben sich weiterhin zwei unzusammenhängende
+     * Takte ineinander. Hier gibt es gar keine Naht: Ein Akkord, der bei
+     * Sekunde 30 einer 32-Sekunden-Schleife anfängt, klingt bei Sekunde 0
+     * weiter aus. Die Schleife schließt sich, weil sie nie geöffnet war.
+     *
+     * Das geht nur bei berechneten Klängen. Eine Aufnahme kann man nicht um
+     * ihre eigene Länge herumfalten — deshalb braucht sie das Überblenden.
      */
-    fun crossfadeLoop(samples: ShortArray, seconds: Float): ShortArray {
-        val fade = secondsToSamples(seconds).coerceAtMost(samples.size / 4)
-        if (fade <= 0) return samples
+    fun mixLooping(loopSeconds: Float, vararg layers: Pair<Float, FloatArray>): FloatArray {
+        val length = secondsToSamples(loopSeconds)
+        val output = FloatArray(length)
 
-        val length = samples.size - fade
-        val result = ShortArray(length)
-        samples.copyInto(result, 0, 0, length)
-
-        for (index in 0 until fade) {
-            val weight = index.toFloat() / fade
-            val tail = samples[length + index].toInt()
-            val head = result[index].toInt()
-            result[index] = (head * weight + tail * (1f - weight)).toInt().toShort()
+        for ((offsetSeconds, samples) in layers) {
+            var cursor = secondsToSamples(offsetSeconds) % length
+            if (cursor < 0) cursor += length
+            for (value in samples) {
+                output[cursor] += value
+                cursor++
+                if (cursor == length) cursor = 0
+            }
         }
-        return result
+        return output
     }
 
     /** Blendet Anfang und Ende aus, damit ein Loop nahtlos schließt. */

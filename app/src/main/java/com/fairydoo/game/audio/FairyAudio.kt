@@ -1,4 +1,4 @@
-﻿package com.fairydoo.game.audio
+package com.fairydoo.game.audio
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -6,7 +6,6 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import android.media.SoundPool
 import android.util.Log
-import com.fairydoo.game.R
 import com.fairydoo.game.data.PlayerProfile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +16,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.zip.CRC32
 
 /**
  * Spielt die Klangwelt ab.
@@ -80,13 +78,17 @@ class FairyAudio(context: Context) {
     @Volatile
     private var voiceVolume: Float = PlayerProfile.DEFAULT_VOICE_VOLUME
 
+    /** Welches Stück laufen soll; der Bildschirm entscheidet. */
+    @Volatile
+    private var musicTrack: MusicTrack = MusicTrack.Forest
+
     private val musicEnabled: Boolean get() = musicVolume > 0f
 
     init {
         loadClips()
         // Effekte und Musik nebeneinander vorbereiten: Nacheinander summierten
-        // sich Klangberechnung und Musik-Dekodierung, und bis beides fertig war,
-        // blieb das Spiel stumm. Sie hängen nicht voneinander ab.
+        // sich beide Berechnungen, und bis sie fertig waren, blieb das Spiel
+        // stumm. Sie hängen nicht voneinander ab.
         scope.launch { prepare() }
         if (musicEnabled) musicJob = scope.launch { startMusic() }
     }
@@ -151,23 +153,25 @@ class FairyAudio(context: Context) {
     /**
      * Die Musikschleife als rohe Abtastwerte im Zwischenspeicher.
      *
-     * Die Datei wird einmal dekodiert und danach von hier geladen — das
-     * Dekodieren einer Minute Musik kostet spürbar Zeit, und so lange bliebe
-     * es still. Abgelegt wird rohes PCM, weil AudioTrack die Daten als
-     * Zahlenfeld erwartet; ein Container brächte nur einen Kopfsatz zum
-     * Überspringen.
+     * Berechnet wird nur beim ersten Mal. Ein Stück besteht aus rund vierzig
+     * Stimmen über eine halbe Minute — das kostet auf einem langsamen Gerät
+     * spürbar Zeit, und so lange bliebe es still. Abgelegt wird rohes PCM, weil
+     * AudioTrack die Daten als Zahlenfeld erwartet; ein Container brächte nur
+     * einen Kopfsatz zum Überspringen.
      */
-    private fun loadOrDecodeMusic(cacheDir: File): ShortArray {
-        val file = File(cacheDir, "ambient-${musicFingerprint()}.pcm")
-        // Was eine frühere Musik hinterlassen hat, wird jetzt nicht mehr
-        // gefunden — aber es läge sonst für immer da und belegte Platz.
+    private fun loadOrRenderMusic(track: MusicTrack, cacheDir: File): ShortArray {
+        val name = "musik-${track.name.lowercase()}-v$MUSIC_VERSION.pcm"
+        val file = File(cacheDir, name)
+
+        // Was eine frühere Fassung hinterlassen hat, wird nicht mehr gefunden —
+        // es läge sonst für immer da und belegte Platz.
         runCatching {
             cacheDir.listFiles()
-                ?.filter { it.name.startsWith("ambient") && it.name != file.name }
+                ?.filter { it.name.startsWith("musik-") && it.name != name }
                 ?.forEach { it.delete() }
         }
 
-        if (file.exists() && file.length() > 0) {
+        if (file.exists() && file.length() >= 2 && file.length() % 2 == 0L) {
             runCatching {
                 val bytes = file.readBytes()
                 return ShortArray(bytes.size / 2) { index ->
@@ -180,11 +184,7 @@ class FairyAudio(context: Context) {
             }
         }
 
-        val decoded = MusicDecoder.decodeToMono(appContext, R.raw.ambient_forest)
-        // Kurzes Überblenden von Schluss auf Anfang: MP3 trägt kodierungsbedingt
-        // etwas Stille an den Rändern, die beim Wiederholen als Lücke hörbar
-        // wäre.
-        val samples = Synth.crossfadeLoop(decoded, seconds = LOOP_CROSSFADE_SECONDS)
+        val samples = Synth.toPcm16(Music.loopFor(track))
 
         runCatching {
             val bytes = ByteArray(samples.size * 2)
@@ -192,43 +192,18 @@ class FairyAudio(context: Context) {
                 bytes[index * 2] = (value.toInt() and 0xFF).toByte()
                 bytes[index * 2 + 1] = (value.toInt() shr 8).toByte()
             }
-            file.writeBytes(bytes)
+            // Erst danebenschreiben, dann umbenennen. Wird die App mitten im
+            // Schreiben beendet — und fünf Megabyte dauern —, läge sonst eine
+            // abgeschnittene Schleife im Zwischenspeicher, die ab dann *immer*
+            // benutzt würde: Der Name ändert sich ja nicht mehr. Das Umbenennen
+            // ist der einzige Schritt, den das Dateisystem nicht halb erledigt.
+            val temp = File(cacheDir, "$name.tmp")
+            temp.writeBytes(bytes)
+            if (!temp.renameTo(file)) temp.delete()
         }.onFailure { error ->
             Log.w(TAG, "Musik konnte nicht zwischengespeichert werden", error)
         }
         return samples
-    }
-
-    /**
-     * Erkennungsmerkmal der Musikaufnahme.
-     *
-     * Der Zwischenspeicher hing zuvor allein an [SOUND_CACHE_VERSION]. Als die
-     * berechnete Schleife durch die komponierte Aufnahme ersetzt wurde, blieb
-     * diese Zahl unverändert — und jedes Gerät, auf dem das Spiel vorher
-     * gelaufen war, spielte danach weiter die alte Schleife. Der Fehler war von
-     * außen nicht zu erkennen: Der Ton war ja da, nur der falsche.
-     *
-     * Am Dateinamen hängt deshalb jetzt die Prüfsumme der Aufnahme selbst. Wird
-     * die Musik ausgetauscht, ändert sich der Name von allein; niemand muss
-     * mehr daran denken, eine Nummer hochzusetzen.
-     *
-     * Das Lesen der Datei kostet bei jedem Start ein paar Millisekunden — der
-     * Preis dafür, dass ein Vergessen keine Folgen mehr hat.
-     */
-    private fun musicFingerprint(): Long = runCatching {
-        val checksum = CRC32()
-        appContext.resources.openRawResource(R.raw.ambient_forest).use { input ->
-            val buffer = ByteArray(FINGERPRINT_BUFFER_BYTES)
-            while (true) {
-                val read = input.read(buffer)
-                if (read <= 0) break
-                checksum.update(buffer, 0, read)
-            }
-        }
-        checksum.value
-    }.getOrElse { error ->
-        Log.w(TAG, "Prüfsumme der Musik nicht ermittelbar", error)
-        0L
     }
 
     /**
@@ -336,6 +311,28 @@ class FairyAudio(context: Context) {
         musicJob = scope.launch { startMusic() }
     }
 
+    /**
+     * Wechselt das Stück — Wald beim Rätseln, Feenpfad auf der Levelkarte.
+     *
+     * Die Karte ist der Atemzug zwischen zwei Leveln, und das hört man: dieselbe
+     * Tonart, aber halb so viele Akkorde, ein Drittel der Glocken, leiser. Es
+     * soll sich anfühlen wie ein Ortswechsel im selben Wald, nicht wie ein
+     * Senderwechsel.
+     *
+     * Ein Wechsel schneidet das laufende Stück hart ab. Das ist bei einem
+     * Bildschirmwechsel richtig so — hier blendet ohnehin das Bild, und ein
+     * Überblenden der Musik bräuchte eine zweite Spur, die die ganze Zeit
+     * mitliefe.
+     */
+    fun setMusicTrack(next: MusicTrack) {
+        if (next == musicTrack) return
+        musicTrack = next
+        if (!musicEnabled) return
+
+        musicJob?.cancel()
+        musicJob = scope.launch { startMusic() }
+    }
+
     /** Beim Verlassen des Spiels: Musik anhalten, Stimme verstummen lassen. */
     fun pause() {
         runCatching { music?.pause() }
@@ -383,17 +380,25 @@ class FairyAudio(context: Context) {
     }
 
     private suspend fun startMusic() {
+        val wanted = musicTrack
         stopMusic()
         runCatching {
-            val loop = withContext(Dispatchers.Default) { loadOrDecodeMusic(soundCacheDir()) }
-            val track = createMusicTrack(loop.size)
-            track.write(loop, 0, loop.size)
+            val loop = withContext(Dispatchers.Default) {
+                loadOrRenderMusic(wanted, soundCacheDir())
+            }
+            // Beim ersten Mal dauert das Rechnen; wer in dieser Zeit auf die
+            // Levelkarte wechselt, bekäme sonst noch das Waldstück zu hören —
+            // und der Wechsel danach fiele aus, weil ja schon etwas läuft.
+            if (musicTrack != wanted) return@runCatching
+
+            val audioTrack = createMusicTrack(loop.size)
+            audioTrack.write(loop, 0, loop.size)
             // Der ganze Puffer ist die Schleife — dadurch läuft die Musik ohne
             // Lücke weiter, ohne dass jemand nachfüllen muss.
-            track.setLoopPoints(0, loop.size, -1)
-            track.setVolume(musicVolume)
-            track.play()
-            music = track
+            audioTrack.setLoopPoints(0, loop.size, -1)
+            audioTrack.setVolume(musicVolume)
+            audioTrack.play()
+            music = audioTrack
         }.onFailure { error ->
             Log.w(TAG, "Musik konnte nicht gestartet werden", error)
         }
@@ -479,10 +484,12 @@ class FairyAudio(context: Context) {
          */
         const val SOUND_CACHE_VERSION = 5
 
-        /** Häppchen beim Prüfsummenlesen — größer bringt messbar nichts mehr. */
-        const val FINGERPRINT_BUFFER_BYTES = 64 * 1024
-
-        /** Überblendung an der Schleifennaht — kurz genug, um nicht aufzufallen. */
-        const val LOOP_CROSSFADE_SECONDS = 0.4f
+        /**
+         * Hochzählen, wenn sich [Music] ändert — sonst spielt ein Gerät, auf
+         * dem das Spiel schon lief, weiter die alte Fassung aus dem
+         * Zwischenspeicher. Getrennt von [SOUND_CACHE_VERSION], damit eine
+         * Änderung an der Musik nicht auch alle Effekte neu berechnen lässt.
+         */
+        const val MUSIC_VERSION = 1
     }
 }
