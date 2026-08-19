@@ -7,6 +7,7 @@ import android.media.AudioTrack
 import android.media.SoundPool
 import android.util.Log
 import com.fairydoo.game.data.PlayerProfile
+import com.fairydoo.game.game.FairySpecies
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -44,9 +45,9 @@ class FairyAudio(context: Context) {
      * Für den aufgenommenen Aufschrei bei falsch gesetzten Feen.
      *
      * SoundPool statt AudioTrack, weil es MP3 selbst dekodiert und mehrere
-     * Clips gleichzeitig mischen kann. Die Ausrufe der richtig gesetzten Feen
-     * laufen dagegen über die Sprachausgabe (siehe [FairyVoice.exclaim]),
-     * nicht über diesen Pool — keine Aufnahme, deren Rechte zu klären wären.
+     * Clips gleichzeitig mischen kann. Im selben Pool liegen die zehn
+     * Feentöne — beim schnellen Setzen mehrerer Feen sollen sie sich
+     * überlagern statt einander abzuschneiden.
      */
     private val clipPool: SoundPool = SoundPool.Builder()
         .setMaxStreams(MAX_CLIP_STREAMS)
@@ -135,7 +136,14 @@ class FairyAudio(context: Context) {
             KEY_GAME_OVER to FairySounds::gameOver,
         )
 
-        effects = builders.mapNotNull { (key, build) ->
+        // Dazu die zehn Feentöne — einer je Art. Sie sind winzig (0,42 s) und
+        // werden beim Setzen jeder Fee gebraucht, gehören also in denselben
+        // Pool wie die übrigen Effekte.
+        val alle = builders + FairySpecies.entries.associate { species ->
+            chimeKey(species) to { FairyChimes.render(species) }
+        }
+
+        effects = alle.mapNotNull { (key, build) ->
             runCatching {
                 val file = File(cacheDir, "$key.wav")
                 if (!file.exists() || file.length() == 0L) {
@@ -236,10 +244,6 @@ class FairyAudio(context: Context) {
         // Bereitschaftsprüfung — beides unabhängig von den berechneten
         // Klängen spielbereit, deshalb wird hier nicht auf `prepared` gewartet.
         when (event) {
-            is SoundEvent.FairyPlaced -> {
-                val volume = voiceVolume
-                if (volume > 0f) voice.exclaim(event.species, volume)
-            }
             SoundEvent.FairyStartled -> playClip(startledId)
             else -> Unit
         }
@@ -247,7 +251,13 @@ class FairyAudio(context: Context) {
         if (!prepared) return
 
         when (event) {
-            is SoundEvent.FairyPlaced, SoundEvent.FairyStartled -> Unit
+            SoundEvent.FairyStartled -> Unit
+            // Der Ton der Fee läuft über die Feenstimmen-Lautstärke, nicht über
+            // die der Klänge: Er ertönt bei jedem Zug und ist damit das, was
+            // man am ehesten leiser haben will, ohne Tick und Jubel mit zu
+            // dämpfen. Der Regler heißt weiter „Feenstimme" — es ist ja immer
+            // noch die Äußerung der Fee, nur ohne Worte.
+            is SoundEvent.FairyPlaced -> playEffect(chimeKey(event.species), voiceVolume)
             SoundEvent.Ward -> playEffect(KEY_TICK)
             SoundEvent.Undo -> playEffect(KEY_UNDO)
             SoundEvent.FairyDustUsed -> playEffect(KEY_SPARKLE)
@@ -373,8 +383,8 @@ class FairyAudio(context: Context) {
         }
     }
 
-    private fun playEffect(key: String) {
-        val volume = soundVolume
+    private fun playEffect(key: String, atVolume: Float? = null) {
+        val volume = atVolume ?: soundVolume
         if (volume <= 0f) return
         val sampleId = effects[key] ?: return
         if (sampleId !in loadedClips) return
@@ -453,6 +463,9 @@ class FairyAudio(context: Context) {
             .build()
             .also { it.setVolume(musicVolume) }
     }
+
+    /** Der Schlüssel, unter dem der Ton einer Fee im Pool liegt. */
+    private fun chimeKey(species: FairySpecies) = "fee-${species.name.lowercase()}"
 
     private companion object {
         const val TAG = "FairyAudio"

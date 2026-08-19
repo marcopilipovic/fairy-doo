@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.OnInitListener
 import android.util.Log
-import com.fairydoo.game.game.FairySpecies
 import java.util.Locale
 import kotlin.random.Random
 
@@ -62,29 +61,11 @@ class FairyVoice(context: Context) {
             putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume.coerceIn(0f, 1f))
         }
         // Tonhöhe/Tempo explizit zurücksetzen — ein zuvor gesetzter Feen-Ausruf
-        // (siehe [exclaim]) hätte sie sonst auf den letzten Ausruf stehen
+        // hätte sie sonst auf einem früheren Wert stehen
         // lassen.
         engine?.setPitch(FAIRY_PITCH)
         engine?.setSpeechRate(FAIRY_RATE)
         engine?.speak(phrase, TextToSpeech.QUEUE_FLUSH, params, "praise-$level")
-    }
-
-    /**
-     * Der kurze, artspezifische Ausruf beim Setzen einer Fee — siehe
-     * [FairyExclamations]. `QUEUE_ADD` statt `QUEUE_FLUSH`, damit beim
-     * schnellen Setzen mehrerer Feen jeder Ausruf zu Ende gesprochen wird,
-     * statt vom nächsten abgeschnitten zu werden.
-     */
-    fun exclaim(species: FairySpecies, volume: Float = 1f) {
-        if (!ready) return
-
-        val line = FairyExclamations.of(species)
-        val params = Bundle().apply {
-            putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume.coerceIn(0f, 1f))
-        }
-        engine?.setPitch(line.pitch)
-        engine?.setSpeechRate(line.rate)
-        engine?.speak(line.text, TextToSpeech.QUEUE_ADD, params, "exclaim-${species.name}")
     }
 
     fun stop() {

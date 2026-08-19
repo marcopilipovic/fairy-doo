@@ -1,5 +1,7 @@
 package com.fairydoo.game.audio
 
+import com.fairydoo.game.game.FairySpecies
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -47,6 +49,34 @@ class SoundRenderTest {
         }
 
         println("Klänge geschrieben nach: ${outputDir.absolutePath}")
+    }
+
+    @Test
+    fun `jede Fee hat ihren eigenen Ton`() {
+        val toene = FairySpecies.entries.associateWith { FairyChimes.render(it) }
+
+        for ((species, samples) in toene) {
+            val peak = samples.maxOf { abs(it) }
+            assertTrue("${species.displayName} ist stumm", peak > 0.05f)
+            assertTrue("${species.displayName} übersteuert (Spitze $peak)", peak <= 1.0f)
+            writeWav(File(outputDir, "fee-${species.name.lowercase()}.wav"), samples)
+        }
+
+        // Zwei Feen mit derselben Tonhöhe wären am Klang nicht auseinander-
+        // zuhalten — und die Zuordnung entsteht von Hand.
+        val hoehen = FairySpecies.entries.map { FairyChimes.of(it).hertz }
+        assertEquals("Zwei Feen teilen sich eine Tonhöhe", hoehen.size, hoehen.toSet().size)
+
+        // Sie sollen sich außerdem deutlich unterscheiden, nicht nur messbar:
+        // Ein Halbton Abstand hörte man beim Spielen nicht heraus.
+        val sortiert = hoehen.sorted()
+        for (i in 1 until sortiert.size) {
+            val verhaeltnis = sortiert[i] / sortiert[i - 1]
+            assertTrue(
+                "Zwei Tonhöhen liegen zu dicht beieinander ($verhaeltnis)",
+                verhaeltnis > 1.05f,
+            )
+        }
     }
 
     @Test
