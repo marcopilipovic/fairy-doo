@@ -42,12 +42,13 @@ class FairyAudio(context: Context) {
     private var musicJob: Job? = null
 
     /**
-     * Für den aufgenommenen Aufschrei bei falsch gesetzten Feen.
+     * Für alle kurzen Klänge: Ticks, Fähigkeiten, Jubel, die zehn Feentöne.
      *
-     * SoundPool statt AudioTrack, weil es MP3 selbst dekodiert und mehrere
-     * Clips gleichzeitig mischen kann. Im selben Pool liegen die zehn
-     * Feentöne — beim schnellen Setzen mehrerer Feen sollen sie sich
-     * überlagern statt einander abzuschneiden.
+     * SoundPool statt AudioTrack, weil es mehrere Klänge gleichzeitig mischen
+     * kann — beim schnellen Setzen mehrerer Feen sollen sich die Töne
+     * überlagern statt einander abzuschneiden. Er lädt aus Dateien, deshalb
+     * werden die berechneten Klänge zuvor als WAV in den Zwischenspeicher
+     * geschrieben.
      */
     private val clipPool: SoundPool = SoundPool.Builder()
         .setMaxStreams(MAX_CLIP_STREAMS)
@@ -58,8 +59,6 @@ class FairyAudio(context: Context) {
                 .build(),
         )
         .build()
-
-    private var startledId = 0
 
     /** Geladene Clips; vorher abgespielt liefert SoundPool nur Stille. */
     private val loadedClips = mutableSetOf<Int>()
@@ -85,26 +84,29 @@ class FairyAudio(context: Context) {
 
     private val musicEnabled: Boolean get() = musicVolume > 0f
 
+    /**
+     * Merkt sich, welche Klänge der Pool fertig geladen hat.
+     *
+     * Ein noch nicht geladener Klang bliebe beim Abspielen stumm und belegte
+     * trotzdem einen Kanal.
+     */
+    private fun registerClipLoading() {
+        clipPool.setOnLoadCompleteListener { _, sampleId, status ->
+            if (status == 0) {
+                loadedClips += sampleId
+            } else {
+                Log.w(TAG, "Klang $sampleId konnte nicht geladen werden (Status $status)")
+            }
+        }
+    }
+
     init {
-        loadClips()
+        registerClipLoading()
         // Effekte und Musik nebeneinander vorbereiten: Nacheinander summierten
         // sich beide Berechnungen, und bis sie fertig waren, blieb das Spiel
         // stumm. Sie hängen nicht voneinander ab.
         scope.launch { prepare() }
         if (musicEnabled) musicJob = scope.launch { startMusic() }
-    }
-
-    /** Lädt die aufgenommene Aufschrei-Stimme; das Dekodieren übernimmt SoundPool. */
-    private fun loadClips() {
-        clipPool.setOnLoadCompleteListener { _, sampleId, status ->
-            if (status == 0) {
-                loadedClips += sampleId
-            } else {
-                Log.w(TAG, "Feenstimme $sampleId konnte nicht geladen werden (Status $status)")
-            }
-        }
-
-        startledId = clipPool.load(appContext, FairyClips.startled, 1)
     }
 
     /**
@@ -134,6 +136,7 @@ class FairyAudio(context: Context) {
             KEY_FREEZE to FairySounds::timeFreeze,
             KEY_CHEER to FairySounds::cheer,
             KEY_GAME_OVER to FairySounds::gameOver,
+            KEY_STARTLED to FairySounds::startled,
         )
 
         // Dazu die zehn Feentöne — einer je Art. Sie sind winzig (0,42 s) und
@@ -244,14 +247,13 @@ class FairyAudio(context: Context) {
         // Bereitschaftsprüfung — beides unabhängig von den berechneten
         // Klängen spielbereit, deshalb wird hier nicht auf `prepared` gewartet.
         when (event) {
-            SoundEvent.FairyStartled -> playClip(startledId)
             else -> Unit
         }
 
         if (!prepared) return
 
         when (event) {
-            SoundEvent.FairyStartled -> Unit
+            SoundEvent.FairyStartled -> playEffect(KEY_STARTLED)
             // Der Ton der Fee läuft über die Feenstimmen-Lautstärke, nicht über
             // die der Klänge: Er ertönt bei jedem Zug und ist damit das, was
             // man am ehesten leiser haben will, ohne Tick und Jubel mit zu
@@ -368,21 +370,6 @@ class FairyAudio(context: Context) {
     }
 
     /** Spielt eine aufgenommene Feenstimme. */
-    private fun playClip(sampleId: Int?) {
-        val volume = soundVolume
-        if (volume <= 0f) return
-        if (sampleId == null || sampleId == 0) return
-        // Ein noch nicht fertig dekodierter Clip würde stumm bleiben und den
-        // Stream trotzdem belegen.
-        if (sampleId !in loadedClips) return
-
-        runCatching {
-            clipPool.play(sampleId, volume, volume, 1, 0, 1f)
-        }.onFailure { error ->
-            Log.w(TAG, "Feenstimme $sampleId konnte nicht abgespielt werden", error)
-        }
-    }
-
     private fun playEffect(key: String, atVolume: Float? = null) {
         val volume = atVolume ?: soundVolume
         if (volume <= 0f) return
@@ -417,6 +404,11 @@ class FairyAudio(context: Context) {
             audioTrack.play()
             music = audioTrack
         }.onFailure { error ->
+            // Ein Wechsel des Stücks bricht den laufenden Aufbau ab — das ist
+            // der Normalfall beim Bildschirmwechsel und kein Fehler. Ohne diese
+            // Unterscheidung steht bei jedem Wechsel eine Warnung im Protokoll,
+            // und echte Fehler gehen darin unter.
+            if (error is kotlinx.coroutines.CancellationException) return@onFailure
             Log.w(TAG, "Musik konnte nicht gestartet werden", error)
         }
     }
@@ -478,6 +470,7 @@ class FairyAudio(context: Context) {
         const val KEY_TICK = "tick"
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"
+        const val KEY_STARTLED = "startled"
 
         /**
          * Kanäle für gleichzeitige Klänge. Stimmen und Effekte teilen sie sich,
@@ -502,7 +495,7 @@ class FairyAudio(context: Context) {
          * Auf 5 gesetzt, weil auch die Effekte seit „Musik lauter aussteuern"
          * veraltet im Zwischenspeicher lagen.
          */
-        const val SOUND_CACHE_VERSION = 5
+        const val SOUND_CACHE_VERSION = 6
 
         /**
          * Hochzählen, wenn sich [Music] ändert — sonst spielt ein Gerät, auf

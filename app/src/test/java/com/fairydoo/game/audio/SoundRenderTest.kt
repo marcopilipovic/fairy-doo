@@ -25,8 +25,8 @@ class SoundRenderTest {
 
     @Test
     fun `alle Klaenge sind hoerbar und uebersteuern nicht`() {
-        // Der Aufschrei ist eine Aufnahme und daher nicht Teil dieser Prüfung
-        // — hier geht es nur um die berechneten Klänge.
+        // Seit der Aufschreck gerechnet wird, ist keine einzige Aufnahme mehr
+        // im Spiel — alles hier ist prüfbar.
         val sounds = buildMap {
             put("jubel", FairySounds.cheer())
             put("feenstaub", FairySounds.sparkle())
@@ -35,6 +35,7 @@ class SoundRenderTest {
             put("merkzeichen", FairySounds.tick())
             put("ruecknahme", FairySounds.undo())
             put("spielende", FairySounds.gameOver())
+            put("aufschreck", FairySounds.startled())
         }
 
         for ((name, samples) in sounds) {

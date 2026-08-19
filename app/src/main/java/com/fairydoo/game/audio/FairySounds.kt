@@ -112,6 +112,42 @@ object FairySounds {
         target = 0.35f,
     )
 
+    /**
+     * Die falsch gesetzte Fee: ein kurzer Schreck.
+     *
+     * Vorher eine Aufnahme — der einzige fremde Ton, der noch im Spiel war, und
+     * ohne belegbare Herkunft. Jetzt gerechnet wie alles andere, damit an der
+     * App nichts hängt, dessen Rechte niemand nachweisen kann.
+     *
+     * Zwei Töne im Tritonus, beide fallend. Das ist Absicht und nicht
+     * beliebig: Alle guten Klänge des Spiels — Feentöne wie Glocken der Musik
+     * — stammen aus einer Pentatonik und passen immer zusammen. Der Tritonus
+     * kommt darin nicht vor. Der Fehler klingt deshalb hörbar *daneben*, ohne
+     * laut oder unangenehm zu sein.
+     */
+    fun startled(): FloatArray {
+        val fall = { start: Float -> { progress: Float -> start * (1f - 0.28f * progress) } }
+        return Synth.normalize(
+            Synth.mix(
+                0f to Synth.tone(
+                    durationSeconds = 0.34f,
+                    frequencyAt = fall(740f),
+                    amplitudeAt = Synth.pluck(decay = 9f, peak = 0.5f),
+                    harmonics = listOf(1f to 1f, 2f to 0.28f, 3f to 0.1f),
+                ),
+                // Der zweite Ton setzt einen Hauch später ein — dadurch wirkt
+                // es wie ein Zusammenzucken statt wie ein Signalton.
+                0.02f to Synth.tone(
+                    durationSeconds = 0.32f,
+                    frequencyAt = fall(1046f),
+                    amplitudeAt = Synth.pluck(decay = 11f, peak = 0.38f),
+                    harmonics = listOf(1f to 1f, 2f to 0.2f),
+                ),
+            ),
+            target = 0.45f,
+        )
+    }
+
     /** Das Zurücknehmen einer Fee: ein kurzes Abwärts-Wispern. */
     fun undo(): FloatArray = Synth.normalize(
         Synth.tone(

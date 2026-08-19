@@ -108,9 +108,12 @@ class RewardedAdManager(private val appContext: Context) {
         if (_offer.value == AdOffer.Preparing) return
 
         _offer.value = AdOffer.Preparing
-        ensureConsent(activity) { erlaubt ->
-            if (!erlaubt) {
-                _offer.value = AdOffer.Unavailable
+        ensureConsent(activity) { stand ->
+            if (stand != Consent.Erteilt) {
+                // Abgelehnt heißt aus; unklar heißt "später nochmal", sonst
+                // kostet ein Funkloch alle weiteren Anzeigen dieser Sitzung.
+                _offer.value =
+                    if (stand == Consent.Abgelehnt) AdOffer.Unavailable else AdOffer.Available
                 onFinished()
                 return@ensureConsent
             }
@@ -139,13 +142,31 @@ class RewardedAdManager(private val appContext: Context) {
         }
     }
 
+    /** Wie eine Einwilligungsabfrage ausgegangen ist. */
+    private enum class Consent {
+        /** Es darf angefragt werden. */
+        Erteilt,
+
+        /** Der Spieler hat abgelehnt — dabei bleibt es, bis er es selbst ändert. */
+        Abgelehnt,
+
+        /** Nicht erreichbar, etwa ohne Netz — beim nächsten Tippen neu versuchen. */
+        Unklar,
+    }
+
     /**
      * Holt den Einwilligungsstand und zeigt bei Bedarf das Formular.
      *
-     * [onDone] bekommt `true`, wenn danach Anzeigen angefragt werden dürfen.
-     * Außerhalb des EWR ist das ohne jeden Dialog sofort der Fall.
+     * Außerhalb des EWR meldet das Werkzeug ohne jeden Dialog, dass angefragt
+     * werden darf.
+     *
+     * Der Unterschied zwischen [Consent.Abgelehnt] und [Consent.Unklar] ist
+     * bares Geld: Ohne Netz schlägt die Abfrage fehl, und wer das mit einer
+     * Ablehnung gleichsetzt, schaltet den Werbe-Knopf für den Rest der Sitzung
+     * aus — ein Funkloch beim ersten Versuch kostet dann alle weiteren
+     * Anzeigen.
      */
-    private fun ensureConsent(activity: Activity, onDone: (Boolean) -> Unit) {
+    private fun ensureConsent(activity: Activity, onDone: (Consent) -> Unit) {
         // Ab 13 Jahren: Die Nutzer gelten nicht als „unter dem Einwilligungs-
         // alter" im Sinne der Google-Richtlinie — dieselbe Aussage wie in
         // AGB und Datenschutzerklärung.
@@ -160,12 +181,13 @@ class RewardedAdManager(private val appContext: Context) {
                 UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { error ->
                     if (error != null) Log.w(TAG, "Einwilligungsformular: ${error.message}")
                     refreshPrivacyOptions()
-                    onDone(consent.canRequestAds())
+                    onDone(if (consent.canRequestAds()) Consent.Erteilt else Consent.Abgelehnt)
                 }
             },
             { error ->
+                // Kein Netz, Dienst nicht erreichbar: Das ist keine Ablehnung.
                 Log.w(TAG, "Einwilligungsstand nicht abrufbar: ${error.message}")
-                onDone(false)
+                onDone(Consent.Unklar)
             },
         )
     }
