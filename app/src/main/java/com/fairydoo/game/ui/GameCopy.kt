@@ -198,6 +198,15 @@ object GameCopy {
             Alle Bilder, Klänge und Musikstücke der App sind eigene Werke. Musik und Klänge werden im Spiel selbst berechnet; es sind keine fremden Aufnahmen enthalten.
         """.trimIndent()
 
+        // Kein Haftungsparagraf. Hier stand eine Klausel, die die Haftung auf
+        // Vorsatz und grobe Fahrlässigkeit begrenzte; sie ist am 24. August
+        // 2026 auf Weisung entfernt worden. Damit gilt die gesetzliche Haftung
+        // ungekürzt — das ist eine bewusste Entscheidung des Anbieters und
+        // keine Lücke, die jemand später „reparieren" sollte. Wer sie wieder
+        // aufnehmen will, sollte sie vorher anwaltlich prüfen lassen.
+        //
+        // Die früheren §§ 11 bis 13 sind dadurch zu §§ 10 bis 12 geworden.
+        // Querverweise gab es keine, jeder Paragraf wird nur einmal genannt.
         LegalPage.Agb -> """
             § 1 Geltungsbereich und Anbieter
             Diese Nutzungsbedingungen gelten für die Nutzung der mobilen App „Fairydoku" (nachfolgend „App"), angeboten von App HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle (nachfolgend „Anbieter"). Mit der Installation und Nutzung der App erkennst du diese Bedingungen an.
@@ -232,16 +241,13 @@ object GameCopy {
             § 9 Verfügbarkeit und Änderungen
             Der Anbieter ist bemüht, die App störungsfrei bereitzustellen, schuldet jedoch keine ununterbrochene Verfügbarkeit. Der Anbieter darf die App weiterentwickeln, ändern, einschränken oder den Betrieb einstellen, soweit dies für dich zumutbar ist.
 
-            § 10 Gewährleistung und Haftung
-            Da die App kostenlos bereitgestellt wird, haftet der Anbieter – gleich aus welchem Rechtsgrund – nur für Vorsatz und grobe Fahrlässigkeit. Für die Verletzung wesentlicher Vertragspflichten (Kardinalpflichten) haftet der Anbieter auch bei einfacher Fahrlässigkeit, jedoch begrenzt auf den vertragstypischen, vorhersehbaren Schaden. Die Haftung für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit sowie die Haftung nach dem Produkthaftungsgesetz bleiben unberührt.
-
-            § 11 Datenschutz
+            § 10 Datenschutz
             Informationen zum Umgang mit Daten findest du in der separaten Datenschutzerklärung.
 
-            § 12 Änderungen dieser Bedingungen
+            § 11 Änderungen dieser Bedingungen
             Der Anbieter kann diese Nutzungsbedingungen anpassen, sofern dies erforderlich ist (z. B. bei Änderungen der App oder der Rechtslage) und dies für dich zumutbar ist. Die jeweils aktuelle Fassung wird in der App bzw. im Store bereitgestellt.
 
-            § 13 Schlussbestimmungen
+            § 12 Schlussbestimmungen
             Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Zwingende verbraucherschützende Vorschriften des Staates, in dem du deinen gewöhnlichen Aufenthalt hast, bleiben unberührt. Sollte eine Bestimmung dieser Bedingungen unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt. Der Anbieter ist nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
 
             Stand: August 2026
@@ -299,12 +305,12 @@ object GameCopy {
 
             9. Deine Rechte
             Dir stehen nach der DSGVO folgende Rechte zu:
-            Auskunft über die verarbeiteten Daten (Art. 15 DSGVO)
-            Berichtigung unrichtiger Daten (Art. 16 DSGVO)
-            Löschung (Art. 17 DSGVO)
-            Einschränkung der Verarbeitung (Art. 18 DSGVO)
-            Datenübertragbarkeit (Art. 20 DSGVO)
-            Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)
+            • Auskunft über die verarbeiteten Daten (Art. 15 DSGVO)
+            • Berichtigung unrichtiger Daten (Art. 16 DSGVO)
+            • Löschung (Art. 17 DSGVO)
+            • Einschränkung der Verarbeitung (Art. 18 DSGVO)
+            • Datenübertragbarkeit (Art. 20 DSGVO)
+            • Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)
             Zur Ausübung genügt eine Nachricht an die oben genannte Kontaktadresse. Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
 
             10. Einwilligung ändern oder zurücknehmen

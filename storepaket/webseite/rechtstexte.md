@@ -32,7 +32,8 @@ Registernummer: HRB 208491
 Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:  
 DE359950076
 
-Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV  
+### Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV
+
 Marco Pilipovic  
 Parkstraße 9, 31188 Holle
 
@@ -50,7 +51,7 @@ Alle Bilder, Klänge und Musikstücke der App sind eigene Werke. Musik und Klän
 
 ---
 
-## Nutzungsbedingungen (AGB)
+## AGB
 
 ### § 1 Geltungsbereich und Anbieter
 
@@ -94,19 +95,15 @@ Minderjährige dürfen die App nur mit Zustimmung ihrer Erziehungsberechtigten n
 
 Der Anbieter ist bemüht, die App störungsfrei bereitzustellen, schuldet jedoch keine ununterbrochene Verfügbarkeit. Der Anbieter darf die App weiterentwickeln, ändern, einschränken oder den Betrieb einstellen, soweit dies für dich zumutbar ist.
 
-### § 10 Gewährleistung und Haftung
-
-Da die App kostenlos bereitgestellt wird, haftet der Anbieter – gleich aus welchem Rechtsgrund – nur für Vorsatz und grobe Fahrlässigkeit. Für die Verletzung wesentlicher Vertragspflichten (Kardinalpflichten) haftet der Anbieter auch bei einfacher Fahrlässigkeit, jedoch begrenzt auf den vertragstypischen, vorhersehbaren Schaden. Die Haftung für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit sowie die Haftung nach dem Produkthaftungsgesetz bleiben unberührt.
-
-### § 11 Datenschutz
+### § 10 Datenschutz
 
 Informationen zum Umgang mit Daten findest du in der separaten Datenschutzerklärung.
 
-### § 12 Änderungen dieser Bedingungen
+### § 11 Änderungen dieser Bedingungen
 
 Der Anbieter kann diese Nutzungsbedingungen anpassen, sofern dies erforderlich ist (z. B. bei Änderungen der App oder der Rechtslage) und dies für dich zumutbar ist. Die jeweils aktuelle Fassung wird in der App bzw. im Store bereitgestellt.
 
-### § 13 Schlussbestimmungen
+### § 12 Schlussbestimmungen
 
 Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Zwingende verbraucherschützende Vorschriften des Staates, in dem du deinen gewöhnlichen Aufenthalt hast, bleiben unberührt. Sollte eine Bestimmung dieser Bedingungen unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt. Der Anbieter ist nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
 
@@ -114,7 +111,7 @@ Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrec
 
 ---
 
-## Datenschutzerklärung
+## Datenschutz
 
 Der Schutz deiner Daten ist uns wichtig. Diese Datenschutzerklärung informiert dich darüber, welche Daten bei der Nutzung der App „Fairydoku" verarbeitet werden. Grundsatz: Fairydoku erhebt so wenige Daten wie möglich. Es gibt keine Registrierung und kein Nutzerkonto.
 
@@ -175,13 +172,15 @@ Wir selbst speichern keine personenbezogenen Daten. Die Speicherdauer der durch 
 
 ### 9. Deine Rechte
 
-Dir stehen nach der DSGVO folgende Rechte zu:  
-Auskunft über die verarbeiteten Daten (Art. 15 DSGVO)  
-Berichtigung unrichtiger Daten (Art. 16 DSGVO)  
-Löschung (Art. 17 DSGVO)  
-Einschränkung der Verarbeitung (Art. 18 DSGVO)  
-Datenübertragbarkeit (Art. 20 DSGVO)  
-Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)  
+Dir stehen nach der DSGVO folgende Rechte zu:
+
+- Auskunft über die verarbeiteten Daten (Art. 15 DSGVO)
+- Berichtigung unrichtiger Daten (Art. 16 DSGVO)
+- Löschung (Art. 17 DSGVO)
+- Einschränkung der Verarbeitung (Art. 18 DSGVO)
+- Datenübertragbarkeit (Art. 20 DSGVO)
+- Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)
+
 Zur Ausübung genügt eine Nachricht an die oben genannte Kontaktadresse. Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
 
 ### 10. Einwilligung ändern oder zurücknehmen
