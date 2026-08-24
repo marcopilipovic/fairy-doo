@@ -159,8 +159,9 @@ object GameCopy {
      *
      * **Keine Platzhalter mehr.** Hier stand, sie seien vor der
      * Veroeffentlichung zu ersetzen — das ist erledigt: Firmenangaben,
-     * Registereintrag und Umsatzsteuer-ID stehen drin, die ENTWURF-Vermerke
-     * sind entfernt.
+     * Registereintrag und Umsatzsteuer-ID stehen drin, und die Vermerke
+     * „dieser Text ist ein Entwurf" sind am 22. August 2026 entfernt worden.
+     * Anwaltlich geprüft ist der Text damit nicht — das bleibt offen.
      *
      * **Ohne Telefonnummer, und das ist Absicht.** Paragraf 5 DDG verlangt
      * Angaben, die eine schnelle elektronische Kontaktaufnahme und
@@ -172,9 +173,9 @@ object GameCopy {
      * laesst sich jederzeit nachtragen.
      */
     fun legalBody(page: LegalPage): String = when (page) {
-        // Entwurf, kein geprüfter Rechtstext — alle [eckigen Klammern] sind
-        // von Nataly auszufüllen; nicht zutreffende Punkte (z. B. USt-IdNr.)
-        // kann sie beim Ausfüllen entfernen.
+        // Vollständig ausgefüllt und ohne Vorbehaltszeilen. Anwaltlich geprüft
+        // ist der Text nicht — das ist eine offene Aufgabe, aber kein Grund,
+        // den Vorbehalt im Impressum selbst stehen zu lassen.
         LegalPage.Impressum -> """
             Angaben gemäß § 5 DDG
             App HUMB UG (haftungsbeschränkt)
@@ -202,16 +203,23 @@ object GameCopy {
 
             Verbraucherstreitbeilegung
             Wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
-
-            Hinweis: Dieser Text ist ein Entwurf und bedarf vor Veröffentlichung noch der Überarbeitung und rechtlichen Prüfung.
         """.trimIndent()
-        // Entwurf, kein geprüfter Rechtstext — App HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle und
-        // August 2026 sind von Nataly auszufüllen. Gegenüber der Vorlage
+        // Anbieterangaben stehen vollständig drin. Gegenüber der Vorlage
         // zweifach an das tatsächliche Spiel angepasst: kein Elternschutz
         // (§ 4, § 8 — bewusst nicht gebaut, siehe Zielgruppen-Anpassung im
         // Play Store) und keine Google-Play-Games-Rangliste (§ 6 — Bestleistung
         // liegt nur lokal auf dem Gerät, es gibt keine geräteübergreifende
         // oder geteilte Rangliste).
+        //
+        // Kein Haftungsparagraf. Hier stand eine Klausel, die die Haftung auf
+        // Vorsatz und grobe Fahrlässigkeit begrenzte; sie ist am 24. August
+        // 2026 auf Weisung entfernt worden. Damit gilt die gesetzliche Haftung
+        // ungekürzt — das ist eine bewusste Entscheidung des Anbieters und
+        // keine Lücke, die jemand später „reparieren" sollte. Wer sie wieder
+        // aufnehmen will, sollte sie vorher anwaltlich prüfen lassen.
+        //
+        // Die früheren §§ 11 bis 13 sind dadurch zu §§ 10 bis 12 geworden.
+        // Querverweise gab es keine, jeder Paragraf wird nur einmal genannt.
         //
         // Zielgruppe ab 13, nicht an Kinder gerichtet (§ 8): Das entkoppelt die
         // harmlose Inhaltseinstufung von den Familienrichtlinien und hält den
@@ -236,7 +244,7 @@ object GameCopy {
             Der Anbieter räumt dir ein einfaches, nicht übertragbares und widerrufliches Recht ein, die App auf deinen Geräten für private Zwecke zu nutzen. Eine Bearbeitung, Vervielfältigung, Verbreitung oder das Zugänglichmachen der App oder ihrer Inhalte über die private Nutzung hinaus ist nicht gestattet.
 
             § 4 Kosten und Werbung
-            Die Nutzung der App ist kostenlos. Die App finanziert sich über Werbung. Zusätzlich kann der Nutzer freiwillig kurze Werbevideos ansehen, um Spielhilfen oder ein Leben zu erhalten (Belohnungsvideos). Diese Option wird angeboten, sobald Level 10 abgeschlossen ist. Eine Verpflichtung, Werbung anzusehen, besteht nicht.
+            Die Nutzung der App ist kostenlos und bleibt es. Sie finanziert sich ausschließlich über freiwillige Belohnungsvideos: Du kannst ein kurzes Werbevideo ansehen, um Spielhilfen oder ein Leben zu erhalten. Es gibt keine Werbebanner und keine Anzeigen, die sich von selbst vor das Spiel schieben — wer nie auf das Angebot tippt, sieht keine Werbung. Eine Verpflichtung, Werbung anzusehen, besteht nicht.
 
             § 5 Virtuelle Gegenstände (Spielhilfen und Leben)
             Innerhalb der App gibt es virtuelle Elemente wie Spielhilfen („Feenstaub", „Irrlicht") und Leben. Diese haben keinen Geldwert, sind nicht in echtes Geld umwandelbar, nicht übertragbar und können nicht ausgezahlt werden. Ein Anspruch auf eine bestimmte Menge oder eine dauerhafte Verfügbarkeit besteht nicht; der Anbieter kann die Regeln zu Erhalt und Nachwachsen dieser Elemente anpassen.
@@ -259,23 +267,18 @@ object GameCopy {
             § 9 Verfügbarkeit und Änderungen
             Der Anbieter ist bemüht, die App störungsfrei bereitzustellen, schuldet jedoch keine ununterbrochene Verfügbarkeit. Der Anbieter darf die App weiterentwickeln, ändern, einschränken oder den Betrieb einstellen, soweit dies für dich zumutbar ist.
 
-            § 10 Gewährleistung und Haftung
-            Da die App kostenlos bereitgestellt wird, haftet der Anbieter – gleich aus welchem Rechtsgrund – nur für Vorsatz und grobe Fahrlässigkeit. Für die Verletzung wesentlicher Vertragspflichten (Kardinalpflichten) haftet der Anbieter auch bei einfacher Fahrlässigkeit, jedoch begrenzt auf den vertragstypischen, vorhersehbaren Schaden. Die Haftung für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit sowie die Haftung nach dem Produkthaftungsgesetz bleiben unberührt.
-
-            § 11 Datenschutz
+            § 10 Datenschutz
             Informationen zum Umgang mit Daten findest du in der separaten Datenschutzerklärung.
 
-            § 12 Änderungen dieser Bedingungen
+            § 11 Änderungen dieser Bedingungen
             Der Anbieter kann diese Nutzungsbedingungen anpassen, sofern dies erforderlich ist (z. B. bei Änderungen der App oder der Rechtslage) und dies für dich zumutbar ist. Die jeweils aktuelle Fassung wird in der App bzw. im Store bereitgestellt.
 
-            § 13 Schlussbestimmungen
+            § 12 Schlussbestimmungen
             Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Zwingende verbraucherschützende Vorschriften des Staates, in dem du deinen gewöhnlichen Aufenthalt hast, bleiben unberührt. Sollte eine Bestimmung dieser Bedingungen unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt. Der Anbieter ist nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
 
             Stand: August 2026
-
-            Hinweis: Dieser Text ist ein Entwurf und bedarf vor Veröffentlichung noch der Überarbeitung und rechtlichen Prüfung.
         """.trimIndent()
-        // Entwurf, kein geprüfter Rechtstext — App HUMB UG (haftungsbeschränkt) usw. sind von
+        // Anbieterangaben vollständig. Was von
         // Nataly auszufüllen. Gegenüber der Vorlage an das tatsächliche Spiel
         // angepasst: keine Google-Play-Games-Rangliste (Abschnitt 2 + 4 —
         // Bestleistung liegt nur lokal auf dem Gerät), kein Firebase Remote
@@ -314,11 +317,11 @@ object GameCopy {
             Fairydoku ist ein reines Logikspiel und kostenlos nutzbar. Wir erheben selbst keine personenbezogenen Daten und betreiben keine eigene Nutzerverwaltung. Eine Anmeldung findet nicht statt. Eine Datenverarbeitung erfolgt im Wesentlichen nur durch den eingebundenen Google-Dienst für Werbung, der im Folgenden beschrieben wird.
 
             3. Werbung (Google AdMob)
-            Zur Finanzierung der kostenlosen App wird Werbung über Google AdMob (Google Ireland Limited bzw. Google LLC) eingeblendet. Dabei können durch Google Geräte- und Nutzungsinformationen sowie ggf. eine Werbekennung (Advertising ID) verarbeitet werden, um Werbung auszuliefern und Missbrauch (z. B. Klickbetrug) zu verhindern.
+            Zur Finanzierung der kostenlosen App wird Werbung über Google AdMob (Google Ireland Limited bzw. Google LLC) ausgeliefert — ausschließlich in den freiwilligen Belohnungsvideos, die du selbst startest. Dabei können durch Google Geräte- und Nutzungsinformationen sowie ggf. eine Werbekennung (Advertising ID) verarbeitet werden, um Werbung auszuliefern und Missbrauch (z. B. Klickbetrug) zu verhindern.
 
             AdMob ist so konfiguriert, dass ausschließlich nicht personalisierte Werbung mit der niedrigsten Inhaltsfreigabe („G") ausgeliefert wird. Werbung mit Glücksspiel-, Gewalt- oder sexuellen Inhalten ist damit ausgeschlossen. Eine auf Interessen basierende (personalisierte) Werbung findet nicht statt.
 
-Für Nutzerinnen und Nutzer im Europäischen Wirtschaftsraum und im Vereinigten Königreich holen wir vor der ersten Werbeauslieferung eine Einwilligung ein. Dafür ist das von Google zertifizierte Einwilligungswerkzeug (User Messaging Platform) eingebunden. Ohne erteilte Einwilligung wird keine Anzeige angefragt und keine Werbung ausgeliefert; die App bleibt vollständig spielbar, es entfällt lediglich die Möglichkeit, für eine Belohnung freiwillig ein Werbevideo anzusehen.
+            Für Nutzerinnen und Nutzer im Europäischen Wirtschaftsraum und im Vereinigten Königreich holen wir vor der ersten Werbeauslieferung eine Einwilligung ein. Dafür ist das von Google zertifizierte Einwilligungswerkzeug (User Messaging Platform) eingebunden. Ohne erteilte Einwilligung wird keine Anzeige angefragt und keine Werbung ausgeliefert; die App bleibt vollständig spielbar, es entfällt lediglich die Möglichkeit, für eine Belohnung freiwillig ein Werbevideo anzusehen.
 
             Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit mit Wirkung für die Zukunft ändern oder zurücknehmen — in den Einstellungen der App unter „Datenschutz-Einstellungen ändern". Weitere Informationen: Google-Datenschutzerklärung.
 
@@ -343,12 +346,12 @@ Für Nutzerinnen und Nutzer im Europäischen Wirtschaftsraum und im Vereinigten 
 
             9. Deine Rechte
             Dir stehen nach der DSGVO folgende Rechte zu:
-            Auskunft über die verarbeiteten Daten (Art. 15 DSGVO)
-            Berichtigung unrichtiger Daten (Art. 16 DSGVO)
-            Löschung (Art. 17 DSGVO)
-            Einschränkung der Verarbeitung (Art. 18 DSGVO)
-            Datenübertragbarkeit (Art. 20 DSGVO)
-            Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)
+            • Auskunft über die verarbeiteten Daten (Art. 15 DSGVO)
+            • Berichtigung unrichtiger Daten (Art. 16 DSGVO)
+            • Löschung (Art. 17 DSGVO)
+            • Einschränkung der Verarbeitung (Art. 18 DSGVO)
+            • Datenübertragbarkeit (Art. 20 DSGVO)
+            • Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)
             Zur Ausübung genügt eine Nachricht an die oben genannte Kontaktadresse. Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
 
             10. Einwilligung ändern oder zurücknehmen
@@ -358,8 +361,6 @@ Für Nutzerinnen und Nutzer im Europäischen Wirtschaftsraum und im Vereinigten 
             Wir passen diese Datenschutzerklärung an, wenn Änderungen an der App oder der Rechtslage dies erforderlich machen. Es gilt die jeweils in der App bzw. im Play Store verlinkte Fassung.
 
             Stand: August 2026
-
-            Hinweis: Dieser Text ist ein Entwurf und bedarf vor Veröffentlichung noch der Überarbeitung und rechtlichen Prüfung.
         """.trimIndent()
     }
 }
