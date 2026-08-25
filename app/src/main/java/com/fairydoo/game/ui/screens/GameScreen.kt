@@ -537,7 +537,21 @@ private fun GameContent(
             StatusRow(state = state)
 
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // Nie höher als das, was nach den übrigen Zeilen übrig
+                    // bleibt. `fill = false` ist der Punkt: Im Hochformat ist
+                    // das Brett ohnehin kleiner als dieser Rest, dort ändert
+                    // sich dadurch nichts.
+                    //
+                    // Nötig wird es ab Ziel-API 36. Android 16 achtet auf
+                    // großen Bildschirmen nicht mehr auf
+                    // `screenOrientation="portrait"` — das Spiel kann dann
+                    // quer oder in einem frei veränderbaren Fenster stehen.
+                    // Ohne diese Grenze wüchse das Brett weiter nach unten,
+                    // und die Kacheln für Feenstaub und Irrlicht fielen aus
+                    // dem Bild.
+                    .weight(1f, fill = false),
                 contentAlignment = Alignment.Center,
             ) {
                 if (isPreparing || state.puzzle == null) {
@@ -553,7 +567,18 @@ private fun GameContent(
                         // und rechts kein halbes Feld übrig bleibt. Was die
                         // Moos-Matte an Breite verbraucht, weiß das Brett
                         // selbst — hier wird es nur abgezogen.
-                        val available = maxWidth - BoardFrameInsets
+                        //
+                        // Das Brett ist quadratisch (cellSize × boardSize plus
+                        // Rahmen). Es darf deshalb weder breiter als der Kasten
+                        // noch höher als der Rest sein — sonst schneidet ein
+                        // flaches Fenster es unten ab. Ist die Höhe unbegrenzt,
+                        // zählt wie bisher allein die Breite.
+                        val side = if (constraints.hasBoundedHeight) {
+                            minOf(maxWidth, maxHeight)
+                        } else {
+                            maxWidth
+                        }
+                        val available = side - BoardFrameInsets
                         val cell = (available.value / state.boardSize).toInt().dp
 
                         FairydokuBoard(
