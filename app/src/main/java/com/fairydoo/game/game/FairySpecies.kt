@@ -18,7 +18,7 @@ package com.fairydoo.game.game
  * ob ein Enum-Feldname die Verschleierung übersteht.
  */
 enum class FairySpecies(val displayName: String) {
-    Flora("Flora"),
+    Viridis("Viridis"),
     Nebula("Nebula"),
     Salta("Salta"),
     Aura("Aura"),

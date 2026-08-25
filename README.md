@@ -126,7 +126,7 @@ auseinanderzuhalten.
 
 | | | | | |
 | --- | --- | --- | --- | --- |
-| Flora, die Waldfee | Nebula, die Staubfee | Salta, die Hüpffee | Aura, die Strahlfee | Nixie, die Frostfee |
+| Viridis, die Waldfee | Nebula, die Staubfee | Salta, die Hüpffee | Aura, die Strahlfee | Nixie, die Frostfee |
 | Zephyr, die Windfee | Ignis, die Funkenfee | Terra, die Kristallfee | Chrono, die Pendelfee | Trixie, die Chaosfee |
 
 Zehn Feen, aber höchstens acht Zonen: Wäre die Zuordnung fest, blieben zwei Feen

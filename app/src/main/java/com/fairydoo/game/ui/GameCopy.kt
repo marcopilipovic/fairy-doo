@@ -60,7 +60,7 @@ object GameCopy {
 
     /** Die Wesensart jeder Fee — Beiname, nicht Eigenname. */
     fun fairyTitle(species: FairySpecies): String = when (species) {
-        FairySpecies.Flora -> "Waldfee"
+        FairySpecies.Viridis -> "Waldfee"
         FairySpecies.Nebula -> "Staubfee"
         FairySpecies.Salta -> "Hüpffee"
         FairySpecies.Aura -> "Strahlfee"
@@ -114,7 +114,7 @@ object GameCopy {
         return "$opening — $names $verb schon…"
     }
 
-    /** „Flora" · „Flora und Nixie" · „Flora, Nixie und Chrono" */
+    /** „Viridis" · „Viridis und Nixie" · „Viridis, Nixie und Chrono" */
     private fun enumerate(names: List<String>): String = when (names.size) {
         0 -> ""
         1 -> names.first()

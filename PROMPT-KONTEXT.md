@@ -55,7 +55,7 @@ häng den passenden Abschnitt aus Teil 2 oder 3 an.
 
 | Fee | Beschreibung für den Prompt |
 | --- | --- |
-| **Flora**, die Waldfee | Große orange-gelbe Monarchenfalter-Flügel, grünes Blätterkleid, braunes Haar mit Fühlern, hält einen kleinen Blätterzweig. |
+| **Viridis**, die Waldfee | Große orange-gelbe Monarchenfalter-Flügel, grünes Blätterkleid, braunes Haar mit Fühlern, hält einen kleinen Blätterzweig. |
 | **Nebula**, die Staubfee | Violette Nachtfalter-Flügel mit winzigen weißen Sternenpunkten, dunkelblaues Stoffkleid, hält eine gläserne Fiole, aus der rosa Glitzerpunkte rieseln. |
 | **Salta**, die Hüpffee | Kurze, runde Bienenflügel steil nach oben, hellgelbes Kleidchen, freche hochgebundene Zöpfe, angewinkelte Arme wie vor einem Sprung. |
 | **Aura**, die Strahlfee | Vier spitze Libellenflügel in gleißendem Weiß-Blau, fast durchsichtig, reinweißes Kleid mit goldenen Rändern, hält einen leuchtenden Stern vor der Brust. |

@@ -73,7 +73,7 @@ DER WALD WIRD DICHTER
 Du beginnst auf einem kleinen Gitter und arbeitest dich Schritt für Schritt
 tiefer in den Wald. Alle zwei Level kommt ein Feld dazu, bis zu einem
 achtfachen Gitter mit acht Zonen – und mit jeder Zone zieht eine weitere Fee
-ein. Zehn gibt es: Flora die Waldfee, Nixie die Frostfee, Ignis die Funkenfee
+ein. Zehn gibt es: Viridis die Waldfee, Nixie die Frostfee, Ignis die Funkenfee
 und sieben weitere.
 
 Der Weg dorthin ist ein Pfad, kein Raster. Er windet sich durch den Wald,

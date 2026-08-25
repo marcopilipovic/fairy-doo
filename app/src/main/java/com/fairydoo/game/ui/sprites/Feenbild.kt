@@ -72,7 +72,7 @@ private val FairySpecies.farben: Feenfarben
     get() = when (this) {
         FairySpecies.Nixie -> Feenfarben(Color(0xFF2F9C9C), Color(0xFF1F7A7A), Color(0xFF7FD6D0), Color(0xFF3C2A20))
         FairySpecies.Aura -> Feenfarben(Color(0xFFE8B93A), Color(0xFFBF8F1E), Color(0xFFFFE08A), Color(0xFFA9763F))
-        FairySpecies.Flora -> Feenfarben(Color(0xFF6FAA4F), Color(0xFF4D8036), Color(0xFFBCE39B), Color(0xFF6B4A2E))
+        FairySpecies.Viridis -> Feenfarben(Color(0xFF6FAA4F), Color(0xFF4D8036), Color(0xFFBCE39B), Color(0xFF6B4A2E))
         FairySpecies.Ignis -> Feenfarben(Color(0xFFE28A42), Color(0xFFB96524), Color(0xFFFFC48E), Color(0xFFC98A4A))
         FairySpecies.Salta -> Feenfarben(Color(0xFFE37A9C), Color(0xFFBB5678), Color(0xFFFFB9CF), Color(0xFF4A3226))
         FairySpecies.Trixie -> Feenfarben(Color(0xFF8A6AC4), Color(0xFF664A9C), Color(0xFFC9B4EC), Color(0xFF5A3F6A))

@@ -47,7 +47,7 @@ object FairyMotifs {
     private val chime = listOf(1f to 1f, 2f to 0.34f, 3f to 0.12f, 5f to 0.05f)
 
     fun of(species: FairySpecies): FloatArray = when (species) {
-        FairySpecies.Flora -> flora()
+        FairySpecies.Viridis -> viridis()
         FairySpecies.Nebula -> nebula()
         FairySpecies.Salta -> salta()
         FairySpecies.Aura -> aura()
@@ -60,7 +60,7 @@ object FairyMotifs {
     }
 
     /** Waldfee — zwei aufblühende Töne, warm und rund. */
-    private fun flora(): FloatArray = Synth.normalize(
+    private fun viridis(): FloatArray = Synth.normalize(
         Synth.mix(
             0f to Synth.tone(0.34f, { note(4) }, Synth.pluck(decay = 7f, peak = 0.55f), chime),
             0.07f to Synth.tone(0.40f, { note(9) }, Synth.pluck(decay = 6f, peak = 0.60f), chime),
