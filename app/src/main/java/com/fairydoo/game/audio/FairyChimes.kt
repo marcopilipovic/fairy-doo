@@ -40,7 +40,7 @@ object FairyChimes {
         FairySpecies.Terra to Chime(587.33f, 5.0f, 0.10f),    // D5  — Kristall, schwer
         FairySpecies.Aura to Chime(659.25f, 5.5f, 0.16f),     // E5  — Strahl, weich
         FairySpecies.Nebula to Chime(783.99f, 6.0f, 0.12f),   // G5  — Staub, matt
-        FairySpecies.Flora to Chime(880.00f, 6.5f, 0.14f),    // A5  — Wald, rund
+        FairySpecies.Viridis to Chime(880.00f, 6.5f, 0.14f),    // A5  — Wald, rund
         FairySpecies.Chrono to Chime(1046.50f, 7.0f, 0.30f),  // C6  — Pendel, klar
         FairySpecies.Zephyr to Chime(1174.66f, 7.5f, 0.11f),  // D6  — Wind, luftig
         FairySpecies.Trixie to Chime(1318.51f, 8.5f, 0.26f),  // E6  — Chaos, spitz

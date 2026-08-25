@@ -24,7 +24,7 @@ import com.fairydoo.game.game.FairySpecies
 @get:DrawableRes
 val FairySpecies.drawableRes: Int
     get() = when (this) {
-        FairySpecies.Flora -> R.drawable.fairy_flora
+        FairySpecies.Viridis -> R.drawable.fairy_viridis
         FairySpecies.Nebula -> R.drawable.fairy_nebula
         FairySpecies.Salta -> R.drawable.fairy_salta
         FairySpecies.Aura -> R.drawable.fairy_aura

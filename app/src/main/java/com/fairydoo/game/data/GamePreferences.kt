@@ -46,7 +46,7 @@ data class PlayerProfile(
     /** Wie die Spielerin in der Rangliste heißen möchte — leer, bis gesetzt. */
     val playerName: String = "",
     /** Die Fee, die als Avatar in Profil und Rangliste erscheint. */
-    val selectedAvatar: FairySpecies = FairySpecies.Flora,
+    val selectedAvatar: FairySpecies = FairySpecies.Viridis,
 ) {
     val musicEnabled: Boolean get() = musicVolume > 0f
     val soundEnabled: Boolean get() = soundVolume > 0f
@@ -95,7 +95,7 @@ class GamePreferencesRepository(context: Context) {
             playerName = prefs[KeyPlayerName] ?: "",
             selectedAvatar = prefs[KeySelectedAvatar]
                 ?.let { stored -> FairySpecies.entries.find { it.name == stored } }
-                ?: FairySpecies.Flora,
+                ?: FairySpecies.Viridis,
         )
     }
 
