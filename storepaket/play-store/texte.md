@@ -58,7 +58,7 @@ man Feen setzt, deshalb liegt das Merkzeichen auf der schnelleren Geste.
 
 DER WALD WIRD DICHTER
 
-Das erste Gitter ist 4×4. Mit jedem Level kommt eine Reihe dazu, bis zu 8×8 mit
+Das erste Gitter ist 4×4. Alle zwei Level kommt eine Reihe dazu, bis zu 8×8 mit
 acht Feen. In jeder Waldzone lebt eine andere Fee, und über zehn Level kommt
 jede von ihnen einmal in jeder Zone vorbei — zehn Figuren mit eigenem Namen,
 eigener Farbe und eigenem Klang.

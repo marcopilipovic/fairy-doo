@@ -64,9 +64,14 @@ absichtlich nicht im Repository). Geht er verloren, lässt sich die App im Play
 Store nie wieder aktualisieren. Er gehört an einen zweiten Ort gesichert.
 
 **Auf die anwaltliche Prüfung der Rechtstexte wurde bewusst verzichtet.** Als
-Rechtsgrundlage für die Werbung steht das berechtigte Interesse (Art. 6 Abs. 1
-lit. f DSGVO); ob das im EWR neben der Einwilligungsabfrage die richtige
-Einordnung ist, ist ungeprüft.
+Rechtsgrundlage für die Werbung steht die Einwilligung (Art. 6 Abs. 1 lit. a
+DSGVO) — passend dazu, dass vor der ersten Anzeige Googles Einwilligungswerkzeug
+läuft und ohne Einwilligung nichts angefragt wird. Ungeprüft ist damit nicht
+mehr die Einordnung, sondern nur noch, ob die Texte im Übrigen vollständig sind.
+
+*(Hier stand bis zum 25. August das berechtigte Interesse nach lit. f. Das war
+schon damals falsch — die Datenschutzerklärung selbst nennt seit jeher die
+Einwilligung. Wer diese Datei als Einstieg las, trug den Fehler weiter.)*
 
 ---
 
