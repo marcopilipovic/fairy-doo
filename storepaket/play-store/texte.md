@@ -58,8 +58,9 @@ man Feen setzt, deshalb liegt das Merkzeichen auf der schnelleren Geste.
 
 DER WALD WIRD DICHTER
 
-Das erste Gitter ist 4×4. Alle zwei Level kommt eine Reihe dazu, bis zu 8×8 mit
-acht Feen. In jeder Waldzone lebt eine andere Fee, und über zehn Level kommt
+Das erste Gitter ist 4×4. Alle zwei Level wächst es um eine Reihe und eine
+Spalte, bis ab Level 9 ein 8×8-Gitter mit acht Feen vor dir liegt. In jeder
+Waldzone lebt eine andere Fee, und über zehn Level kommt
 jede von ihnen einmal in jeder Zone vorbei — zehn Figuren mit eigenem Namen,
 eigener Farbe und eigenem Klang.
 
@@ -70,9 +71,12 @@ deckt umgekehrt ein Feld auf, auf dem keine sitzt. Von beidem hast du bis zu
 drei; verbrauchtes wächst von selbst nach — du musst nichts kaufen und nichts
 freischalten.
 
-In einem Level hast du drei Versuche. Geht eins verloren, kostet das eines von
-fünf Wald-Leben, und alle zwei Stunden kommt eines zurück. Wer nicht warten
-will, sieht sich freiwillig ein kurzes Video an.
+Pro Level hast du drei Versuche. Einen kostet es nur, wenn du eine Fee auf ein
+Feld setzt, auf dem sie stört — Wegnehmen und Merkzeichen sind frei. Sind alle
+drei aufgebraucht, oder läuft die Uhr des Levels ab, ist das Level verloren.
+
+Erst das kostet eines von fünf Wald-Leben. Alle zwei Stunden wächst eines nach;
+wer nicht warten will, sieht sich freiwillig ein kurzes Video an.
 
 DER FEENPFAD
 
