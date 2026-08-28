@@ -188,7 +188,10 @@ class FairyAudio(context: Context) {
      * einen Kopfsatz zum Überspringen.
      */
     private fun loadOrRenderMusic(track: MusicTrack, cacheDir: File): ShortArray {
-        val name = "musik-${track.name.lowercase()}-v$MUSIC_VERSION.pcm"
+        // Nach der Quelle benannt, nicht nach dem Bildschirm: Teilen sich beide
+        // dieselbe Aufnahme, liegt sie auch nur einmal im Zwischenspeicher
+        // statt zweimal mit fünf Megabyte.
+        val name = "musik-${musicSource(track)}-v$MUSIC_VERSION.pcm"
         val file = File(cacheDir, name)
 
         // Was eine frühere Fassung hinterlassen hat, wird nicht mehr gefunden —
@@ -233,14 +236,11 @@ class FairyAudio(context: Context) {
         // Schlägt das Entpacken fehl — beschädigte Datei, kein Decoder auf dem
         // Gerät —, wird gerechnet wie zuvor. Stille wäre die schlechteste aller
         // Antworten.
-        val samples = when (track) {
-            MusicTrack.Forest -> runCatching {
-                MusicDecoder.decodeToMono(appContext, R.raw.ambient_forest)
-            }.getOrElse { error ->
-                Log.w(TAG, "Waldmusik nicht entpackbar — es wird gerechnet", error)
-                Synth.toPcm16(Music.loopFor(track))
-            }
-            else -> Synth.toPcm16(Music.loopFor(track))
+        val samples = runCatching {
+            MusicDecoder.decodeToMono(appContext, R.raw.ambient_forest)
+        }.getOrElse { error ->
+            Log.w(TAG, "Waldmusik nicht entpackbar — es wird gerechnet", error)
+            Synth.toPcm16(Music.loopFor(track))
         }
 
         runCatching {
@@ -384,11 +384,33 @@ class FairyAudio(context: Context) {
      */
     fun setMusicTrack(next: MusicTrack) {
         if (next == musicTrack) return
+
+        // Tragen beide Bildschirme dieselbe Aufnahme, wird nichts neu
+        // gestartet — die Musik läuft über den Wechsel hinweg weiter.
+        //
+        // Ohne das setzte sie bei jedem Sprung zwischen Levelkarte und Brett
+        // kurz aus und begänne von vorn. Bei zwei verschiedenen Stücken ist
+        // genau das gewollt; bei einem gemeinsamen ist es ein Aussetzer ohne
+        // Grund.
+        val gleicheQuelle = musicSource(next) == musicSource(musicTrack)
         musicTrack = next
+        if (gleicheQuelle) return
         if (!musicEnabled) return
 
         musicJob?.cancel()
         musicJob = scope.launch { startMusic() }
+    }
+
+    /**
+     * Woher ein Bildschirm seine Musik nimmt.
+     *
+     * Seit dem 28. August tragen Wald und Feenpfad dieselbe Aufnahme — die
+     * berechnete Levelkarten-Fläche hat der Testrunde nicht gefallen. Die
+     * Unterscheidung bleibt trotzdem stehen: Kommt später ein eigenes Stück für
+     * die Karte, ist es hier eine Zeile, und der Rest funktioniert schon.
+     */
+    private fun musicSource(track: MusicTrack): String = when (track) {
+        MusicTrack.Forest, MusicTrack.Path -> "wald"
     }
 
     /** Beim Verlassen des Spiels: Musik anhalten, Stimme verstummen lassen. */

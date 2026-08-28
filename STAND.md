@@ -25,10 +25,15 @@ Overlays.
 (`mipmap-anydpi-v26/ic_launcher_foreground.xml` übernimmt den Inhalt aus
 `drawable/fairy_salta.xml`). Reiner Vektor, keine Dichtestufen mehr.
 
-**Klang und Musik.** Alles wird im Spiel gerechnet — es liegt **keine einzige
-Tondatei** mehr in der App. Zwei Musikstücke (Wald 32 s, Feenpfad 40 s), zehn
-Feentöne, alle Effekte. Die Schleifen schließen sich ohne Naht, weil
-`Synth.mixLooping` den Überhang nach vorn faltet.
+**Klang und Musik.** Die zehn Feentöne und alle Effekte werden im Spiel
+gerechnet; ihre Schleifen schließen sich ohne Naht, weil `Synth.mixLooping` den
+Überhang nach vorn faltet.
+
+Die Waldmusik und der Schreckenslaut sind seit dem 28. August wieder
+Aufnahmen — die berechneten Fassungen haben der Testrunde nicht gefallen.
+Dieselbe Musik liegt über beiden Bildschirmen und läuft beim Wechsel
+durch. Erzeugt mit ElevenLabs am 1. August 2026 unter bezahltem Tarif;
+der Beleg dazu ist im `pruefbericht.md` noch als offener Punkt vermerkt.
 
 **Werbung.** Nur freiwillige Videos für Feenstaub, Irrlicht oder ein Leben, ab
 Level 3. Keine Banner. Das Werbe-SDK startet erst beim ersten Tippen auf einen

@@ -90,8 +90,8 @@ wiederzukommen.
 
 KLANG
 
-Über dem Wald liegt eine ruhige Fläche, über der Levelkarte eine sparsamere.
-Jede Fee hat ihren eigenen Glockenton, alle aus derselben Tonleiter — es kann
+Über dem ganzen Wald liegt eine ruhige Fläche — sie läuft weiter, auch wenn du
+zwischen Rätsel und Karte wechselst. Jede Fee hat ihren eigenen Glockenton, alle aus derselben Tonleiter — es kann
 also nichts schief klingen, egal wie schnell du setzt. Musik, Klänge und
 Feenstimmen lassen sich getrennt regeln; jeder Regler auf null ist zugleich der
 Stummschalter.
