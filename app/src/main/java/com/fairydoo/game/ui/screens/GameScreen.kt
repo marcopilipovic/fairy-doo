@@ -1010,11 +1010,7 @@ private fun StatusRow(state: GameState) {
             fontSize = 15.sp,
         )
 
-        Text(
-            text = "⏳ " + GameCopy.formatTime(state.remainingSeconds),
-            style = MaterialTheme.typography.titleLarge,
-            fontSize = 15.sp,
-            color = if (state.remainingSeconds < 20) DangerPink else TextPrimary,
-        )
+        // Hier stand die Spieluhr. Sie ist mit dem Countdown selbst
+        // verschwunden — siehe FairydokuEngine.tick.
     }
 }

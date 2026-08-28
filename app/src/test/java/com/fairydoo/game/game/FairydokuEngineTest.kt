@@ -3,6 +3,7 @@ package com.fairydoo.game.game
 import com.fairydoo.game.game.model.CellMark
 import com.fairydoo.game.game.model.Pos
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -167,14 +168,20 @@ class FairydokuEngineTest {
     }
 
     @Test
-    fun `abgelaufene Zeit beendet die Partie`() {
+    fun `die Zeit beendet die Partie nicht mehr`() {
         var state = startedGame()
 
-        state = engine.tick(state, state.remainingMillis)
+        // Weit über jede frühere Leveldauer hinaus.
+        state = engine.tick(state, 10 * 60 * 1000L)
 
-        assertEquals(0L, state.remainingMillis)
-        assertEquals(GameStatus.GameOver, state.status)
-        assertEquals(GameOverReason.TimeUp, state.overReason)
+        assertEquals(GameStatus.Running, state.status)
+
+        // Bis zum 28. August 2026 lief hier ein Countdown, und war er
+        // abgelaufen, war das Level verloren. Der Zeitdruck machte das Spiel
+        // für die Jüngsten unspielbar und ist deshalb herausgenommen worden.
+        // Der Test steht umgedreht weiter da, damit die Uhr nicht
+        // versehentlich zurückkommt.
+        assertNull("Ein Level darf nicht mehr an der Zeit scheitern", state.overReason)
     }
 
     @Test

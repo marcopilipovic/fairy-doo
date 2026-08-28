@@ -73,10 +73,14 @@ freischalten.
 
 Pro Level hast du drei Versuche. Einen kostet es nur, wenn du eine Fee auf ein
 Feld setzt, auf dem sie stört — Wegnehmen und Merkzeichen sind frei. Sind alle
-drei aufgebraucht, oder läuft die Uhr des Levels ab, ist das Level verloren.
+drei aufgebraucht, ist das Level verloren.
 
-Erst das kostet eines von fünf Wald-Leben. Alle zwei Stunden wächst eines nach;
-wer nicht warten will, sieht sich freiwillig ein kurzes Video an.
+Eine Uhr läuft nicht. Du kannst überlegen, so lange du magst, aufstehen,
+wiederkommen — das Rätsel wartet.
+
+Erst ein verlorenes Level kostet eines von fünf Wald-Leben. Alle zwei Stunden
+wächst eines nach; wer nicht warten will, sieht sich freiwillig ein kurzes
+Video an.
 
 DER FEENPFAD
 

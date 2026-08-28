@@ -70,12 +70,18 @@ class FairydokuEngine : GameEngine {
             hintCell = if (pulse == 0L) null else state.hintCell,
         )
 
-        val remaining = (withPulse.remainingMillis - deltaMillis).coerceAtLeast(0L)
-        return withPulse.copy(
-            remainingMillis = remaining,
-            status = if (remaining == 0L) GameStatus.GameOver else withPulse.status,
-            overReason = if (remaining == 0L) GameOverReason.TimeUp else withPulse.overReason,
-        )
+        // Ohne Spieluhr.
+        //
+        // Es gab einen Countdown je Level; lief er ab, war das Level verloren.
+        // Er ist am 28. August 2026 herausgenommen worden, weil er das Spiel
+        // für die Jüngsten unspielbar machte — ein Logikrätsel unter Zeitdruck
+        // ist ein anderes Spiel, und zwar ein frustrierendes.
+        //
+        // Ein Level endet seither nur noch durch drei verbrauchte Versuche.
+        // [GameState.remainingMillis] bleibt vorerst stehen und läuft einfach
+        // nicht mehr herunter; wer die Uhr wieder will, braucht nur diese
+        // Stelle und die Anzeige im StatusRow.
+        return withPulse
     }
 
     override fun onInput(state: GameState, input: GameInput): GameState = when (input) {
