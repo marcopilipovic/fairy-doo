@@ -842,6 +842,19 @@ private fun TitleRow() {
     )
 
     Row(
+        // Unter das Knopfband gerückt.
+        //
+        // Die Knöpfe liegen als eigene Schicht in den Ecken und reichen bis
+        // 42 dp unter den sicheren Rand; der Inhalt begann bei 20 dp. Solange
+        // die Titelzeile schmal blieb, ging das gut — sie steht mittig, die
+        // Knöpfe außen. Bei vergrößerter Systemschrift wird sie aber so breit,
+        // dass die linke Fee unter dem Fragezeichen verschwand.
+        //
+        // 28 dp mehr Abstand nach oben lassen die Zeile darunter beginnen,
+        // unabhängig davon, wie breit sie wird. Die Höhe, die das kostet,
+        // nimmt das Brett auf: Es bemisst sich seit der Umstellung auf
+        // Ziel-API 36 nach der kleineren der beiden Kanten.
+        modifier = Modifier.padding(top = 28.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {

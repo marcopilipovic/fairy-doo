@@ -33,10 +33,11 @@ android {
         // versehentlich die 1, und damit ließ sich die App auf keinem Telefon
         // mehr aktualisieren, auf dem eine Testfassung von main lag.
         //
-        // Deshalb 8: über beiden bisherigen Zählungen. Für den Store ist die
+        // Seither zählt sie über beiden bisherigen Ständen weiter und wird bei
+        // jeder Fassung erhöht, die auf ein Telefon geht. Für den Store ist die
         // Zahl der ersten Einreichung beliebig; nur steigen muss sie danach.
-        versionCode = 9
-        versionName = "0.4.1"
+        versionCode = 10
+        versionName = "0.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
