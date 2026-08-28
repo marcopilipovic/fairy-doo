@@ -145,7 +145,7 @@ object GameCopy {
     }
 
     /**
-     * Die drei Rechtsseiten, wie sie in der App stehen.
+     * Die vier Rechtsseiten, wie sie in der App stehen.
      *
      * Die Angaben stammen aus dem Rechtstext-Bestand der Webseite (Stand
      * 18. August 2026) und sind vollständig — keine Platzhalter mehr.
@@ -354,16 +354,14 @@ object GameCopy {
         //
         // Kommt später ein fremder Bestandteil dazu, gehört er hierher.
         LegalPage.Lizenzen -> """
-            Fairydoku benutzt fremde Bestandteile: zwei Schriften und mehrere
-            Programmbibliotheken. Deren Urheber erlauben das ausdrücklich — sie verlangen
-            aber, dass ihr Lizenztext mitgeliefert wird. Genau dafür ist diese Seite da.
+            Fairydoku benutzt fremde Bestandteile: zwei Schriften und mehrere Programmbibliotheken. Deren Urheber erlauben das ausdrücklich — sie verlangen aber, dass ihr Lizenztext mitgeliefert wird. Genau dafür ist diese Seite da.
 
-            Die Lizenzen stehen im englischen Original. Eine Übersetzung wäre nicht die
-            Lizenz, sondern eine Nacherzählung davon.
+            Die Lizenzen stehen im englischen Original. Eine Übersetzung wäre nicht die Lizenz, sondern eine Nacherzählung davon.
 
             Schriften
             Copyright © 2012 Natanael Gama (info@ndiscovered.com), with Reserved Font Name 'Cinzel'
             Copyright 2019 The Quicksand Project Authors (https://github.com/andrew-paglinawan/QuicksandFamily.git), with Reserved Font Name "Quicksand"
+
             Beide stehen unter der SIL Open Font License, Version 1.1. Ihr vollständiger Text folgt.
 
             SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007

@@ -80,6 +80,8 @@ import com.fairydoo.game.ui.theme.MossMatBottom
 import com.fairydoo.game.ui.theme.MossMatMiddle
 import com.fairydoo.game.ui.theme.MossMatTop
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import com.fairydoo.game.ui.theme.PanelBorder
 import com.fairydoo.game.ui.theme.PanelBottom
@@ -849,10 +851,17 @@ private fun ForestLivesBadge(
  * Impressum "leicht erkennbar und unmittelbar erreichbar" bleibt (§ 5 TMG).
  */
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 private fun LegalFooter(onOpenLegal: (LegalPage) -> Unit) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    // Umbrechend statt einzeilig.
+    //
+    // Mit drei Links passte die Zeile immer; mit „Lizenzen" als viertem nicht
+    // mehr, und dann brach das letzte Wort mitten durch — auf dem Telefon
+    // stand „Lizen" und darunter „zen". FlowRow schiebt stattdessen den
+    // ganzen Link in die nächste Zeile.
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         LegalFooterLink("Impressum") { onOpenLegal(LegalPage.Impressum) }
         LegalFooterDot()
@@ -871,6 +880,10 @@ private fun LegalFooterLink(label: String, onClick: () -> Unit) {
         style = MaterialTheme.typography.labelSmall,
         fontSize = 11.sp,
         color = StatusPurple,
+        // Ein Link bricht nie in sich selbst um — entweder er passt in die
+        // Zeile, oder FlowRow schiebt ihn als Ganzes eine Zeile tiefer.
+        maxLines = 1,
+        softWrap = false,
         modifier = Modifier
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
