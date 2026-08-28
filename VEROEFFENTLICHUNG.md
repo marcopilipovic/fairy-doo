@@ -180,8 +180,8 @@ Stand 7. August 2026. Alles, was zwischen heute und dem Play Store steht.
 | ⬜ | **Rechtstexte prüfen lassen** | Empfehlung der Texte selbst: Fachanwalt IT-/Datenschutzrecht. |
 | ⬜ | **Datenschutzseite hochladen** | Datei entsteht per Test, braucht nur einen öffentlich erreichbaren Ort. |
 | ⬜ | **Zweite Sicherung des Schlüssels** | Der USB-Stick ist die erste. Eine reicht nicht. |
-| ⬜ | **App-Namen festlegen** | Drei Vorschläge in `STORE-EINTRAG.md`. |
-| ⬜ | **Klang-Lizenz klären** | Womit wurden `ambient_forest.mp3` und `fairy_startled.mp3` erzeugt? Beide werden mit ausgeliefert. |
+| ✅ | **App-Namen festlegen** | „Fairydoku", 9 Zeichen. Steht in `storepaket/play-store/texte.md`. |
+| ✅ | **Klang-Lizenz klären** | Erledigt durch Wegfall: `ambient_forest.mp3` und `fairy_startled.mp3` sind aus der App entfernt. Musik und Klänge werden im Spiel gerechnet — in der APK liegt keine einzige Tondatei mehr. |
 
 ### Zu entscheiden
 

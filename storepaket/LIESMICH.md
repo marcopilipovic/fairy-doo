@@ -1,7 +1,11 @@
 # Fairydoku — alles für die Veröffentlichung
 
-Stand: 26. August 2026. Alles in diesem Ordner ist fertig zum Verwenden, außer
+Stand: 28. August 2026. Alles in diesem Ordner ist fertig zum Verwenden, außer
 dem, was unter „Was noch fehlt" steht.
+
+**Es gibt nur noch eine Fassung des Spiels.** Bis zum 28. August liefen zwei
+Linien nebeneinander; sie sind zusammengeführt, der zweite Zweig ist gelöscht.
+Alles liegt auf `main`.
 
 ---
 
@@ -84,6 +88,22 @@ verschleiert.
 | Ziel-API 36 | ab 31.08.2026 nimmt Google nichts Niedrigeres mehr an |
 | Werkzeugkette angehoben | AGP 8.13.2, Gradle 8.13 |
 | Brett auf flache Fenster vorbereitet | Android 16 erzwingt auf großen Bildschirmen kein Hochformat mehr |
+| **Die zwei Linien zusammengeführt** | siehe unten — dabei kamen vier Fehler ans Licht |
+
+### Was die Zusammenführung ans Licht brachte
+
+Beide Linien waren unvollständig, jede auf ihre Art. Vier Dinge waren falsch
+und sind es jetzt nicht mehr:
+
+- **Die Tageswertung fehlte.** Store-Text, AGB § 6 und Datenschutzerklärung
+  Abschnitt 4 beschrieben sie — gebaut war sie auf dieser Linie nie. Das
+  übersprungene fünfte Bildschirmfoto war der Fingerabdruck davon.
+- **Die Musik war verstummt.** Auf der anderen Linie las der Abspieler eine
+  Tondatei, die es nach dem Entfernen der Aufnahme nicht mehr gab.
+- **„Der Wald wird dichter"** erschien bei jedem Level, obwohl das Gitter nur
+  jedes zweite Mal wächst — derselbe Fehler wie im Store-Text.
+- **Vier Statusmeldungen waren zu lang** und brachen auf dem Gerät ab, unter
+  anderem „✨ Der Feenstaub zeigt dir ein sicheres Feld!" mit 44 Zeichen.
 
 Die vollständige Prüfung aller Inhalte steht in `pruefbericht.md` (19.08.,
 Rechte und Stabilität) — die Markenlage und die Store-Texte sind am 25.08.

@@ -1,4 +1,4 @@
-# Stand: 19. August 2026
+# Stand: 28. August 2026
 
 Diese Datei ist der Einstieg für jede neue Sitzung in diesem Ordner. Sie sagt,
 wo das Projekt steht und was noch fehlt — damit niemand aus Gesprächsresten
@@ -6,8 +6,11 @@ rekonstruieren muss, was längst getan ist.
 
 **Fairydoku geht als erstes der Spiele in den Play Store.**
 
-Aktueller Zweig: `feature/neue-feen-symbol-und-musik`, 16 Commits vor `main`.
-Diese Arbeit ist **nicht auf GitHub** — dort steht noch der 6. August.
+**Es gibt nur noch `main`, und alles liegt auf GitHub.** Bis zum 28. August
+liefen zwei Fassungen nebeneinander, die sich am 6. August getrennt hatten;
+`feature/neue-feen-symbol-und-musik` ist eingearbeitet und gelöscht. Wer hier
+einen zweiten Zweig anlegt, sollte ihn zügig wieder zurückführen — die drei
+Wochen Trennung haben dieselbe Arbeit zweimal entstehen lassen.
 
 ---
 
@@ -53,7 +56,13 @@ Alterseinstufung sowie `pruefbericht.md`.
 3. **Datenschutz-Seite ins Netz stellen.** Google ruft die Adresse beim
    Einreichen ab. Fertige Datei: `storepaket/webseite/rechtstexte.html`.
 4. **Einmal auf einem echten Telefon durchspielen.** Bisher alles im Emulator
-   geprüft.
+   geprüft, und seit der Zusammenführung ist noch gar nichts auf einem Gerät
+   gelaufen. Besonders anzusehen: die Tageswertung im Spielverlauf und das
+   Querformat — Android 16 achtet auf großen Bildschirmen nicht mehr auf die
+   Festlegung auf Hochformat.
+5. **Das fünfte Bildschirmfoto.** Die Reihe springt von 4 auf 6, weil die
+   Tageswertung auf der alten Linie fehlte. Jetzt ist sie wieder da und kann
+   aufgenommen werden. Nicht zwingend — Google verlangt mindestens zwei.
 
 ---
 
