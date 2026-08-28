@@ -1,6 +1,7 @@
 package com.fairydoo.game.audio
 
 import android.content.Context
+import com.fairydoo.game.R
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
@@ -136,7 +137,6 @@ class FairyAudio(context: Context) {
             KEY_FREEZE to FairySounds::timeFreeze,
             KEY_CHEER to FairySounds::cheer,
             KEY_GAME_OVER to FairySounds::gameOver,
-            KEY_STARTLED to FairySounds::startled,
         )
 
         // Dazu die zehn Feentöne — einer je Art. Sie sind winzig (0,42 s) und
@@ -157,6 +157,23 @@ class FairyAudio(context: Context) {
                 Log.w(TAG, "Klang $key konnte nicht vorbereitet werden", error)
             }.getOrNull()
         }.toMap()
+
+        // Der Schreckenslaut kommt wieder vom Band.
+        //
+        // Er lag als Aufnahme vor, wurde im August berechnet ersetzt und kehrt
+        // jetzt zurück — dieselbe Geschichte wie bei der Waldmusik. Anders als
+        // dort braucht es keinen Umweg über den Zwischenspeicher: SoundPool
+        // lädt Ressourcen unmittelbar, und sechs Kilobyte muss niemand
+        // zwischenlagern.
+        //
+        // [FairySounds.startled] bleibt stehen. Es kostet nichts, solange es
+        // niemand aufruft, und wer die Aufnahme wieder herausnehmen will,
+        // braucht nur diese Zeilen zu löschen.
+        runCatching {
+            effects = effects + (KEY_STARTLED to clipPool.load(appContext, R.raw.fairy_startled, 1))
+        }.onFailure { error ->
+            Log.w(TAG, "Schreckenslaut nicht ladbar", error)
+        }
 
         prepared = true
     }
@@ -202,7 +219,29 @@ class FairyAudio(context: Context) {
             }
         }
 
-        val samples = Synth.toPcm16(Music.loopFor(track))
+        // Der Wald klingt vom Band, der Feenpfad wird gerechnet.
+        //
+        // Beides war schon einmal anders herum. Die Waldschleife lag als
+        // Aufnahme vor, wurde im August durch ein berechnetes Stück ersetzt —
+        // damals, weil niemand die Rechte an der Aufnahme belegen konnte — und
+        // kommt jetzt zurück, weil die Testrunde das gerechnete Stück nicht
+        // mochte und die Lizenz inzwischen geklärt ist.
+        //
+        // Für den Feenpfad gibt es keine Aufnahme, nur das gerechnete Stück.
+        // Deshalb die Fallunterscheidung statt einer Umstellung überall.
+        //
+        // Schlägt das Entpacken fehl — beschädigte Datei, kein Decoder auf dem
+        // Gerät —, wird gerechnet wie zuvor. Stille wäre die schlechteste aller
+        // Antworten.
+        val samples = when (track) {
+            MusicTrack.Forest -> runCatching {
+                MusicDecoder.decodeToMono(appContext, R.raw.ambient_forest)
+            }.getOrElse { error ->
+                Log.w(TAG, "Waldmusik nicht entpackbar — es wird gerechnet", error)
+                Synth.toPcm16(Music.loopFor(track))
+            }
+            else -> Synth.toPcm16(Music.loopFor(track))
+        }
 
         runCatching {
             val bytes = ByteArray(samples.size * 2)
@@ -503,6 +542,9 @@ class FairyAudio(context: Context) {
          * Zwischenspeicher. Getrennt von [SOUND_CACHE_VERSION], damit eine
          * Änderung an der Musik nicht auch alle Effekte neu berechnen lässt.
          */
-        const val MUSIC_VERSION = 1
+        // Erhöht, wenn sich ein Stück ändert: Der Zwischenspeicher wird sonst
+        // weiter mit der alten Fassung bedient. Auf 2 seit der Rückkehr der
+        // Waldaufnahme.
+        const val MUSIC_VERSION = 2
     }
 }

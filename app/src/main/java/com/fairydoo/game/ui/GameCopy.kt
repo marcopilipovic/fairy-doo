@@ -206,7 +206,7 @@ object GameCopy {
             Quicksand — Copyright © 2019 The Quicksand Project Authors.
             Beide stehen unter der SIL Open Font License, Version 1.1 (scripts.sil.org/OFL).
 
-            Alle Bilder, Klänge und Musikstücke der App sind eigene Werke. Musik und Klänge werden im Spiel selbst berechnet; es sind keine fremden Aufnahmen enthalten.
+            Alle Bilder der App sind eigene Werke. Die Klänge und die zehn Feentöne werden im Spiel selbst berechnet. Die Waldmusik und der Schreckenslaut sind mit einem KI-Werkzeug erzeugt und unter dem dort erworbenen Tarif lizenziert.
         """.trimIndent()
 
         // Kein Haftungsparagraf. Hier stand eine Klausel, die die Haftung auf

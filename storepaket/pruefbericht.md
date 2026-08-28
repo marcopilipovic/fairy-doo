@@ -98,11 +98,25 @@ Schriften unter freier Lizenz.**
 | Cinzel Decorative, Quicksand | Google Fonts | **SIL OFL 1.1** |
 | Bibliotheken | AndroidX, Google, JetBrains | Apache 2.0 / Play-Bedingungen |
 
-**Heute entfernt:** `fairy_startled.mp3` war der letzte Ton, der nicht gerechnet
-wurde. Er stammt aus `Audio/tiny_fairy_startled__#1-1785564019923_wrong.mp3` —
-ein Dateiname, der nach einem Generator aussieht und dessen Rechtelage niemand
-belegen kann. Ersetzt durch einen berechneten Klang. **In der APK liegt jetzt
-keine einzige Tondatei mehr.**
+**Nachtrag vom 28. August:** Zwei Aufnahmen sind zurück in der App — die
+Waldmusik (`ambient_forest.mp3`, 821 KB) und der Schreckenslaut
+(`fairy_startled.mp3`, 6 KB). Der Rest wird weiterhin berechnet: alle übrigen
+Effekte und die zehn Feentöne.
+
+Beide waren im August entfernt worden, weil hier stand, ihre Rechtelage sei
+nicht zu belegen. Das war zu vorsichtig formuliert — es war eine offene Frage,
+keine Absage. Erzeugt wurden sie am **1. August 2026 zwischen 5:56 und 12:53
+Uhr** mit ElevenLabs, und zwar unter einem bezahlten Tarif; die Zeitstempel
+stehen in den Dateinamen unter `Audio/`.
+
+⬜ **Nachzutragen:** die Abo-Bestätigung für den 1. August 2026 — Tarifname und
+Zeitraum. Erst damit ist die Herkunft belegt statt erinnert. Solange das fehlt,
+gilt dieser Punkt als offen.
+
+Zurückgeholt wurden sie, weil die Testrunde die berechnete Musik nicht mochte.
+Die Waldschleife ist dabei von 194 kbit/s Stereo auf 112 kbit/s Mono neu
+kodiert worden — 821 statt 1.423 KB, und der Abspieler rechnet sie ohnehin auf
+einen Kanal herunter.
 
 **Die Schriftlizenz** verlangt, dass Copyright-Vermerk und Lizenzhinweis
 mitgeliefert werden. Beides steht jetzt im Impressum. Die OFL erlaubt das

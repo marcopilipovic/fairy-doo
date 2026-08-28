@@ -90,11 +90,11 @@ wiederzukommen.
 
 KLANG
 
-Musik und Klänge entstehen im Spiel selbst, Ton für Ton berechnet. Der Wald
-trägt eine ruhige Fläche, die Levelkarte eine sparsamere. Jede Fee hat ihren
-eigenen Glockenton, alle aus derselben Tonleiter — es kann also nichts schief
-klingen, egal wie schnell du setzt. Musik, Klänge und Feenstimmen lassen sich
-getrennt regeln; jeder Regler auf null ist zugleich der Stummschalter.
+Über dem Wald liegt eine ruhige Fläche, über der Levelkarte eine sparsamere.
+Jede Fee hat ihren eigenen Glockenton, alle aus derselben Tonleiter — es kann
+also nichts schief klingen, egal wie schnell du setzt. Musik, Klänge und
+Feenstimmen lassen sich getrennt regeln; jeder Regler auf null ist zugleich der
+Stummschalter.
 
 FAIR UND OHNE HAKEN
 
