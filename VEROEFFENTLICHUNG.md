@@ -85,7 +85,7 @@ Release-Build die Namen verschleiert.
 | 2 | Signierter Release-Build (AAB + APK) | ✅ baut durch, 5,5 MB APK |
 | 3 | Entwicklerkonto bei Google (einmalig ~25 USD) | ⬜ **nur Nataly** |
 | 4 | Einwilligungswerkzeug für Werbung (UMP) | ✅ eingebaut, Widerruf in den Einstellungen |
-| 5 | Datenschutzerklärung unter einer Web-Adresse | ✅ Seite wird erzeugt — **hochladen fehlt** |
+| 5 | Datenschutzerklärung unter einer Web-Adresse | ✅ Seite neu erzeugt (22.8., ohne Vermerke) — **hochladen fehlt** |
 | 6 | Platzhalter in den Rechtstexten ausfüllen | ⬜ **nur Nataly** |
 | 7 | Store-Eintrag: Symbol, Bilder, Beschreibung, Fragebögen | ⬜ offen |
 | 8 | **Echte AdMob-Anzeigen-ID** statt der Test-ID | ⬜ **nur Nataly** |
@@ -176,7 +176,7 @@ Stand 7. August 2026. Alles, was zwischen heute und dem Play Store steht.
 |---|---|---|
 | ⬜ | **Entwicklerkonto bei Google** | play.google.com/console, einmalig ~25 USD. Die Identitätsprüfung dauert Tage — früh anstoßen. |
 | ⬜ | **AdMob-Konto** | Liefert die echte App-ID und Anzeigen-ID. Ohne sie läuft die App mit Googles Testanzeigen, und die werden beanstandet. |
-| ⬜ | **Platzhalter ausfüllen** | 21 Stück in `GameCopy.kt`. Liste unter `app/build/rechtstexte/offene-platzhalter.txt`. |
+| ✅ | **Platzhalter ausfüllen** | Erledigt am 22. August 2026. `offene-platzhalter.txt` meldet: keine offenen mehr. Die ENTWURF-Vermerke sind im selben Zug entfernt. |
 | ⬜ | **Rechtstexte prüfen lassen** | Empfehlung der Texte selbst: Fachanwalt IT-/Datenschutzrecht. |
 | ⬜ | **Datenschutzseite hochladen** | Datei entsteht per Test, braucht nur einen öffentlich erreichbaren Ort. |
 | ⬜ | **Zweite Sicherung des Schlüssels** | Der USB-Stick ist die erste. Eine reicht nicht. |
