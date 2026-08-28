@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -151,7 +152,18 @@ private fun PowerUpButton(
 ) {
     Column(
         modifier = Modifier
-            .width(86.dp)
+            // Nicht auf 86 dp festgenagelt, sondern mitwachsend bis 140 dp.
+            //
+            // Vorher stand hier `width(86.dp)`. Das reicht für „Feenstaub" nur
+            // bei normaler Systemschrift; wer sie vergrößert hat, sah
+            // „Feenstau" und darunter ein einzelnes „b" — Android bricht mitten
+            // im Wort um, wenn das Wort allein schon breiter ist als die Zeile.
+            //
+            // Die Kachel darüber bleibt bei 66 dp, nur die Beschriftung darf
+            // breiter werden. Die Obergrenze ist so gewählt, dass zwei Knöpfe
+            // samt Abstand (2 × 140 + 18 dp) auch auf einem schmalen Telefon
+            // nebeneinander passen.
+            .widthIn(min = 86.dp, max = 140.dp)
             // Ein leerer Vorrat bleibt sichtbar, aber blass und ohne Wirkung —
             // so ist erkennbar, dass die Hilfe existiert und gerade nur
             // nachwächst.
