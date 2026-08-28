@@ -26,8 +26,17 @@ android {
         applicationId = "com.fairydoo.game"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        // Die Nummer darf nie kleiner werden — Android lehnt jede Installation
+        // ab, deren versionCode unter dem liegt, was auf dem Gerät steht. Die
+        // beiden Linien hatten bis zur Zusammenführung eigene Zählungen: main
+        // stand bei 7, der Veröffentlichungszweig bei 1. Übernommen wurde
+        // versehentlich die 1, und damit ließ sich die App auf keinem Telefon
+        // mehr aktualisieren, auf dem eine Testfassung von main lag.
+        //
+        // Deshalb 8: über beiden bisherigen Zählungen. Für den Store ist die
+        // Zahl der ersten Einreichung beliebig; nur steigen muss sie danach.
+        versionCode = 8
+        versionName = "0.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
