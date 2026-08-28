@@ -42,8 +42,20 @@ class RechtstexteExportTest {
 
             assertTrue("$titel ist zu kurz für einen Rechtstext", text.length > 400)
 
-            // Reste der Vorlage, die es nie in die Veröffentlichung schaffen dürfen.
-            for (rest in listOf("[", "ENTWURF", "Platzhalter", "auszufüllen")) {
+            // Reste der Vorlage, die es nie in die Veröffentlichung schaffen
+            // dürfen.
+            //
+            // Die eckige Klammer ist bei den Lizenzen ausgenommen: Der Anhang
+            // der Apache-Lizenz enthält den Mustervermerk „Copyright [yyyy]
+            // [name of copyright owner]". Das ist kein vergessener Platzhalter,
+            // sondern Teil des Lizenztextes — und der wird wortgleich
+            // wiedergegeben oder gar nicht.
+            val verboten = if (page == LegalPage.Lizenzen) {
+                listOf("ENTWURF", "Platzhalter", "auszufüllen")
+            } else {
+                listOf("[", "ENTWURF", "Platzhalter", "auszufüllen")
+            }
+            for (rest in verboten) {
                 assertFalse(
                     "$titel enthält noch \"$rest\" — das ist ein Rest der Vorlage",
                     text.contains(rest),

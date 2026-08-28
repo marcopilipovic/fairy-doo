@@ -859,6 +859,8 @@ private fun LegalFooter(onOpenLegal: (LegalPage) -> Unit) {
         LegalFooterLink("AGB") { onOpenLegal(LegalPage.Agb) }
         LegalFooterDot()
         LegalFooterLink("Datenschutz") { onOpenLegal(LegalPage.Datenschutz) }
+        LegalFooterDot()
+        LegalFooterLink("Lizenzen") { onOpenLegal(LegalPage.Lizenzen) }
     }
 }
 
