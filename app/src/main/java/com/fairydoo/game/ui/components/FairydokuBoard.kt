@@ -608,11 +608,11 @@ private fun FairyGlyph(
     val ownGlow = if (pulsing) Gold else lerp(zoneColor, Color.White, 0.55f)
 
     val density = LocalDensity.current
-    // Die Vorlagen sind Hochformat-Illustrationen (~1∶1,55, je nach Figur
-    // leicht abweichend) statt der quadratischen Pixel-Art von früher — das
-    // Seitenverhältnis kommt deshalb aus dem geladenen Bild selbst statt aus
-    // einer festen Zahl. Passt die volle Breite nicht in die Zellhöhe, wird
-    // stattdessen von der Höhe her skaliert, damit die Fee ihr Feld nie
+    // Die Vorlagen sind hochformatig (1∶1,367, seit „Feen schlicht" bei allen
+    // zehn gleich). Das Seitenverhältnis kommt trotzdem aus dem geladenen Bild
+    // statt aus einer festen Zahl — so übersteht diese Rechnung den nächsten
+    // Wechsel der Zeichnungen. Passt die volle Breite nicht in die Zellhöhe,
+    // wird stattdessen von der Höhe her skaliert, damit die Fee ihr Feld nie
     // verlässt.
     val spriteSize = remember(cellSize, density, bitmap) {
         val cellPx = with(density) { cellSize.toPx() }

@@ -31,9 +31,11 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fairydoo.game.game.FairyDustSupply
+import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GlobalLives
 import com.fairydoo.game.game.IrrlichtSupply
+import com.fairydoo.game.ui.sprites.FairyImage
 import com.fairydoo.game.ui.theme.ConflictRed
 import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.GoldCream
@@ -172,11 +174,12 @@ private fun RuleDemoGrid() {
                     val marked = !isFairy && (r == fairyRow || c == fairyCol || zone == fairyZone)
                     DemoCell(
                         size = 34.dp,
-                        glyph = if (isFairy) "🧚" else if (marked) "✕" else "",
+                        glyph = if (marked) "✕" else "",
+                        fairy = if (isFairy) DEMO_FAIRY else null,
                         background = RegionColors[zone % RegionColors.size].copy(alpha = 0.22f),
                         borderColor = if (isFairy) GoldLight else Color.White.copy(alpha = 0.15f),
                         borderWidth = if (isFairy) 2.dp else 1.dp,
-                        glyphSize = if (isFairy) 18.sp else 13.sp,
+                        glyphSize = 13.sp,
                     )
                 }
             }
@@ -210,11 +213,12 @@ private fun TutorialTouchStep() {
                     val isFairy = r == 1 && c == 1
                     DemoCell(
                         size = 40.dp,
-                        glyph = if (isFairy) "🧚" else "✕",
+                        glyph = if (isFairy) "" else "✕",
+                        fairy = if (isFairy) DEMO_FAIRY else null,
                         background = if (isFairy) GoldLight.copy(alpha = 0.12f) else ConflictRed.copy(alpha = 0.18f),
                         borderColor = if (isFairy) GoldLight else ConflictRed.copy(alpha = 0.6f),
                         borderWidth = if (isFairy) 2.dp else 1.dp,
-                        glyphSize = if (isFairy) 20.sp else 15.sp,
+                        glyphSize = 15.sp,
                     )
                 }
             }
@@ -265,7 +269,8 @@ private fun TutorialTapHoldStep() {
         GestureArrow("halten")
         DemoCell(
             size = 44.dp,
-            glyph = "🧚",
+            glyph = "",
+            fairy = DEMO_FAIRY,
             background = Color.White.copy(alpha = 0.08f),
             borderColor = Color.White.copy(alpha = 0.25f),
             borderWidth = 1.5.dp,
@@ -392,6 +397,21 @@ private fun LivesInfoBox(icon: String, bold: String, rest: String) {
     }
 }
 
+/**
+ * Die Fee, die in allen Beispielfeldern der Anleitung sitzt.
+ *
+ * Überall dieselbe, obwohl auf dem Brett je Zone eine andere lebt: Hier geht es
+ * um die Regel, nicht um die Figuren. Wechselnde Feen ließen die drei Schritte
+ * so aussehen, als wäre die Art Teil der Erklärung.
+ *
+ * Nixie, weil sie die hellste der zehn ist. Die Beispielfelder sind mit 34 bis
+ * 44 dp deutlich kleiner als eine echte Spielzelle — auf dieser Größe entscheidet
+ * allein der Helligkeitsunterschied, ob man die Figur noch als Fee erkennt.
+ * Nebula stand hier zuerst und verschwand mit ihrem Nachthimmel-Kleid im dunklen
+ * Feld.
+ */
+private val DEMO_FAIRY = FairySpecies.Nixie
+
 /** Ein einzelnes Beispielfeld — Baustein aller Mini-Gitter in dieser Anleitung. */
 @Composable
 private fun DemoCell(
@@ -401,6 +421,10 @@ private fun DemoCell(
     borderColor: Color,
     borderWidth: androidx.compose.ui.unit.Dp,
     glyphSize: androidx.compose.ui.unit.TextUnit,
+    // Statt eines Schriftzeichens: dieselbe Illustration wie auf dem Brett.
+    // Die Anleitung soll zeigen, was gleich zu sehen ist — ein Emoji, das das
+    // Gerät in seiner eigenen Schrift zeichnet, zeigt etwas anderes.
+    fairy: FairySpecies? = null,
 ) {
     Box(
         modifier = Modifier
@@ -410,6 +434,13 @@ private fun DemoCell(
             .border(borderWidth, borderColor, RoundedCornerShape(8.dp)),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = glyph, fontSize = glyphSize, color = GoldLight, textAlign = TextAlign.Center)
+        if (fairy != null) {
+            // Höher als der Anteil auf dem Spielbrett: Dort ist eine Zelle ein
+            // Vielfaches davon groß, hier bliebe von der Figur sonst zu wenig
+            // übrig. Ein schmaler Rand bleibt, damit sie nicht am Rahmen klebt.
+            FairyImage(species = fairy, height = size * 0.84f)
+        } else {
+            Text(text = glyph, fontSize = glyphSize, color = GoldLight, textAlign = TextAlign.Center)
+        }
     }
 }

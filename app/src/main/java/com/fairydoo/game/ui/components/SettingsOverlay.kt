@@ -71,12 +71,7 @@ fun SettingsOverlay(
     selectedAvatar: FairySpecies,
     onPlayerNameChange: (String) -> Unit,
     onAvatarSelected: (FairySpecies) -> Unit,
-    /**
-     * Ob die Werbe-Einwilligung widerrufbar sein muss. Gilt im EWR und im
-     * Vereinigten Königreich; anderswo gibt es nichts zu widerrufen, und der
-     * Punkt bliebe eine Sackgasse.
-     */
-    privacyOptionsRequired: Boolean,
+    privacyOptionsAvailable: Boolean,
     onOpenPrivacyOptions: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -152,19 +147,21 @@ fun SettingsOverlay(
                 }
             }
 
-            // Wo eine Einwilligung eingeholt wurde, muss sie auch zurücknehmbar
-            // sein — sonst wäre sie keine. Der Punkt erscheint nur dort, wo das
-            // Einwilligungswerkzeug ihn verlangt.
-            if (privacyOptionsRequired) {
+            // Nur, wenn es tatsächlich etwas zu ändern gibt: Außerhalb des EWR
+            // wird nie eine Einwilligung abgefragt, und vor dem ersten
+            // Werbe-Knopf gibt es noch keine. Ein Menüpunkt, der ein leeres
+            // Formular öffnet, verwirrt mehr, als er hilft.
+            if (privacyOptionsAvailable) {
                 Spacer(Modifier.height(16.dp))
 
-                SectionLabel("Werbung")
+                SectionLabel("Datenschutz")
 
                 Spacer(Modifier.height(6.dp))
 
                 Text(
                     text = "Datenschutz-Einstellungen ändern",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontSize = 13.sp,
                     color = GoldLight,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -173,7 +170,7 @@ fun SettingsOverlay(
                             indication = null,
                             onClick = onOpenPrivacyOptions,
                         )
-                        .padding(vertical = 8.dp),
+                        .padding(vertical = 6.dp),
                 )
             }
 

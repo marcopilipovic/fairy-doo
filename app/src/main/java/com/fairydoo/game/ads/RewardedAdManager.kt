@@ -3,22 +3,68 @@ package com.fairydoo.game.ads
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
+import com.google.ads.mediation.admob.AdMobAdapter
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.ads.mediation.admob.AdMobAdapter
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.google.android.ump.ConsentInformation
+import com.google.android.ump.ConsentRequestParameters
+import com.google.android.ump.UserMessagingPlatform
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/** Was der Werbe-Knopf gerade anbieten kann. */
+enum class AdOffer {
+    /** Der Knopf lässt sich drücken — entweder liegt eine Anzeige bereit oder sie wird geholt. */
+    Available,
+
+    /** Einwilligung, SDK-Start oder Anzeige werden gerade geladen. */
+    Preparing,
+
+    /** Keine Einwilligung oder dauerhaft keine Anzeige — der Knopf bleibt aus. */
+    Unavailable,
+}
+
 /**
- * Kapselt das Laden und Zeigen einer Rewarded-Anzeige (Werbung ansehen, dafür
- * ein Feenstaub/Irrlicht/Leben extra).
+ * Kapselt Einwilligung, Laden und Zeigen einer Rewarded-Anzeige (Werbung
+ * ansehen, dafür ein Feenstaub/Irrlicht/Leben extra).
+ *
+ * ## Warum hier nichts beim App-Start passiert
+ *
+ * Bis Level [com.fairydoo.game.game.GameViewModel.ADS_UNLOCK_AFTER_LEVEL] gibt
+ * es überhaupt keine Werbe-Knöpfe, und Fairydoku hat keine Banner: Werbung
+ * kommt ausschließlich, wenn jemand sie selbst anfordert. Trotzdem startete
+ * das SDK früher beim App-Start und lud eine Anzeige vor — bei *jedem*
+ * Spieler, auch bei denen, die nie einen Werbe-Knopf anfassen. Damit flossen
+ * Gerätedaten an Google, ohne dass es je einen Anlass gab.
+ *
+ * Jetzt geschieht bis zum ersten Tippen nichts. Wer nie Werbung ansieht, bei
+ * dem verlässt nichts das Gerät. Das ist nicht nur sauberer, es macht auch die
+ * Datenschutzerklärung einfacher: Sie kann sagen, dass ohne Zutun nichts
+ * passiert, statt es zu erklären.
+ *
+ * Der Preis ist ein paar Sekunden Wartezeit beim allerersten Mal. Ab dem
+ * zweiten ist es wie vorher, weil nach jeder gesehenen Anzeige sofort die
+ * nächste nachgeladen wird.
+ *
+ * ## Warum die Einwilligung sein muss
+ *
+ * Für Nutzer im EWR und in Großbritannien verlangt Google seit Anfang 2024
+ * eine zertifizierte Einwilligungslösung; ohne sie schränkt Google die
+ * Auslieferung ein. Unabhängig davon verlangt § 25 TDDDG eine Einwilligung
+ * dafür, dass eine App auf dem Gerät eine Werbekennung ausliest — und zwar
+ * auch dann, wenn die Werbung wie hier ausdrücklich nicht personalisiert ist.
+ * „Nicht personalisiert" heißt eben nicht „ohne Zugriff aufs Gerät".
+ *
+ * Googles User Messaging Platform übernimmt beides. Außerhalb des EWR meldet
+ * sie schlicht, dass kein Formular nötig ist, und es geht ohne Dialog weiter.
  *
  * TEMP: Googles offizielle Test-Anzeigen-ID — es gibt noch kein eigenes
  * AdMob-Konto. Vor Veröffentlichung durch die echte Ad-Unit-ID ersetzen,
@@ -27,38 +73,164 @@ import kotlinx.coroutines.flow.asStateFlow
 class RewardedAdManager(private val appContext: Context) {
 
     private var rewardedAd: RewardedAd? = null
-    private var isLoading = false
+    private var sdkStarted = false
 
-    private val _isReady = MutableStateFlow(false)
-    /** Ob gerade eine Anzeige bereitsteht — die UI blendet den Werbe-Knopf danach ein/aus. */
-    val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
+    private val consent: ConsentInformation =
+        UserMessagingPlatform.getConsentInformation(appContext)
+
+    private val _offer = MutableStateFlow(AdOffer.Available)
+    /** Steuert Beschriftung und Zustand der Werbe-Knöpfe. */
+    val offer: StateFlow<AdOffer> = _offer.asStateFlow()
+
+    private val _privacyOptionsAvailable = MutableStateFlow(false)
+    /**
+     * Ob der Menüpunkt „Datenschutz-Einstellungen ändern" gezeigt werden soll.
+     *
+     * Er erscheint erst, wenn es tatsächlich etwas zu ändern gibt — also nachdem
+     * eine Einwilligung abgefragt wurde. Ein Menüpunkt, der ein leeres Formular
+     * öffnet, verwirrt mehr, als er hilft.
+     */
+    val privacyOptionsAvailable: StateFlow<Boolean> = _privacyOptionsAvailable.asStateFlow()
 
     /**
-     * Einmal beim App-Start: initialisiert das SDK und lädt die erste Anzeige
-     * vor.
+     * Ein Druck auf einen Werbe-Knopf.
      *
-     * Wird erst aufgerufen, wenn [AdConsentManager] die Einwilligung geklärt
-     * hat — vorher darf keine Anfrage an Google gehen. Ohne Einwilligung wird
-     * gar nicht initialisiert: Die App bleibt vollständig spielbar, es entfällt
-     * nur das Angebot, für eine Belohnung ein Video anzusehen.
+     * Kümmert sich um alles, was gerade nötig ist: Einwilligung einholen, das
+     * SDK starten, eine Anzeige laden, sie zeigen. Liegt schon eine bereit,
+     * läuft nur der letzte Schritt.
      */
-    fun init() {
-        // Fairydoku ist für alle Altersstufen freigegeben — "G" filtert
-        // Glücksspiel-, Gewalt- und sexuelle Werbeinhalte schon auf
-        // Anzeigen-Ebene heraus, unabhängig von der Zielgruppen-Einstufung im
-        // Play-Store-Konsolen-Fragebogen.
+    fun onAdRequested(
+        activity: Activity,
+        onReward: () -> Unit,
+        onFinished: () -> Unit = {},
+    ) {
+        rewardedAd?.let { show(activity, it, onReward, onFinished) ; return }
+        if (_offer.value == AdOffer.Preparing) return
+
+        _offer.value = AdOffer.Preparing
+        ensureConsent(activity) { stand ->
+            if (stand != Consent.Erteilt) {
+                // Abgelehnt heißt aus; unklar heißt "später nochmal", sonst
+                // kostet ein Funkloch alle weiteren Anzeigen dieser Sitzung.
+                _offer.value =
+                    if (stand == Consent.Abgelehnt) AdOffer.Unavailable else AdOffer.Available
+                onFinished()
+                return@ensureConsent
+            }
+            startSdk()
+            load { geladen ->
+                if (geladen) {
+                    // Der Spieler wartet seit seinem Tippen — die Anzeige
+                    // kommt jetzt von selbst, ohne dass er erneut drücken muss.
+                    val ad = rewardedAd
+                    if (ad != null) show(activity, ad, onReward, onFinished) else onFinished()
+                } else {
+                    // Kein Netz, kein Inventar: beim nächsten Tippen neu
+                    // versuchen, statt den Knopf dauerhaft auszuschalten.
+                    _offer.value = AdOffer.Available
+                    onFinished()
+                }
+            }
+        }
+    }
+
+    /** Öffnet das Einwilligungsformular erneut — für den Menüpunkt in den Einstellungen. */
+    fun showPrivacyOptions(activity: Activity) {
+        UserMessagingPlatform.showPrivacyOptionsForm(activity) { error ->
+            if (error != null) Log.w(TAG, "Datenschutz-Formular: ${error.message}")
+            refreshPrivacyOptions()
+        }
+    }
+
+    /** Wie eine Einwilligungsabfrage ausgegangen ist. */
+    private enum class Consent {
+        /** Es darf angefragt werden. */
+        Erteilt,
+
+        /** Der Spieler hat abgelehnt — dabei bleibt es, bis er es selbst ändert. */
+        Abgelehnt,
+
+        /** Nicht erreichbar, etwa ohne Netz — beim nächsten Tippen neu versuchen. */
+        Unklar,
+    }
+
+    /**
+     * Holt den Einwilligungsstand und zeigt bei Bedarf das Formular.
+     *
+     * Außerhalb des EWR meldet das Werkzeug ohne jeden Dialog, dass angefragt
+     * werden darf.
+     *
+     * Der Unterschied zwischen [Consent.Abgelehnt] und [Consent.Unklar] ist
+     * bares Geld: Ohne Netz schlägt die Abfrage fehl, und wer das mit einer
+     * Ablehnung gleichsetzt, schaltet den Werbe-Knopf für den Rest der Sitzung
+     * aus — ein Funkloch beim ersten Versuch kostet dann alle weiteren
+     * Anzeigen.
+     */
+    private fun ensureConsent(activity: Activity, onDone: (Consent) -> Unit) {
+        // Ab 13 Jahren: Die Nutzer gelten nicht als „unter dem Einwilligungs-
+        // alter" im Sinne der Google-Richtlinie — dieselbe Aussage wie in
+        // AGB und Datenschutzerklärung.
+        val params = ConsentRequestParameters.Builder()
+            .setTagForUnderAgeOfConsent(false)
+            .build()
+
+        consent.requestConsentInfoUpdate(
+            activity,
+            params,
+            {
+                UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { error ->
+                    if (error != null) Log.w(TAG, "Einwilligungsformular: ${error.message}")
+                    refreshPrivacyOptions()
+                    onDone(if (consent.canRequestAds()) Consent.Erteilt else Consent.Abgelehnt)
+                }
+            },
+            { error ->
+                // Kein Netz, Dienst nicht erreichbar: Das ist keine Ablehnung.
+                Log.w(TAG, "Einwilligungsstand nicht abrufbar: ${error.message}")
+                onDone(Consent.Unklar)
+            },
+        )
+    }
+
+    private fun refreshPrivacyOptions() {
+        _privacyOptionsAvailable.value =
+            consent.privacyOptionsRequirementStatus ==
+                ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
+    }
+
+    /** Startet das Werbe-SDK — einmal, und erst nach erteilter Einwilligung. */
+    private fun startSdk() {
+        if (sdkStarted) return
+        sdkStarted = true
+
+        // Zwei Einstellungen, die zwei verschiedene Dinge regeln — und die man
+        // leicht verwechselt.
+        //
+        // "G" begrenzt, *was* an Werbung kommen darf: Glücksspiel-, Gewalt- und
+        // sexuelle Inhalte sind damit schon auf Anzeigen-Ebene ausgeschlossen.
+        // Das gilt unabhängig davon, an wen sich die App richtet, und bleibt so
+        // — die Inhalte des Spiels sind für jedes Alter unbedenklich.
+        //
+        // Die zweite sagt Google, *an wen* sich die App richtet: ab 13 Jahren
+        // und damit kein an Kinder gerichtetes Angebot im Sinne der
+        // Play-Store-Familienrichtlinien. Genau so steht es auch in AGB und
+        // Datenschutzerklärung (siehe [com.fairydoo.game.ui.GameCopy.legalBody]).
         MobileAds.setRequestConfiguration(
             RequestConfiguration.Builder()
                 .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G)
+                .setTagForChildDirectedTreatment(
+                    RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE,
+                )
                 .build(),
         )
         MobileAds.initialize(appContext) {}
-        load()
     }
 
-    private fun load() {
-        if (rewardedAd != null || isLoading) return
-        isLoading = true
+    private fun load(onDone: (Boolean) -> Unit = {}) {
+        if (rewardedAd != null) {
+            onDone(true)
+            return
+        }
 
         // Ausdrücklich unpersonalisierte Anfrage: Die App zeigt keine
         // personalisierte Werbung. Das "npa"-Flag ist die von Google
@@ -76,44 +248,55 @@ class RewardedAdManager(private val appContext: Context) {
             request,
             object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(ad: RewardedAd) {
-                    isLoading = false
                     rewardedAd = ad
-                    _isReady.value = true
+                    _offer.value = AdOffer.Available
+                    onDone(true)
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
-                    isLoading = false
                     rewardedAd = null
-                    _isReady.value = false
+                    Log.w(TAG, "Anzeige nicht ladbar: ${error.message}")
+                    onDone(false)
                 }
             },
         )
     }
 
     /**
-     * Zeigt die vorgeladene Anzeige und ruft [onReward] auf, sobald sie zu
-     * Ende gesehen wurde. Lädt danach sofort die nächste nach, damit die
-     * nächste Anfrage nicht ins Leere läuft.
+     * Zeigt die Anzeige und ruft [onReward] auf, sobald sie zu Ende gesehen
+     * wurde. Lädt danach sofort die nächste nach, damit das nächste Tippen
+     * nicht wieder warten muss.
+     *
+     * [onFinished] meldet, dass der Spieler wieder vor dem Spiel sitzt — egal,
+     * ob er die Anzeige zu Ende gesehen oder weggetippt hat. Daran hängt, dass
+     * die Uhr weiterläuft, die für die Dauer der Anzeige stillstand.
      */
-    fun show(activity: Activity, onReward: () -> Unit) {
-        val ad = rewardedAd ?: return
+    private fun show(
+        activity: Activity,
+        ad: RewardedAd,
+        onReward: () -> Unit,
+        onFinished: () -> Unit,
+    ) {
+        _offer.value = AdOffer.Available
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
                 rewardedAd = null
-                _isReady.value = false
                 load()
+                onFinished()
             }
 
             override fun onAdFailedToShowFullScreenContent(error: AdError) {
                 rewardedAd = null
-                _isReady.value = false
+                Log.w(TAG, "Anzeige nicht zeigbar: ${error.message}")
                 load()
+                onFinished()
             }
         }
         ad.show(activity) { onReward() }
     }
 
     private companion object {
+        const val TAG = "RewardedAds"
         const val AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
     }
 }

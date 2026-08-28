@@ -3,6 +3,7 @@ package com.fairydoo.game.ui
 import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameOverReason
 import com.fairydoo.game.game.StatusMessage
+import com.fairydoo.game.ui.sprites.FAIRY_TOKEN
 
 /**
  * Alle Texte der Oberfläche an einem Ort — wörtlich aus dem Handoff.
@@ -28,13 +29,7 @@ object GameCopy {
     fun zoneName(index: Int): String = zoneNames[index % zoneNames.size]
 
     fun statusText(message: StatusMessage): String = when (message) {
-        StatusMessage.Hint -> "Tippen: ✕ · gedrückt halten: 🧚"
-        // Alle Meldungen bewusst kurz: Die Zeile hat Platz für zwei Zeilen,
-        // aber bei vergrößerter Systemschrift reicht auch der nicht mehr, und
-        // dann wird mitten im Satz abgeschnitten. Auf dem Gerät stand so
-        // „✨ Der Feenstaub zeigt dir ein sicheres …" — die Meldung erklärte
-        // gerade das, was sie selbst nicht mehr zeigen konnte.
-        //
+        StatusMessage.Hint -> "Tippen: ✕ · gedrückt halten: $FAIRY_TOKEN"
         // Knapp gehalten: Das ist die mit Abstand längste Meldung, und je
         // kürzer sie ist, desto seltener bricht sie auf zwei Zeilen um.
         is StatusMessage.Zone ->
@@ -84,12 +79,6 @@ object GameCopy {
      *
      * Kündigt die Neuzugänge an statt einer Feen-Art: Seit in jeder Zone eine
      * andere Fee lebt, ist das die Information, auf die man sich freut.
-     *
-     * „Dichter" wird das Gitter aber nur jedes zweite Level — es wächst nach
-     * `sizeForLevel` alle zwei Stufen um ein Feld. Stand dort früher trotzdem
-     * „Der Wald wird dichter: 5×5-Gitter", während gerade eben schon auf 5×5
-     * gespielt wurde, klang das nach einem Versprechen, das das nächste Level
-     * nicht hält. Deshalb entscheidet [sizeGrew], welcher Satz erscheint.
      */
     fun nextLevelTeaser(
         nextSize: Int,
@@ -155,27 +144,34 @@ object GameCopy {
     }
 
     /**
-     * Die Rechtstexte der App.
+     * Die drei Rechtsseiten, wie sie in der App stehen.
      *
-     * **Keine Platzhalter mehr.** Hier stand, sie seien vor der
-     * Veroeffentlichung zu ersetzen — das ist erledigt: Firmenangaben,
-     * Registereintrag und Umsatzsteuer-ID stehen drin, und die Vermerke
-     * „dieser Text ist ein Entwurf" sind am 22. August 2026 entfernt worden.
-     * Anwaltlich geprüft ist der Text damit nicht — das bleibt offen.
+     * Die Angaben stammen aus dem Rechtstext-Bestand der Webseite (Stand
+     * 18. August 2026) und sind vollständig — keine Platzhalter mehr.
      *
-     * **Ohne Telefonnummer, und das ist Absicht.** Paragraf 5 DDG verlangt
-     * Angaben, die eine schnelle elektronische Kontaktaufnahme und
-     * unmittelbare Kommunikation ermoeglichen — eine beantwortete
-     * E-Mail-Adresse genuegt dafuer. Eine Zeile mit einer offenen eckigen
-     * Klammer haette dagegen woertlich so im Impressum gestanden.
+     * ## Was hier bewusst anders steht als in der Vorlage
      *
-     * Ein Kontaktformular auf humb.ug waere der sicherere zweite Weg und
-     * laesst sich jederzeit nachtragen.
+     * Die Vorlage sprach von „eingeblendeter" Werbung. Die App hat weder Banner
+     * noch Anzeigen, die von selbst erscheinen — Werbung läuft ausschließlich
+     * als Videoanzeige, die der Spieler selbst startet, um dafür eine
+     * Spielhilfe zu erhalten (siehe [com.fairydoo.game.ads.RewardedAdManager]).
+     *
+     * Wichtiger noch: Bis zum ersten Druck auf einen Werbe-Knopf wird das
+     * Werbe-SDK gar nicht erst gestartet. Wer nie ein Video ansieht, bei dem
+     * gehen in diesem Zusammenhang keine Daten an Google — und genau das steht
+     * jetzt auch da. Ein Datenschutztext, der eine Verarbeitung beschreibt, die
+     * bei den meisten Spielern nie stattfindet, wäre unnötig abschreckend.
+     *
+     * ## Diese Texte und der Code müssen zusammen geändert werden
+     *
+     * Abschnitt 3 und 10 beschreiben die Einwilligungsabfrage über Googles User
+     * Messaging Platform und den Menüpunkt „Datenschutz-Einstellungen ändern".
+     * Beides existiert — in [com.fairydoo.game.ads.RewardedAdManager] und im
+     * [com.fairydoo.game.ui.components.SettingsOverlay]. Wer eines davon
+     * ausbaut, muss hier mit ändern; ein Text, der eine Abfrage verspricht, die
+     * nie erscheint, wäre schlechter als gar keiner.
      */
     fun legalBody(page: LegalPage): String = when (page) {
-        // Vollständig ausgefüllt und ohne Vorbehaltszeilen. Anwaltlich geprüft
-        // ist der Text nicht — das ist eine offene Aufgabe, aber kein Grund,
-        // den Vorbehalt im Impressum selbst stehen zu lassen.
         LegalPage.Impressum -> """
             Angaben gemäß § 5 DDG
             App HUMB UG (haftungsbeschränkt)
@@ -203,14 +199,15 @@ object GameCopy {
 
             Verbraucherstreitbeilegung
             Wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+
+            Verwendete Schriften
+            Cinzel Decorative — Copyright © 2012 Natanael Gama, mit dem reservierten Schriftnamen „Cinzel".
+            Quicksand — Copyright © 2019 The Quicksand Project Authors.
+            Beide stehen unter der SIL Open Font License, Version 1.1 (scripts.sil.org/OFL).
+
+            Alle Bilder, Klänge und Musikstücke der App sind eigene Werke. Musik und Klänge werden im Spiel selbst berechnet; es sind keine fremden Aufnahmen enthalten.
         """.trimIndent()
-        // Anbieterangaben stehen vollständig drin. Gegenüber der Vorlage
-        // zweifach an das tatsächliche Spiel angepasst: kein Elternschutz
-        // (§ 4, § 8 — bewusst nicht gebaut, siehe Zielgruppen-Anpassung im
-        // Play Store) und keine Google-Play-Games-Rangliste (§ 6 — Bestleistung
-        // liegt nur lokal auf dem Gerät, es gibt keine geräteübergreifende
-        // oder geteilte Rangliste).
-        //
+
         // Kein Haftungsparagraf. Hier stand eine Klausel, die die Haftung auf
         // Vorsatz und grobe Fahrlässigkeit begrenzte; sie ist am 24. August
         // 2026 auf Weisung entfernt worden. Damit gilt die gesetzliche Haftung
@@ -220,19 +217,6 @@ object GameCopy {
         //
         // Die früheren §§ 11 bis 13 sind dadurch zu §§ 10 bis 12 geworden.
         // Querverweise gab es keine, jeder Paragraf wird nur einmal genannt.
-        //
-        // Zielgruppe ab 13, nicht an Kinder gerichtet (§ 8): Das entkoppelt die
-        // harmlose Inhaltseinstufung von den Familienrichtlinien und hält den
-        // Weg zu Play Games und einer Online-Rangliste offen. Ein an Kinder
-        // gerichtetes Angebot dürfte fremde Anzeigenamen kaum zeigen.
-        //
-        // Die Tageswertung ist in § 6 beschrieben, weil verfallende Punkte eine
-        // Erwartung berühren: Wer sammelt, soll vorher wissen, dass der Stand
-        // am Stichtag zurückgesetzt wird.
-        //
-        // Der Entwurf für die spätere Fassung mit Online-Rangliste liegt in
-        // RECHTSTEXTE-RANGLISTE.md — dieser Text hier beschreibt die App, wie
-        // sie heute ist.
         LegalPage.Agb -> """
             § 1 Geltungsbereich und Anbieter
             Diese Nutzungsbedingungen gelten für die Nutzung der mobilen App „Fairydoku" (nachfolgend „App"), angeboten von App HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle (nachfolgend „Anbieter"). Mit der Installation und Nutzung der App erkennst du diese Bedingungen an.
@@ -244,7 +228,7 @@ object GameCopy {
             Der Anbieter räumt dir ein einfaches, nicht übertragbares und widerrufliches Recht ein, die App auf deinen Geräten für private Zwecke zu nutzen. Eine Bearbeitung, Vervielfältigung, Verbreitung oder das Zugänglichmachen der App oder ihrer Inhalte über die private Nutzung hinaus ist nicht gestattet.
 
             § 4 Kosten und Werbung
-            Die Nutzung der App ist kostenlos und bleibt es. Sie finanziert sich ausschließlich über freiwillige Belohnungsvideos: Du kannst ein kurzes Werbevideo ansehen, um Spielhilfen oder ein Leben zu erhalten. Es gibt keine Werbebanner und keine Anzeigen, die sich von selbst vor das Spiel schieben — wer nie auf das Angebot tippt, sieht keine Werbung. Eine Verpflichtung, Werbung anzusehen, besteht nicht.
+            Die Nutzung der App ist kostenlos. Die App finanziert sich über Werbung. Werbung erscheint nicht von selbst: Du kannst freiwillig ein kurzes Werbevideo ansehen, um dafür eine Spielhilfe oder ein Leben zu erhalten. Eine Verpflichtung, Werbung anzusehen, besteht nicht, und ohne Werbung ist die App vollständig spielbar.
 
             § 5 Virtuelle Gegenstände (Spielhilfen und Leben)
             Innerhalb der App gibt es virtuelle Elemente wie Spielhilfen („Feenstaub", „Irrlicht") und Leben. Diese haben keinen Geldwert, sind nicht in echtes Geld umwandelbar, nicht übertragbar und können nicht ausgezahlt werden. Ein Anspruch auf eine bestimmte Menge oder eine dauerhafte Verfügbarkeit besteht nicht; der Anbieter kann die Regeln zu Erhalt und Nachwachsen dieser Elemente anpassen.
@@ -278,30 +262,7 @@ object GameCopy {
 
             Stand: August 2026
         """.trimIndent()
-        // Anbieterangaben vollständig. Was von
-        // Nataly auszufüllen. Gegenüber der Vorlage an das tatsächliche Spiel
-        // angepasst: keine Google-Play-Games-Rangliste (Abschnitt 2 + 4 —
-        // Bestleistung liegt nur lokal auf dem Gerät), kein Firebase Remote
-        // Config (Abschnitt 5 — Werbe-Freischaltung ist fest im Code
-        // verdrahtet), kein Elternschutz (Abschnitt 6 — bewusst nicht gebaut)
-        // und kein Einwilligungsdialog/keine Einwilligungseinstellungen
-        // (Abschnitt 3 + 10 — es gibt kein Google-UMP-SDK im Code, nur
-        // durchgehend nicht personalisierte Werbung).
-        //
-        // Abschnitt 3 und 10 beschreiben inzwischen ein tatsächlich vorhandenes
-        // Einwilligungswerkzeug: Googles UMP-SDK ist eingebunden (siehe
-        // AdConsentManager.kt), ohne Einwilligung wird gar nicht erst geladen,
-        // und der Widerruf liegt in den Einstellungen. Damit entfällt der
-        // frühere Vorbehalt „ob das ausreicht, sollte geprüft werden".
-        //
-        // Abschnitt 4 beschreibt zusätzlich die Tageswertung — Tagespunkte,
-        // bestes Tagesergebnis und letzter Tageswechsel, ebenfalls
-        // ausschließlich lokal (siehe DailyCycle.kt).
-        //
-        // Abschnitt 6 folgt der Zielgruppen-Entscheidung „ab 13": Die Inhalte
-        // bleiben unbedenklich, das Angebot ist aber keins für Kinder im Sinne
-        // der Familienrichtlinien. Der Entwurf für die spätere Fassung mit
-        // Online-Rangliste liegt in RECHTSTEXTE-RANGLISTE.md.
+
         LegalPage.Datenschutz -> """
             Der Schutz deiner Daten ist uns wichtig. Diese Datenschutzerklärung informiert dich darüber, welche Daten bei der Nutzung der App „Fairydoku" verarbeitet werden. Grundsatz: Fairydoku erhebt so wenige Daten wie möglich. Es gibt keine Registrierung und kein Nutzerkonto.
 
@@ -317,18 +278,26 @@ object GameCopy {
             Fairydoku ist ein reines Logikspiel und kostenlos nutzbar. Wir erheben selbst keine personenbezogenen Daten und betreiben keine eigene Nutzerverwaltung. Eine Anmeldung findet nicht statt. Eine Datenverarbeitung erfolgt im Wesentlichen nur durch den eingebundenen Google-Dienst für Werbung, der im Folgenden beschrieben wird.
 
             3. Werbung (Google AdMob)
-            Zur Finanzierung der kostenlosen App wird Werbung über Google AdMob (Google Ireland Limited bzw. Google LLC) ausgeliefert — ausschließlich in den freiwilligen Belohnungsvideos, die du selbst startest. Dabei können durch Google Geräte- und Nutzungsinformationen sowie ggf. eine Werbekennung (Advertising ID) verarbeitet werden, um Werbung auszuliefern und Missbrauch (z. B. Klickbetrug) zu verhindern.
+            Zur Finanzierung der kostenlosen App ist Google AdMob (Google Ireland Limited bzw. Google LLC) eingebunden.
 
-            AdMob ist so konfiguriert, dass ausschließlich nicht personalisierte Werbung mit der niedrigsten Inhaltsfreigabe („G") ausgeliefert wird. Werbung mit Glücksspiel-, Gewalt- oder sexuellen Inhalten ist damit ausgeschlossen. Eine auf Interessen basierende (personalisierte) Werbung findet nicht statt.
+            Es gibt keine Werbebanner und keine Anzeigen, die von selbst erscheinen. Werbung läuft ausschließlich als Videoanzeige, die du selbst startest, um dafür eine Spielhilfe oder ein Leben zu erhalten.
 
-            Für Nutzerinnen und Nutzer im Europäischen Wirtschaftsraum und im Vereinigten Königreich holen wir vor der ersten Werbeauslieferung eine Einwilligung ein. Dafür ist das von Google zertifizierte Einwilligungswerkzeug (User Messaging Platform) eingebunden. Ohne erteilte Einwilligung wird keine Anzeige angefragt und keine Werbung ausgeliefert; die App bleibt vollständig spielbar, es entfällt lediglich die Möglichkeit, für eine Belohnung freiwillig ein Werbevideo anzusehen.
+            Solange du das nicht tust, passiert nichts: Das Werbe-SDK wird gar nicht erst gestartet, es wird keine Anzeige geladen, und es gehen keine Daten an Google. Wer nie ein Werbevideo ansieht, bei dem verlässt in diesem Zusammenhang nichts das Gerät.
 
-            Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit mit Wirkung für die Zukunft ändern oder zurücknehmen — in den Einstellungen der App unter „Datenschutz-Einstellungen ändern". Weitere Informationen: Google-Datenschutzerklärung.
+            Drückst du zum ersten Mal auf einen Werbe-Knopf, fragen wir zuvor deine Einwilligung ab. Dafür ist das von Google zertifizierte Einwilligungswerkzeug (User Messaging Platform) eingebunden. Erst nach erteilter Einwilligung startet das Werbe-SDK und lädt eine Anzeige. Ohne Einwilligung wird keine Anzeige angefragt; die App bleibt vollständig spielbar, es entfällt lediglich die Möglichkeit, für eine Belohnung ein Video anzusehen.
+
+            Bei der Auslieferung können durch Google Geräte- und Nutzungsinformationen sowie eine Werbekennung (Advertising ID) verarbeitet werden, um die Anzeige auszuliefern und Missbrauch (z. B. Klickbetrug) zu verhindern.
+
+            Jede Anzeigenanfrage ist ausdrücklich als nicht personalisiert gekennzeichnet, und die maximale Inhaltsfreigabe ist auf „G" gesetzt. Eine auf Interessen basierende Werbung findet nicht statt, es werden keine Nutzerprofile gebildet, und Werbung mit Glücksspiel-, Gewalt- oder sexuellen Inhalten ist ausgeschlossen.
+
+            Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit mit Wirkung für die Zukunft ändern oder zurücknehmen — siehe Abschnitt 10. Weitere Informationen findest du in der Datenschutzerklärung von Google.
 
             4. Spielstand, Tageswertung und Bestleistungen
-            Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden ausschließlich lokal auf deinem Gerät gespeichert. Es findet keine Übermittlung an uns oder an Dritte statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+            Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden lokal auf deinem Gerät gespeichert. Eine Übermittlung an uns findet nicht statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
 
-            Die Tageswertung speichert dazu, wie viele Punkte am laufenden Tag gesammelt wurden, das beste Tagesergebnis und den Zeitpunkt des letzten Tageswechsels. Auch diese Angaben verlassen dein Gerät nicht. Ein Anzeigename und eine Avatar-Fee lassen sich in den Einstellungen hinterlegen; beides wird ebenfalls nur lokal gespeichert und niemandem angezeigt.
+            Die Tageswertung speichert dazu, wie viele Punkte am laufenden Tag gesammelt wurden, das beste Tagesergebnis und den Zeitpunkt des letzten Tageswechsels. Ein Anzeigename und eine Avatar-Fee lassen sich in den Einstellungen hinterlegen; beides wird ebenfalls nur lokal gespeichert und niemandem angezeigt.
+
+            Eine Ausnahme, die wir offen nennen wollen: Android sichert App-Daten auf Wunsch in deinem eigenen Google-Konto („Automatische Datensicherung"), und Fairydoku nimmt daran teil. Dadurch findest du deinen Spielstand auf einem neuen Telefon wieder. Diese Sicherung liegt in deinem Konto, nicht bei uns — wir haben darauf keinen Zugriff. Abschalten kannst du sie in den Android-Einstellungen unter „Sicherung" bzw. „Google – Datensicherung".
 
             5. Technische Bereitstellung
             Beim Betrieb der App können technisch notwendige Informationen (z. B. Geräteinformationen) anfallen, soweit dies für Auslieferung und Betrieb erforderlich ist. Wir setzen keine Analyse-, Tracking- oder Absturzberichtsdienste ein.
@@ -355,7 +324,11 @@ object GameCopy {
             Zur Ausübung genügt eine Nachricht an die oben genannte Kontaktadresse. Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
 
             10. Einwilligung ändern oder zurücknehmen
-            Deine Wahl zur Werbung kannst du jederzeit ändern: in den Einstellungen der App unter „Datenschutz-Einstellungen ändern". Der Punkt erscheint dort, wo eine Einwilligung erforderlich ist. Nimmst du sie zurück, wird ab diesem Zeitpunkt keine Werbung mehr ausgeliefert. Möchtest du der Verarbeitung darüber hinaus widersprechen, wende dich an die oben genannte Kontaktadresse.
+            Deine Wahl zur Werbung kannst du jederzeit ändern: in den Einstellungen der App unter „Datenschutz-Einstellungen ändern". Der Punkt erscheint dort, sobald eine Einwilligung abgefragt wurde. Nimmst du sie zurück, wird ab diesem Zeitpunkt keine Werbung mehr ausgeliefert.
+
+            Möchtest du der Verarbeitung darüber hinaus widersprechen, wende dich an die oben genannte Kontaktadresse.
+
+            Unabhängig davon kannst du die Werbekennung deines Geräts jederzeit selbst löschen oder zurücksetzen: in den Android-Einstellungen unter „Datenschutz" bzw. „Google" im Punkt „Anzeigen". Apps erhalten danach keine Werbekennung mehr.
 
             11. Änderungen dieser Datenschutzerklärung
             Wir passen diese Datenschutzerklärung an, wenn Änderungen an der App oder der Rechtslage dies erforderlich machen. Es gilt die jeweils in der App bzw. im Play Store verlinkte Fassung.

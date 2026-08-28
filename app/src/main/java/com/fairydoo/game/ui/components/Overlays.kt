@@ -13,8 +13,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,10 +41,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fairydoo.game.ads.AdOffer
 import com.fairydoo.game.ui.theme.CardBottom
 import com.fairydoo.game.ui.theme.CardTop
+import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GlobalLives
 import com.fairydoo.game.game.GlobalLivesState
+import com.fairydoo.game.ui.sprites.FAIRY_TOKEN
+import com.fairydoo.game.ui.sprites.FairyImage
+import com.fairydoo.game.ui.sprites.fairyInlineContent
+import com.fairydoo.game.ui.sprites.fairyText
 import com.fairydoo.game.ui.theme.DangerRose
 import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.GoldLight
@@ -172,9 +180,12 @@ fun IntroOverlay(bestScore: Int, onStart: () -> Unit) {
         Spacer(Modifier.height(10.dp))
 
         Text(
-            text = "Tippen: leer → ✕ (hier keine Fee) → 🧚 Fee\n" +
-                "✨ Feenstaub: deckt ein sicheres Feld mit Fee auf\n" +
-                "🔮 Irrlicht: deckt ein sicheres Feld ohne Fee auf",
+            text = fairyText(
+                "Tippen: leer → ✕ (hier keine Fee) → $FAIRY_TOKEN Fee\n" +
+                    "✨ Feenstaub: deckt ein sicheres Feld mit Fee auf\n" +
+                    "🔮 Irrlicht: deckt ein sicheres Feld ohne Fee auf",
+            ),
+            inlineContent = fairyInlineContent(FairySpecies.Nebula, 20.sp),
             style = MaterialTheme.typography.bodyMedium,
             color = TextPrimary.copy(alpha = 0.9f),
             fontSize = 13.sp,
@@ -220,11 +231,14 @@ fun LevelUpOverlay(
             label = "levelUpGlowValue",
         )
 
-        Text(
-            text = "🧚‍♀️✨",
-            fontSize = 44.sp,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.graphicsLayer { alpha = glow },
-        )
+        ) {
+            FairyImage(species = FairySpecies.Nebula, height = 58.dp)
+            Text(text = "✨", fontSize = 34.sp)
+        }
 
         Spacer(Modifier.height(8.dp))
 
@@ -359,7 +373,7 @@ fun GameOverOverlay(
     onRetry: () -> Unit,
     onShowLevelMap: () -> Unit,
     adsUnlocked: Boolean,
-    adReady: Boolean,
+    adOffer: AdOffer,
     onWatchAd: () -> Unit,
     onOpenGift: () -> Unit,
 ) {
@@ -429,11 +443,15 @@ fun GameOverOverlay(
             GoldButton(label = "Level neu starten", onClick = onRetry)
         } else if (adsUnlocked) {
             GoldButton(
-                label = if (adReady) "📺 Werbung ansehen (+1 Leben)" else "Werbung lädt…",
-                onClick = if (adReady) onWatchAd else ({}),
+                label = when (adOffer) {
+                    AdOffer.Available -> "📺 Werbung ansehen (+1 Leben)"
+                    AdOffer.Preparing -> "Werbung lädt…"
+                    AdOffer.Unavailable -> "Werbung nicht verfügbar"
+                },
+                onClick = if (adOffer == AdOffer.Available) onWatchAd else ({}),
             )
         } else {
-            // Vor Level 11 gibt es noch keine Werbung — ein leerer Vorrat
+            // Vor der Werbe-Schwelle gibt es keine Werbung — ein leerer Vorrat
             // wartet nicht auf den Countdown, sondern lässt sich sofort per
             // Geschenk auffüllen.
             GoldButton(label = "🎁 Geschenk annehmen", onClick = onOpenGift)

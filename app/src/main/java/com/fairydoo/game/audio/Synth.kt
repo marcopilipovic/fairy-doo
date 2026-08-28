@@ -109,55 +109,6 @@ object Synth {
     }
 
     /** Hüllkurve mit weichem Ein- und Ausklang; verhindert Knacken an den Rändern. */
-    /**
-     * Rauschen — der Baustein, den reine Sinustöne nicht ersetzen können.
-     *
-     * Alles Tonale lässt sich aus Sinustönen bauen, alles Geräuschhafte nicht:
-     * ein Flügelschlag, ein Windstoß, ein Erschrecken bestehen zum großen Teil
-     * aus Rauschen. Ohne dieses klingt jeder Versuch nach Blasinstrument.
-     *
-     * Der Zufall kommt von außen herein, damit derselbe Aufruf immer dasselbe
-     * Rauschen liefert — sonst klänge das Spiel bei jedem Start anders.
-     */
-    fun noise(
-        durationSeconds: Float,
-        amplitudeAt: (progress: Float) -> Float,
-        random: kotlin.random.Random,
-    ): FloatArray {
-        val length = secondsToSamples(durationSeconds)
-        return FloatArray(length) { index ->
-            val progress = index.toFloat() / length
-            (random.nextFloat() * 2f - 1f) * amplitudeAt(progress)
-        }
-    }
-
-    /**
-     * Ein schmales Band aus dem Rauschen herausgreifen.
-     *
-     * Rohes Rauschen klingt nach Fernsehschnee. Erst ein Filter macht daraus
-     * etwas, das nach einer Sache klingt — hoch und schmal nach Flügeln, tief
-     * und breit nach Wind. Zwei Durchgänge, damit die Flanken steil genug sind.
-     */
-    fun bandpass(samples: FloatArray, centerHz: Float, guete: Float): FloatArray {
-        val w = 2.0 * Math.PI * centerHz / SAMPLE_RATE
-        val alpha = kotlin.math.sin(w) / (2.0 * guete)
-        val b0 = alpha
-        val b2 = -alpha
-        val a0 = 1.0 + alpha
-        val a1 = -2.0 * kotlin.math.cos(w)
-        val a2 = 1.0 - alpha
-
-        val out = FloatArray(samples.size)
-        var x1 = 0.0; var x2 = 0.0; var y1 = 0.0; var y2 = 0.0
-        for (i in samples.indices) {
-            val x0 = samples[i].toDouble()
-            val y0 = (b0 * x0 + b2 * x2 - a1 * y1 - a2 * y2) / a0
-            out[i] = y0.toFloat()
-            x2 = x1; x1 = x0; y2 = y1; y1 = y0
-        }
-        return out
-    }
-
     fun envelope(
         attack: Float = 0.02f,
         release: Float = 0.3f,
@@ -221,28 +172,33 @@ object Synth {
     }
 
     /**
-     * Blendet das Ende über den Anfang, damit eine Schleife ohne Naht schließt.
+     * Mischt Klänge in eine Schleife fester Länge — was hinten übersteht, läuft
+     * vorne weiter.
      *
-     * Anders als ein Ausblenden an beiden Rändern — das erzeugt bei einer
-     * Wiederholung ein hörbares Loch. Hier wandert der Schluss über den Beginn,
-     * und das überlappende Stück wird abgeschnitten: Der letzte Abtastwert geht
-     * dadurch nahtlos in den ersten über.
+     * Bis hierher wurde die Naht überblendet: Schluss über Anfang, Überhang
+     * abgeschnitten. Das nahm dem Übergang das Knacken, aber nicht das
+     * Stolpern — an der Naht schoben sich weiterhin zwei unzusammenhängende
+     * Takte ineinander. Hier gibt es gar keine Naht: Ein Akkord, der bei
+     * Sekunde 30 einer 32-Sekunden-Schleife anfängt, klingt bei Sekunde 0
+     * weiter aus. Die Schleife schließt sich, weil sie nie geöffnet war.
+     *
+     * Das geht nur bei berechneten Klängen. Eine Aufnahme kann man nicht um
+     * ihre eigene Länge herumfalten — deshalb braucht sie das Überblenden.
      */
-    fun crossfadeLoop(samples: ShortArray, seconds: Float): ShortArray {
-        val fade = secondsToSamples(seconds).coerceAtMost(samples.size / 4)
-        if (fade <= 0) return samples
+    fun mixLooping(loopSeconds: Float, vararg layers: Pair<Float, FloatArray>): FloatArray {
+        val length = secondsToSamples(loopSeconds)
+        val output = FloatArray(length)
 
-        val length = samples.size - fade
-        val result = ShortArray(length)
-        samples.copyInto(result, 0, 0, length)
-
-        for (index in 0 until fade) {
-            val weight = index.toFloat() / fade
-            val tail = samples[length + index].toInt()
-            val head = result[index].toInt()
-            result[index] = (head * weight + tail * (1f - weight)).toInt().toShort()
+        for ((offsetSeconds, samples) in layers) {
+            var cursor = secondsToSamples(offsetSeconds) % length
+            if (cursor < 0) cursor += length
+            for (value in samples) {
+                output[cursor] += value
+                cursor++
+                if (cursor == length) cursor = 0
+            }
         }
-        return result
+        return output
     }
 
     /** Blendet Anfang und Ende aus, damit ein Loop nahtlos schließt. */

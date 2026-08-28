@@ -67,11 +67,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.app.Activity
+import com.fairydoo.game.ads.AdOffer
 import com.fairydoo.game.ads.RewardedAdManager
-import kotlinx.coroutines.flow.StateFlow
 import com.fairydoo.game.audio.FairyAudio
+import com.fairydoo.game.audio.MusicTrack
 import com.fairydoo.game.data.GamePreferencesRepository
 import com.fairydoo.game.data.PlayerProfile
+import com.fairydoo.game.game.FairySpecies
 import com.fairydoo.game.game.GameInput
 import com.fairydoo.game.game.GameState
 import com.fairydoo.game.game.GameStatus
@@ -91,6 +93,9 @@ import com.fairydoo.game.ui.components.PowerUpBar
 import com.fairydoo.game.ui.components.SoundMenuButton
 import com.fairydoo.game.ui.components.SoundSettingsOverlay
 import com.fairydoo.game.ui.components.TutorialOverlay
+import com.fairydoo.game.ui.sprites.FairyImage
+import com.fairydoo.game.ui.sprites.fairyInlineContent
+import com.fairydoo.game.ui.sprites.fairyText
 import com.fairydoo.game.ui.theme.BlossomPink
 import com.fairydoo.game.ui.theme.DangerPink
 import com.fairydoo.game.ui.theme.GlowBlue
@@ -255,12 +260,7 @@ private fun BoxScope.GlowingMushrooms() {
 }
 
 @Composable
-fun GameScreen(
-    preferences: GamePreferencesRepository,
-    ads: RewardedAdManager,
-    privacyOptionsRequired: StateFlow<Boolean>,
-    onOpenPrivacyOptions: () -> Unit,
-) {
+fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     val viewModel: GameViewModel = viewModel(
         factory = remember(preferences) { GameViewModel.factory(preferences) },
     )
@@ -270,11 +270,13 @@ fun GameScreen(
     val globalLives by viewModel.globalLives.collectAsStateWithLifecycle()
     val fairyDust by viewModel.fairyDust.collectAsStateWithLifecycle()
     val irrlicht by viewModel.irrlicht.collectAsStateWithLifecycle()
-    val daily by viewModel.dailyScore.collectAsStateWithLifecycle()
-    val privacyOptions by privacyOptionsRequired.collectAsStateWithLifecycle()
-    val pendingSettlement by viewModel.pendingSettlement.collectAsStateWithLifecycle()
     val adsUnlocked by viewModel.adsUnlocked.collectAsStateWithLifecycle()
-    val adReady by ads.isReady.collectAsStateWithLifecycle()
+    // Die Tageswertung: der laufende Stand für die Levelkarte, und die
+    // Abrechnung, die beim ersten Start nach Mitternacht fällig wird.
+    val daily by viewModel.dailyScore.collectAsStateWithLifecycle()
+    val pendingSettlement by viewModel.pendingSettlement.collectAsStateWithLifecycle()
+    val adOffer by ads.offer.collectAsStateWithLifecycle()
+    val privacyOptionsAvailable by ads.privacyOptionsAvailable.collectAsStateWithLifecycle()
     val showLevelSelect by viewModel.showLevelSelect.collectAsStateWithLifecycle()
     val tutorialOpen by viewModel.tutorialOpen.collectAsStateWithLifecycle()
     val tutorialStep by viewModel.tutorialStep.collectAsStateWithLifecycle()
@@ -282,28 +284,55 @@ fun GameScreen(
     // Der Activity-Bezug wird erst hier gebraucht, direkt beim Zeigen der
     // Anzeige — der ViewModel bleibt dadurch Activity-unabhängig.
     val activity = LocalContext.current as Activity
-    val onWatchAdForFairyDust = { ads.show(activity) { viewModel.grantFairyDust() } }
-    val onWatchAdForIrrlicht = { ads.show(activity) { viewModel.grantIrrlicht() } }
-    val onWatchAdForLife = { ads.show(activity) { viewModel.grantGlobalLife() } }
+    // Die Uhr steht still, solange die Anzeige läuft — und zwar vom Tippen an,
+    // nicht erst, wenn das Video anfängt: Einwilligung einholen und Anzeige
+    // laden kostet beim ersten Mal ein paar Sekunden.
+    //
+    // Ohne das lief die Uhr weiter, während man sich die Werbung ansah. Wer ein
+    // Helferlein wollte, verlor darüber das Level — genau die Erfahrung, nach
+    // der man sich Werbung nie wieder ansieht. Damit stünde die Werbung gegen
+    // ihren eigenen Zweck.
+    //
+    // Auf dem Gerät nachgemessen, über Einwilligungsdialog und vollständige
+    // Anzeige hinweg: 2:53 vor dem Antippen, 2:49 nach der Rückkehr. Die
+    // verbliebenen Sekunden sind der Weg vom Tippen bis zum Anhalten.
+    //
+    // Der Lebenszyklus allein reicht dafür nicht: Ob eine Anzeige den
+    // Bildschirm überhaupt in ON_STOP schickt, hängt davon ab, wie das
+    // Werbe-SDK sie zeigt. Deshalb wird hier ausdrücklich angehalten, statt
+    // sich darauf zu verlassen.
+    val werbung = { onReward: () -> Unit ->
+        viewModel.pause()
+        ads.onAdRequested(
+            activity = activity,
+            onReward = onReward,
+            onFinished = { if (!showLevelSelect && !tutorialOpen) viewModel.resume() },
+        )
+    }
+    val onWatchAdForFairyDust = { werbung { viewModel.grantFairyDust() } }
+    val onWatchAdForIrrlicht = { werbung { viewModel.grantIrrlicht() } }
+    val onWatchAdForLife = { werbung { viewModel.grantGlobalLife() } }
 
-    // Vor Level 11 tritt an die Stelle der Werbung ein Geschenk-Popup, das
+    // Bis zur Werbe-Schwelle tritt an die Stelle der Werbung ein Geschenk-Popup, das
     // sofort auffüllt — welche Zauberhilfe bzw. welches Leben gerade dran ist,
     // hält dieser Zustand fest, solange das Popup offen ist. Das letzte
-    // Geschenk ist an Level 10 geknüpft — beim Antippen im laufenden Spiel
-    // zählt das gerade gespielte Level (auch beim Wiederholen älterer Level
-    // bleibt so korrekt, dass nur Level 10 selbst als "letztes" gilt und
-    // nicht schon jedes Level, sobald Level 10 insgesamt freigeschaltet ist);
+    // Geschenk ist an die Werbe-Schwelle geknüpft — beim Antippen im
+    // laufenden Spiel zählt das gerade gespielte Level (auch beim Wiederholen
+    // älterer Level bleibt so korrekt, dass nur das Schwellenlevel selbst als
+    // "letztes" gilt und nicht schon jedes Level, sobald die Schwelle
+    // insgesamt überschritten ist);
     // auf der Levelkarte gibt es kein laufendes Level, dort zählt stattdessen
     // das höchste freigeschaltete Level, weil das dem nächsten Levelstart am
     // nächsten kommt.
     var giftKind by rememberSaveable { mutableStateOf<GiftKind?>(null) }
     var giftIsLast by rememberSaveable { mutableStateOf(false) }
-    val onOpenGiftForFairyDust = { giftKind = GiftKind.FairyDust; giftIsLast = state.level == 10 }
-    val onOpenGiftForIrrlicht = { giftKind = GiftKind.Irrlicht; giftIsLast = state.level == 10 }
-    val onOpenGiftForLifeInGame = { giftKind = GiftKind.Life; giftIsLast = state.level == 10 }
+    val letztesGeschenk = { state.level == GameViewModel.ADS_UNLOCK_AFTER_LEVEL }
+    val onOpenGiftForFairyDust = { giftKind = GiftKind.FairyDust; giftIsLast = letztesGeschenk() }
+    val onOpenGiftForIrrlicht = { giftKind = GiftKind.Irrlicht; giftIsLast = letztesGeschenk() }
+    val onOpenGiftForLifeInGame = { giftKind = GiftKind.Life; giftIsLast = letztesGeschenk() }
     val onOpenGiftForLifeOnMap = {
         giftKind = GiftKind.Life
-        giftIsLast = profile.highestLevelUnlocked == 10
+        giftIsLast = profile.highestLevelUnlocked == GameViewModel.ADS_UNLOCK_AFTER_LEVEL
     }
 
     // Die Klangwelt lebt so lange wie der Bildschirm; beim Verlassen wird sie
@@ -321,6 +350,14 @@ fun GameScreen(
         audio.setVoiceVolume(profile.voiceVolume)
     }
 
+    // Jeder Bildschirm hat sein Stück: der Wald trägt die Konzentration beim
+    // Rätseln, der Feenpfad ist der Atemzug dazwischen. Vorher lief überall
+    // dasselbe, und die Karte fühlte sich dadurch an wie eine Unterbrechung
+    // des Spiels statt wie ein Teil davon.
+    LaunchedEffect(showLevelSelect) {
+        audio.setMusicTrack(if (showLevelSelect) MusicTrack.Path else MusicTrack.Forest)
+    }
+
     // Spielgeschehen hörbar machen. Level und Punktestand gehen mit, damit die
     // Feenstimme sie im Lob nennen kann.
     LaunchedEffect(audio) {
@@ -328,18 +365,6 @@ fun GameScreen(
             val current = viewModel.state.value
             audio.play(event, level = current.level, score = current.score)
         }
-    }
-
-    // **Der Waldteppich läuft nur auf der Levelkarte, nicht im Rätsel.**
-    //
-    // Nataly: „Im Level reichen die Klicktöne, wir brauchen nur etwas bei dem
-    // Pfad." Sie hat damit übertragen, was bei Lotte und Balu gilt: Im Garten
-    // singen die Vögel, im Level nicht. Der Grund ist derselbe — im Rätsel
-    // tippt man ständig und bekommt bei jedem Tipp einen Ton; ein Teppich
-    // darunter trägt dann nichts mehr bei und ist trotzdem im Weg. Auf der
-    // Karte schaut und entscheidet man, und dort wirkt Stille tot.
-    LaunchedEffect(showLevelSelect) {
-        if (showLevelSelect) audio.resume() else audio.pause()
     }
 
     // Wandert die App in den Hintergrund, wird pausiert statt weitergespielt.
@@ -355,9 +380,7 @@ fun GameScreen(
                     // Steht die Levelkarte oder die Anleitung offen, bleibt
                     // das Spiel pausiert.
                     if (!showLevelSelect && !tutorialOpen) viewModel.resume()
-                    // Auch hier nur auf der Karte — sonst käme der Teppich
-                    // nach jedem Wechsel in den Hintergrund im Level zurück.
-                    if (showLevelSelect) audio.resume()
+                    audio.resume()
                 }
                 else -> Unit
             }
@@ -387,11 +410,11 @@ fun GameScreen(
                 onSoundChange = viewModel::setSoundVolume,
                 onVoiceChange = viewModel::setVoiceVolume,
                 adsUnlocked = adsUnlocked,
-                adReady = adReady,
+                adOffer = adOffer,
+                privacyOptionsAvailable = privacyOptionsAvailable,
+                onOpenPrivacyOptions = { ads.showPrivacyOptions(activity) },
                 onWatchAdForLife = onWatchAdForLife,
                 onOpenGiftForLife = onOpenGiftForLifeOnMap,
-                privacyOptionsRequired = privacyOptions,
-                onOpenPrivacyOptions = onOpenPrivacyOptions,
             )
         } else {
             GameContent(
@@ -416,7 +439,7 @@ fun GameScreen(
                 nextIrrlichtInMillis = (irrlicht.nextAtMillis - System.currentTimeMillis())
                     .coerceAtLeast(0L),
                 adsUnlocked = adsUnlocked,
-                adReady = adReady,
+                adOffer = adOffer,
                 onWatchAdForFairyDust = onWatchAdForFairyDust,
                 onWatchAdForIrrlicht = onWatchAdForIrrlicht,
                 onWatchAdForLife = onWatchAdForLife,
@@ -495,7 +518,7 @@ private fun GameContent(
     nextDustInMillis: Long,
     nextIrrlichtInMillis: Long,
     adsUnlocked: Boolean,
-    adReady: Boolean,
+    adOffer: AdOffer,
     onWatchAdForFairyDust: () -> Unit,
     onWatchAdForIrrlicht: () -> Unit,
     onWatchAdForLife: () -> Unit,
@@ -592,7 +615,7 @@ private fun GameContent(
             onUseFairyDust = onUseFairyDust,
             onUseIrrlicht = onUseIrrlicht,
             adsUnlocked = adsUnlocked,
-            adReady = adReady,
+            adOffer = adOffer,
             onWatchAdForFairyDust = onWatchAdForFairyDust,
             onWatchAdForIrrlicht = onWatchAdForIrrlicht,
             onOpenGiftForFairyDust = onOpenGiftForFairyDust,
@@ -636,6 +659,9 @@ private fun GameContent(
                     // Bretts ohne die des jetzigen.
                     newcomers = GameState.speciesOnBoard(state.level + 1) -
                         GameState.speciesOnBoard(state.level).toSet(),
+                    // Das Gitter wächst nur jedes zweite Level. Ohne diese
+                    // Unterscheidung verspräche der Text „Der Wald wird
+                    // dichter", während er gleich groß bleibt.
                     sizeGrew = GameState.sizeForLevel(state.level + 1) >
                         GameState.sizeForLevel(state.level),
                 ),
@@ -652,7 +678,7 @@ private fun GameContent(
                 onRetry = { onRetryLevel(state.level) },
                 onShowLevelMap = onOpenLevelSelect,
                 adsUnlocked = adsUnlocked,
-                adReady = adReady,
+                adOffer = adOffer,
                 onWatchAd = onWatchAdForLife,
                 onOpenGift = onOpenGiftForLife,
             )
@@ -697,27 +723,21 @@ private fun StatusMessageLine(text: String) {
     // Der Zuschlag ist nicht Kosmetik: Ohne ihn ist die Fläche um Haaresbreite
     // zu klein für die zweite Zeile, und der Text wird stattdessen mitten im
     // Satz abgeschnitten — sichtbar erst bei vergrößerter Systemschrift.
-    val reserved = with(LocalDensity.current) { (lineHeight * 2).toDp() + 6.dp }
+    val height = with(LocalDensity.current) { (lineHeight * 2).toDp() + 6.dp }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            // Mindesthöhe statt fester Höhe. Eine feste Höhe reicht die
-            // Obergrenze an den Text weiter, und der bricht dann nicht mehr um,
-            // sondern kürzt in der ersten Zeile ab — auf dem Gerät stand so
-            // „Glühwürmchen-Hain · Trixie, die Chaosf…", obwohl zwei Zeilen
-            // erlaubt sind und der Platz dafür reserviert ist.
-            //
-            // Die Rechnung war dabei nicht falsch, nur zu knapp: Die Schrift
-            // braucht je Zeile etwas mehr als ihre Zeilenhöhe. Mit einer
-            // Mindesthöhe ist das gleichgültig — der Platz für zwei Zeilen
-            // bleibt reserviert, damit das Brett nicht springt, und eine dritte
-            // Zeile dürfte sich den Raum nehmen, falls sie je nötig wird.
-            .heightIn(min = reserved),
+            .height(height),
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = text,
+            text = fairyText(text),
+            // Etwas höher als die Schrift: Die Feen sind hochformatig und
+            // schmal, auf reiner Zeilenhöhe verschwänden sie neben den
+            // Buchstaben. Die eine Meldung mit Fee ist ein Einzeiler — die
+            // zweite reservierte Zeile fängt den Zuschlag auf.
+            inlineContent = fairyInlineContent(FairySpecies.Nebula, style.fontSize * 1.6f),
             style = style,
             color = StatusPurple,
             textAlign = TextAlign.Center,
@@ -788,7 +808,14 @@ internal fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-/** „Fairydoku" zwischen zwei schwebenden Feen. */
+/**
+ * „Fairydoku" zwischen zwei schwebenden Feen.
+ *
+ * Zwei verschiedene Arten statt zweimal derselben: Nebula trägt den Nachthimmel
+ * in den Flügeln und steht deshalb ruhig vor dem dunklen Kopfbereich, Nixies
+ * Türkis setzt sich rechts davon ab. Zweimal dieselbe Figur sähe gespiegelt
+ * aus, und gerade im Titel fällt das auf.
+ */
 @Composable
 private fun TitleRow() {
     val transition = rememberInfiniteTransition(label = "floaty")
@@ -818,9 +845,9 @@ private fun TitleRow() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
-            text = "🧚‍♀️",
-            fontSize = 32.sp,
+        FairyImage(
+            species = FairySpecies.Nebula,
+            height = 40.dp,
             modifier = Modifier.graphicsLayer { translationY = leftOffset },
         )
         Text(text = "✦", fontSize = 16.sp, color = GoldLight)
@@ -840,9 +867,9 @@ private fun TitleRow() {
             maxLines = 1,
         )
         Text(text = "✦", fontSize = 16.sp, color = GoldLight)
-        Text(
-            text = "🧚",
-            fontSize = 32.sp,
+        FairyImage(
+            species = FairySpecies.Nixie,
+            height = 40.dp,
             modifier = Modifier.graphicsLayer { translationY = rightOffset },
         )
     }

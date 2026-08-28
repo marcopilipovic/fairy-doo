@@ -37,7 +37,7 @@ sicheres Feld, das zwei Sekunden golden nachleuchtet.
 
 Der Vorrat fasst **drei** Stück und gehört dem Spieler, nicht dem Level — er
 geht in das nächste Level mit und überlebt den Neustart der App. Ein
-verbrauchtes Stück wächst in **einer halben Stunde** nach; ist der Vorrat voll,
+verbrauchtes Stück wächst in **zwei Stunden** nach; ist der Vorrat voll,
 steht die Uhr still. Das Nachwachsen läuft über einen gespeicherten Zeitpunkt
 und holt deshalb auch nach, was während geschlossener App fällig geworden wäre
 (`RegeneratingSupply`, geteilt mit den Wald-Leben).

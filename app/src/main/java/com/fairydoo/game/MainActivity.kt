@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.fairydoo.game.ads.AdConsentManager
 import com.fairydoo.game.ads.RewardedAdManager
 import com.fairydoo.game.data.GamePreferencesRepository
 import com.fairydoo.game.ui.screens.GameScreen
@@ -18,8 +17,6 @@ import com.fairydoo.game.ui.theme.FairyDooTheme
  */
 class MainActivity : ComponentActivity() {
 
-    private lateinit var consent: AdConsentManager
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -28,30 +25,19 @@ class MainActivity : ComponentActivity() {
         // Repository ist, wäre Hilt/Koin nur Zeremonie.
         val preferences = GamePreferencesRepository(applicationContext)
 
-        // Läuft app-weit unabhängig vom Compose-Baum: Eine Anzeige darf über
-        // einen Level- oder Bildschirmwechsel hinweg vorgeladen bleiben, sonst
-        // wartet man nach jedem Wechsel erneut auf das Laden.
+        // Läuft app-weit unabhängig vom Compose-Baum: Eine einmal geladene
+        // Anzeige darf über einen Level- oder Bildschirmwechsel hinweg
+        // bereitstehen, sonst wartet man nach jedem Wechsel erneut.
+        //
+        // Hier wird nur das Objekt angelegt, nichts gestartet: Werbe-SDK und
+        // Einwilligung kommen erst, wenn zum ersten Mal ein Werbe-Knopf
+        // gedrückt wird. Wer nie Werbung ansieht, bei dem verlässt nichts das
+        // Gerät.
         val ads = RewardedAdManager(applicationContext)
-
-        // Erst fragen, dann laden. Das Spiel startet unabhängig davon sofort —
-        // die Einwilligung läuft nebenher, und schlägt sie fehl, bleibt eben
-        // die Werbung aus. Ein Ladebildschirm, der auf ein Netzwerkergebnis
-        // wartet, wäre der schlechteste erste Eindruck, den die App machen
-        // könnte.
-        consent = AdConsentManager(this).also { manager ->
-            manager.gather {
-                if (manager.canRequestAds.value) ads.init()
-            }
-        }
 
         setContent {
             FairyDooTheme {
-                GameScreen(
-                    preferences = preferences,
-                    ads = ads,
-                    privacyOptionsRequired = consent.privacyOptionsRequired,
-                    onOpenPrivacyOptions = consent::showPrivacyOptions,
-                )
+                GameScreen(preferences = preferences, ads = ads)
             }
         }
     }

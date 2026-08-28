@@ -1,4 +1,4 @@
-﻿package com.fairydoo.game.audio
+package com.fairydoo.game.audio
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -6,11 +6,9 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import android.media.SoundPool
 import android.util.Log
-import com.fairydoo.game.R
 import com.fairydoo.game.data.PlayerProfile
 import com.fairydoo.game.game.FairySpecies
 import kotlinx.coroutines.CoroutineScope
-import kotlin.math.pow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -19,7 +17,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.zip.CRC32
 
 /**
  * Spielt die Klangwelt ab.
@@ -45,12 +42,13 @@ class FairyAudio(context: Context) {
     private var musicJob: Job? = null
 
     /**
-     * Für den aufgenommenen Aufschrei bei falsch gesetzten Feen.
+     * Für alle kurzen Klänge: Ticks, Fähigkeiten, Jubel, die zehn Feentöne.
      *
-     * SoundPool statt AudioTrack, weil es MP3 selbst dekodiert und mehrere
-     * Clips gleichzeitig mischen kann. Das Setzen einer richtig platzierten Fee
-     * läuft dagegen über einen berechneten Klick (siehe `FairySounds.place`) —
-     * dafür braucht es keine Aufnahme, deren Rechte zu klären wären.
+     * SoundPool statt AudioTrack, weil es mehrere Klänge gleichzeitig mischen
+     * kann — beim schnellen Setzen mehrerer Feen sollen sich die Töne
+     * überlagern statt einander abzuschneiden. Er lädt aus Dateien, deshalb
+     * werden die berechneten Klänge zuvor als WAV in den Zwischenspeicher
+     * geschrieben.
      */
     private val clipPool: SoundPool = SoundPool.Builder()
         .setMaxStreams(MAX_CLIP_STREAMS)
@@ -61,7 +59,6 @@ class FairyAudio(context: Context) {
                 .build(),
         )
         .build()
-
 
     /** Geladene Clips; vorher abgespielt liefert SoundPool nur Stille. */
     private val loadedClips = mutableSetOf<Int>()
@@ -81,27 +78,35 @@ class FairyAudio(context: Context) {
     @Volatile
     private var voiceVolume: Float = PlayerProfile.DEFAULT_VOICE_VOLUME
 
+    /** Welches Stück laufen soll; der Bildschirm entscheidet. */
+    @Volatile
+    private var musicTrack: MusicTrack = MusicTrack.Forest
+
     private val musicEnabled: Boolean get() = musicVolume > 0f
 
-    init {
-        loadClips()
-        // Effekte und Musik nebeneinander vorbereiten: Nacheinander summierten
-        // sich Klangberechnung und Musik-Dekodierung, und bis beides fertig war,
-        // blieb das Spiel stumm. Sie hängen nicht voneinander ab.
-        scope.launch { prepare() }
-        if (musicEnabled) musicJob = scope.launch { startMusic() }
-    }
-
-    /** Lädt die aufgenommene Aufschrei-Stimme; das Dekodieren übernimmt SoundPool. */
-    private fun loadClips() {
+    /**
+     * Merkt sich, welche Klänge der Pool fertig geladen hat.
+     *
+     * Ein noch nicht geladener Klang bliebe beim Abspielen stumm und belegte
+     * trotzdem einen Kanal.
+     */
+    private fun registerClipLoading() {
         clipPool.setOnLoadCompleteListener { _, sampleId, status ->
             if (status == 0) {
                 loadedClips += sampleId
             } else {
-                Log.w(TAG, "Feenstimme $sampleId konnte nicht geladen werden (Status $status)")
+                Log.w(TAG, "Klang $sampleId konnte nicht geladen werden (Status $status)")
             }
         }
+    }
 
+    init {
+        registerClipLoading()
+        // Effekte und Musik nebeneinander vorbereiten: Nacheinander summierten
+        // sich beide Berechnungen, und bis sie fertig waren, blieb das Spiel
+        // stumm. Sie hängen nicht voneinander ab.
+        scope.launch { prepare() }
+        if (musicEnabled) musicJob = scope.launch { startMusic() }
     }
 
     /**
@@ -124,8 +129,6 @@ class FairyAudio(context: Context) {
         // Effekte zuerst: Sie sind billiger als die Musikschleife, und ein
         // stummer Tastendruck fällt eher auf als fehlende Hintergrundmusik.
         val builders: Map<String, () -> FloatArray> = mapOf(
-            KEY_PLACE to FairySounds::place,
-            KEY_STARTLED to FairySounds::startled,
             KEY_TICK to FairySounds::tick,
             KEY_UNDO to FairySounds::undo,
             KEY_SPARKLE to FairySounds::sparkle,
@@ -133,9 +136,17 @@ class FairyAudio(context: Context) {
             KEY_FREEZE to FairySounds::timeFreeze,
             KEY_CHEER to FairySounds::cheer,
             KEY_GAME_OVER to FairySounds::gameOver,
+            KEY_STARTLED to FairySounds::startled,
         )
 
-        effects = builders.mapNotNull { (key, build) ->
+        // Dazu die zehn Feentöne — einer je Art. Sie sind winzig (0,42 s) und
+        // werden beim Setzen jeder Fee gebraucht, gehören also in denselben
+        // Pool wie die übrigen Effekte.
+        val alle = builders + FairySpecies.entries.associate { species ->
+            chimeKey(species) to { FairyChimes.render(species) }
+        }
+
+        effects = alle.mapNotNull { (key, build) ->
             runCatching {
                 val file = File(cacheDir, "$key.wav")
                 if (!file.exists() || file.length() == 0L) {
@@ -153,23 +164,32 @@ class FairyAudio(context: Context) {
     /**
      * Die Musikschleife als rohe Abtastwerte im Zwischenspeicher.
      *
-     * Die Datei wird einmal dekodiert und danach von hier geladen — das
-     * Dekodieren einer Minute Musik kostet spürbar Zeit, und so lange bliebe
-     * es still. Abgelegt wird rohes PCM, weil AudioTrack die Daten als
-     * Zahlenfeld erwartet; ein Container brächte nur einen Kopfsatz zum
-     * Überspringen.
+     * Berechnet wird nur beim ersten Mal. Ein Stück besteht aus rund vierzig
+     * Stimmen über eine halbe Minute — das kostet auf einem langsamen Gerät
+     * spürbar Zeit, und so lange bliebe es still. Abgelegt wird rohes PCM, weil
+     * AudioTrack die Daten als Zahlenfeld erwartet; ein Container brächte nur
+     * einen Kopfsatz zum Überspringen.
      */
-    private fun loadOrDecodeMusic(cacheDir: File): ShortArray {
-        val file = File(cacheDir, "ambient-${musicFingerprint()}.pcm")
-        // Was eine frühere Musik hinterlassen hat, wird jetzt nicht mehr
-        // gefunden — aber es läge sonst für immer da und belegte Platz.
+    private fun loadOrRenderMusic(track: MusicTrack, cacheDir: File): ShortArray {
+        val name = "musik-${track.name.lowercase()}-v$MUSIC_VERSION.pcm"
+        val file = File(cacheDir, name)
+
+        // Was eine frühere Fassung hinterlassen hat, wird nicht mehr gefunden —
+        // es läge sonst für immer da und belegte Platz.
+        //
+        // Entscheidend ist die Versionsnummer, nicht der Dateiname: Wer hier
+        // alles löscht, was gerade *nicht* geladen wird, wirft bei jedem
+        // Bildschirmwechsel das andere Stück weg. Dann rechnet die App bei
+        // jedem Wechsel eine halbe Minute Musik neu, und während sie das tut,
+        // reißt die Tonausgabe hörbar ab.
+        val endung = "-v$MUSIC_VERSION.pcm"
         runCatching {
             cacheDir.listFiles()
-                ?.filter { it.name.startsWith("ambient") && it.name != file.name }
+                ?.filter { it.name.startsWith("musik-") && !it.name.endsWith(endung) }
                 ?.forEach { it.delete() }
         }
 
-        if (file.exists() && file.length() > 0) {
+        if (file.exists() && file.length() >= 2 && file.length() % 2 == 0L) {
             runCatching {
                 val bytes = file.readBytes()
                 return ShortArray(bytes.size / 2) { index ->
@@ -182,15 +202,7 @@ class FairyAudio(context: Context) {
             }
         }
 
-        // **Berechnet statt entpackt.** Hier lag `ambient_forest.mp3`, die
-        // letzte Aufnahme im Spiel — mit ungeklaerter Lizenz und damit ein
-        // Riegel vor der Veroeffentlichung.
-        //
-        // Ueberblenden braucht es dabei nicht mehr: Die berechnete Schleife ist
-        // ein Kreis, was hinten hinausklingt, sitzt vorn schon drin. Beim MP3
-        // war das Ueberblenden noetig, weil die Kodierung Stille an die Raender
-        // legt.
-        val samples = Synth.toPcm16(FairySounds.forest())
+        val samples = Synth.toPcm16(Music.loopFor(track))
 
         runCatching {
             val bytes = ByteArray(samples.size * 2)
@@ -198,49 +210,18 @@ class FairyAudio(context: Context) {
                 bytes[index * 2] = (value.toInt() and 0xFF).toByte()
                 bytes[index * 2 + 1] = (value.toInt() shr 8).toByte()
             }
-            file.writeBytes(bytes)
+            // Erst danebenschreiben, dann umbenennen. Wird die App mitten im
+            // Schreiben beendet — und fünf Megabyte dauern —, läge sonst eine
+            // abgeschnittene Schleife im Zwischenspeicher, die ab dann *immer*
+            // benutzt würde: Der Name ändert sich ja nicht mehr. Das Umbenennen
+            // ist der einzige Schritt, den das Dateisystem nicht halb erledigt.
+            val temp = File(cacheDir, "$name.tmp")
+            temp.writeBytes(bytes)
+            if (!temp.renameTo(file)) temp.delete()
         }.onFailure { error ->
             Log.w(TAG, "Musik konnte nicht zwischengespeichert werden", error)
         }
         return samples
-    }
-
-    /**
-     * Erkennungsmerkmal der Musikaufnahme.
-     *
-     * Der Zwischenspeicher hing zuvor allein an [SOUND_CACHE_VERSION]. Als die
-     * berechnete Schleife durch die komponierte Aufnahme ersetzt wurde, blieb
-     * diese Zahl unverändert — und jedes Gerät, auf dem das Spiel vorher
-     * gelaufen war, spielte danach weiter die alte Schleife. Der Fehler war von
-     * außen nicht zu erkennen: Der Ton war ja da, nur der falsche.
-     *
-     * Am Dateinamen hängt deshalb jetzt die Prüfsumme der Aufnahme selbst. Wird
-     * die Musik ausgetauscht, ändert sich der Name von allein; niemand muss
-     * mehr daran denken, eine Nummer hochzusetzen.
-     *
-     * Das Lesen der Datei kostet bei jedem Start ein paar Millisekunden — der
-     * Preis dafür, dass ein Vergessen keine Folgen mehr hat.
-     */
-    private fun musicFingerprint(): Long = runCatching {
-        val checksum = CRC32()
-        // **Die Pruefsumme des berechneten Klangs, nicht mehr einer Datei.**
-        // Sie erfuellt denselben Zweck: Aendert sich der Klang, aendert sich
-        // der Name des Zwischenspeichers von allein, und niemand muss daran
-        // denken, eine Nummer hochzusetzen. Ohne das spielte ein Geraet, auf
-        // dem das Spiel schon lief, weiter die alte Schleife — ein Fehler, der
-        // von aussen nicht zu erkennen ist, weil ja Ton da ist, nur der
-        // falsche. Genau das ist hier schon einmal passiert.
-        val samples = Synth.toPcm16(FairySounds.forest())
-        val buffer = ByteArray(samples.size * 2)
-        samples.forEachIndexed { index, value ->
-            buffer[index * 2] = (value.toInt() and 0xFF).toByte()
-            buffer[index * 2 + 1] = (value.toInt() shr 8).toByte()
-        }
-        checksum.update(buffer, 0, buffer.size)
-        checksum.value
-    }.getOrElse { error ->
-        Log.w(TAG, "Prüfsumme der Musik nicht ermittelbar", error)
-        0L
     }
 
     /**
@@ -266,20 +247,19 @@ class FairyAudio(context: Context) {
         // Bereitschaftsprüfung — beides unabhängig von den berechneten
         // Klängen spielbereit, deshalb wird hier nicht auf `prepared` gewartet.
         when (event) {
-            // **Berechnet statt aufgenommen.** Hier lief `fairy_startled.mp3`,
-            // eine Aufnahme mit ungeklaerter Lizenz — und damit ein Riegel vor
-            // der Veroeffentlichung. Der neue Klang faellt bewusst aus der
-            // Leiter der zehn Feentoene heraus: Die sagen „richtig", dieser
-            // sagt „falsch", und man hoert es ohne hinzusehen.
-            SoundEvent.FairyStartled -> playEffect(KEY_STARTLED)
             else -> Unit
         }
 
         if (!prepared) return
 
         when (event) {
-            is SoundEvent.FairyPlaced -> playEffect(KEY_PLACE, rate = rateFor(event.species))
-            SoundEvent.FairyStartled -> Unit
+            SoundEvent.FairyStartled -> playEffect(KEY_STARTLED)
+            // Der Ton der Fee läuft über die Feenstimmen-Lautstärke, nicht über
+            // die der Klänge: Er ertönt bei jedem Zug und ist damit das, was
+            // man am ehesten leiser haben will, ohne Tick und Jubel mit zu
+            // dämpfen. Der Regler heißt weiter „Feenstimme" — es ist ja immer
+            // noch die Äußerung der Fee, nur ohne Worte.
+            is SoundEvent.FairyPlaced -> playEffect(chimeKey(event.species), voiceVolume)
             SoundEvent.Ward -> playEffect(KEY_TICK)
             SoundEvent.Undo -> playEffect(KEY_UNDO)
             SoundEvent.FairyDustUsed -> playEffect(KEY_SPARKLE)
@@ -350,6 +330,28 @@ class FairyAudio(context: Context) {
         musicJob = scope.launch { startMusic() }
     }
 
+    /**
+     * Wechselt das Stück — Wald beim Rätseln, Feenpfad auf der Levelkarte.
+     *
+     * Die Karte ist der Atemzug zwischen zwei Leveln, und das hört man: dieselbe
+     * Tonart, aber halb so viele Akkorde, ein Drittel der Glocken, leiser. Es
+     * soll sich anfühlen wie ein Ortswechsel im selben Wald, nicht wie ein
+     * Senderwechsel.
+     *
+     * Ein Wechsel schneidet das laufende Stück hart ab. Das ist bei einem
+     * Bildschirmwechsel richtig so — hier blendet ohnehin das Bild, und ein
+     * Überblenden der Musik bräuchte eine zweite Spur, die die ganze Zeit
+     * mitliefe.
+     */
+    fun setMusicTrack(next: MusicTrack) {
+        if (next == musicTrack) return
+        musicTrack = next
+        if (!musicEnabled) return
+
+        musicJob?.cancel()
+        musicJob = scope.launch { startMusic() }
+    }
+
     /** Beim Verlassen des Spiels: Musik anhalten, Stimme verstummen lassen. */
     fun pause() {
         runCatching { music?.pause() }
@@ -368,91 +370,45 @@ class FairyAudio(context: Context) {
     }
 
     /** Spielt eine aufgenommene Feenstimme. */
-    private fun playClip(sampleId: Int?) {
-        val volume = soundVolume
-        if (volume <= 0f) return
-        if (sampleId == null || sampleId == 0) return
-        // Ein noch nicht fertig dekodierter Clip würde stumm bleiben und den
-        // Stream trotzdem belegen.
-        if (sampleId !in loadedClips) return
-
-        runCatching {
-            clipPool.play(sampleId, volume, volume, 1, 0, 1f)
-        }.onFailure { error ->
-            Log.w(TAG, "Feenstimme $sampleId konnte nicht abgespielt werden", error)
-        }
-    }
-
-    private fun playEffect(key: String, rate: Float = 1f) {
-        val volume = soundVolume
+    private fun playEffect(key: String, atVolume: Float? = null) {
+        val volume = atVolume ?: soundVolume
         if (volume <= 0f) return
         val sampleId = effects[key] ?: return
         if (sampleId !in loadedClips) return
 
         runCatching {
-            clipPool.play(sampleId, volume, volume, 1, 0, rate)
+            clipPool.play(sampleId, volume, volume, 1, 0, 1f)
         }.onFailure { error ->
             Log.w(TAG, "Klang $key konnte nicht abgespielt werden", error)
         }
     }
 
-    /**
-     * Wie hoch der Setz-Klick für diese Feenart klingt.
-     *
-     * Ein einziger Klang, zehn Tonhöhen: Der SoundPool kann dieselbe Aufnahme
-     * schneller oder langsamer abspielen, und schneller heißt höher. Das
-     * erspart zehn berechnete Klänge im Speicher und klingt trotzdem je Fee
-     * anders — dieselbe Absicht wie bei den früheren gesprochenen Ausrufen,
-     * die jeder Art ihre eigene Tonhöhe gaben.
-     *
-     * Der Bereich ist bewusst eng. SoundPool lässt zwischen 0,5 und 2,0 zu,
-     * aber weit auseinanderliegende Tonhöhen klängen wie verschiedene
-     * Geräusche statt wie dieselbe Fee mit anderer Stimme.
-     */
-    /**
-     * Die Tonhöhe des Klicks — je Fee eine eigene.
-     *
-     * **Vorher war der Abstand gleichmäßig, und genau das war der Fehler.** Die
-     * zehn Feen lagen linear zwischen 0,88 und 1,32; das klingt nach einer
-     * sauberen Verteilung, ist aber keine. Tonhöhe wird nicht linear
-     * wahrgenommen, sondern logarithmisch — gleich große Schritte im Faktor
-     * ergeben ungleiche Intervalle, und die meisten davon liegen zwischen den
-     * Tönen einer Leiter. Zwei Feen kurz nacheinander klangen deshalb
-     * regelmäßig schief, und je schneller man spielte, desto mehr.
-     *
-     * Nataly über den alten Stand: „Das war der erste Versuch, und der ist dann
-     * so nach und nach kaputt gebaut."
-     *
-     * Jetzt sitzen die zehn auf einer **Leiter ohne Halbtonschritte** — den
-     * Stufen 0, 2, 4, 7, 9, 12, 14, 16, 19, 21 in Halbtönen, also einer
-     * Pentatonik über knapp zwei Oktaven. Aus dieser Leiter klingen zwei
-     * beliebige Töne nie schief, auch wenn sie übereinanderfallen. Dieselbe
-     * Regel trägt die Klangwelt der Hundespiele und des Weltraumspiels; sie ist
-     * bei einem Spiel, das man in schneller Folge antippt, keine Feinheit,
-     * sondern die Bedingung.
-     *
-     * Die neunte Stufe steht auf 1,0 — dort klingt der Klick unverändert so,
-     * wie er berechnet wurde.
-     */
-    private fun rateFor(species: FairySpecies): Float {
-        val platz = FairySpecies.entries.indexOf(species).coerceAtLeast(0)
-        val stufe = PENTATONIK[platz % PENTATONIK.size]
-        return 2f.pow((stufe - 9) / 12f)
-    }
-
     private suspend fun startMusic() {
+        val wanted = musicTrack
         stopMusic()
         runCatching {
-            val loop = withContext(Dispatchers.Default) { loadOrDecodeMusic(soundCacheDir()) }
-            val track = createMusicTrack(loop.size)
-            track.write(loop, 0, loop.size)
+            val loop = withContext(Dispatchers.Default) {
+                loadOrRenderMusic(wanted, soundCacheDir())
+            }
+            // Beim ersten Mal dauert das Rechnen; wer in dieser Zeit auf die
+            // Levelkarte wechselt, bekäme sonst noch das Waldstück zu hören —
+            // und der Wechsel danach fiele aus, weil ja schon etwas läuft.
+            if (musicTrack != wanted) return@runCatching
+
+            val audioTrack = createMusicTrack(loop.size)
+            audioTrack.write(loop, 0, loop.size)
             // Der ganze Puffer ist die Schleife — dadurch läuft die Musik ohne
             // Lücke weiter, ohne dass jemand nachfüllen muss.
-            track.setLoopPoints(0, loop.size, -1)
-            track.setVolume(musicVolume)
-            track.play()
-            music = track
+            audioTrack.setLoopPoints(0, loop.size, -1)
+            audioTrack.setVolume(musicVolume)
+            audioTrack.play()
+            music = audioTrack
         }.onFailure { error ->
+            // Ein Wechsel des Stücks bricht den laufenden Aufbau ab — das ist
+            // der Normalfall beim Bildschirmwechsel und kein Fehler. Ohne diese
+            // Unterscheidung steht bei jedem Wechsel eine Warnung im Protokoll,
+            // und echte Fehler gehen darin unter.
+            if (error is kotlinx.coroutines.CancellationException) return@onFailure
             Log.w(TAG, "Musik konnte nicht gestartet werden", error)
         }
     }
@@ -500,10 +456,10 @@ class FairyAudio(context: Context) {
             .also { it.setVolume(musicVolume) }
     }
 
-    private companion object {
-        /** Halbtonschritte einer C-Dur-Pentatonik über knapp zwei Oktaven. */
-        private val PENTATONIK = intArrayOf(0, 2, 4, 7, 9, 12, 14, 16, 19, 21)
+    /** Der Schlüssel, unter dem der Ton einer Fee im Pool liegt. */
+    private fun chimeKey(species: FairySpecies) = "fee-${species.name.lowercase()}"
 
+    private companion object {
         const val TAG = "FairyAudio"
         const val BYTES_PER_SAMPLE = 2
 
@@ -511,11 +467,10 @@ class FairyAudio(context: Context) {
         const val KEY_SPARKLE = "sparkle"
         const val KEY_SHIELD = "shield"
         const val KEY_FREEZE = "freeze"
-        const val KEY_PLACE = "place"
-        const val KEY_STARTLED = "startled"
         const val KEY_TICK = "tick"
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"
+        const val KEY_STARTLED = "startled"
 
         /**
          * Kanäle für gleichzeitige Klänge. Stimmen und Effekte teilen sie sich,
@@ -537,22 +492,17 @@ class FairyAudio(context: Context) {
          * Prüfsumme der Aufnahme (siehe `musicFingerprint`), weil genau dieses
          * Hochzählen beim Austausch der Musik einmal vergessen wurde.
          *
-         * Auf 6 gesetzt, weil der Klick beim Setzen einer Fee dazugekommen ist
-         * und die gesprochenen Ausrufe entfallen sind. Ohne das Hochzählen
-         * behielte jedes Gerät, auf dem das Spiel schon lief, seinen alten
-         * Klangsatz.
-         *
-         * Beinahe wäre es zweimal schiefgegangen: Der Wert stand schon einmal
-         * auf 6, ging beim Zurücknehmen der berechneten Waldmusik aber wieder
-         * auf 5 — obwohl der Klick, der ihn nötig macht, geblieben ist. Beim
-         * Zurücknehmen ist das leichter zu übersehen als beim Ändern.
+         * Auf 5 gesetzt, weil auch die Effekte seit „Musik lauter aussteuern"
+         * veraltet im Zwischenspeicher lagen.
          */
         const val SOUND_CACHE_VERSION = 6
 
-        /** Häppchen beim Prüfsummenlesen — größer bringt messbar nichts mehr. */
-        const val FINGERPRINT_BUFFER_BYTES = 64 * 1024
-
-        /** Überblendung an der Schleifennaht — kurz genug, um nicht aufzufallen. */
-        const val LOOP_CROSSFADE_SECONDS = 0.4f
+        /**
+         * Hochzählen, wenn sich [Music] ändert — sonst spielt ein Gerät, auf
+         * dem das Spiel schon lief, weiter die alte Fassung aus dem
+         * Zwischenspeicher. Getrennt von [SOUND_CACHE_VERSION], damit eine
+         * Änderung an der Musik nicht auch alle Effekte neu berechnen lässt.
+         */
+        const val MUSIC_VERSION = 1
     }
 }

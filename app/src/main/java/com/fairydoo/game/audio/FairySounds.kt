@@ -7,14 +7,11 @@ import kotlin.random.Random
 /**
  * Die berechnete Klangwelt des Feenwalds.
  *
- * Berechnet wird alles Kurze: der Klick beim Setzen, Ticks, Fähigkeiten, Jubel
- * und die Musik. Aus `res/raw` kommt nur noch der Aufschrei beim Falschsetzen
- * (siehe [FairyClips]).
- *
- * **Die gesprochenen Feenausrufe sind entfallen.** Sie liefen über die
- * Sprachausgabe des Geräts und sagten je Feenart ein anderes Wort. Beim
- * Spielen setzt man dutzende Feen, und ein gesprochenes Wort verträgt das
- * nicht — siehe [place].
+ * Die Feenstimmen selbst — Kichern und Aufschrei — sind **keine** Synthese
+ * mehr, sondern echte Aufnahmen aus `res/raw` (siehe [FairyClips]). Berechnet
+ * wird hier alles Übrige: Jubel, Fähigkeiten, Ticks und die Musik. Für
+ * Instrumente und Ambiente ist Synthese ideal, für eine Stimme nicht — deren
+ * Klangfarbe lässt sich aus Sinustönen nicht überzeugend bauen.
  */
 object FairySounds {
 
@@ -105,47 +102,6 @@ object FairySounds {
     }
 
     /** Das Setzen eines Merkzeichens: ein leiser, trockener Tick. */
-    /**
-     * Der Klick beim Setzen einer Fee.
-     *
-     * **Er ersetzt die gesprochenen Ausrufe.** Bis hierher sagte die
-     * Sprachausgabe bei jeder richtig gesetzten Fee „Juhuu!" oder „Jippie!" —
-     * je Art ein anderes Wort. Beim Spielen nutzt sich das ab: Man setzt in
-     * einer Partie dutzende Feen, und ein gesprochenes Wort ist beim
-     * dreißigsten Mal keine Freude mehr, sondern ein Grund, den Ton
-     * abzuschalten. Nataly: „die müssen durch einfache irgendwelche
-     * Klickgeräusche ersetzt werden."
-     *
-     * Ein Klick verträgt Wiederholung, ein Wort nicht.
-     *
-     * Kürzer und trockener als [tick]: Der Merkzeichen-Tick darf nachklingen,
-     * dieser hier soll nur bestätigen. Sechzig Millisekunden, steiler Abfall,
-     * ein bisschen Obertonglanz, damit es nach Feenwald klingt und nicht nach
-     * Schreibmaschine.
-     *
-     * Dass jede Feenart trotzdem anders klingt, kostet keinen zweiten Klang:
-     * Der SoundPool kann denselben schneller oder langsamer abspielen. Siehe
-     * `FairyAudio.rateFor`.
-     */
-    fun place(): FloatArray = Synth.normalize(
-        Synth.mix(
-            0f to Synth.tone(
-                durationSeconds = 0.06f,
-                frequencyAt = { progress -> 2100f - 900f * progress },
-                amplitudeAt = Synth.pluck(decay = 42f, peak = 0.34f),
-                harmonics = listOf(1f to 1f, 2f to 0.22f),
-            ),
-            // Ein hoher Funke obendrauf — er macht aus dem Klick ein Glitzern.
-            0.005f to Synth.tone(
-                durationSeconds = 0.05f,
-                frequencyAt = { 3600f },
-                amplitudeAt = Synth.pluck(decay = 60f, peak = 0.16f),
-                harmonics = listOf(1f to 1f),
-            ),
-        ),
-        target = 0.32f,
-    )
-
     fun tick(): FloatArray = Synth.normalize(
         Synth.tone(
             durationSeconds = 0.09f,
@@ -155,6 +111,42 @@ object FairySounds {
         ),
         target = 0.35f,
     )
+
+    /**
+     * Die falsch gesetzte Fee: ein kurzer Schreck.
+     *
+     * Vorher eine Aufnahme — der einzige fremde Ton, der noch im Spiel war, und
+     * ohne belegbare Herkunft. Jetzt gerechnet wie alles andere, damit an der
+     * App nichts hängt, dessen Rechte niemand nachweisen kann.
+     *
+     * Zwei Töne im Tritonus, beide fallend. Das ist Absicht und nicht
+     * beliebig: Alle guten Klänge des Spiels — Feentöne wie Glocken der Musik
+     * — stammen aus einer Pentatonik und passen immer zusammen. Der Tritonus
+     * kommt darin nicht vor. Der Fehler klingt deshalb hörbar *daneben*, ohne
+     * laut oder unangenehm zu sein.
+     */
+    fun startled(): FloatArray {
+        val fall = { start: Float -> { progress: Float -> start * (1f - 0.28f * progress) } }
+        return Synth.normalize(
+            Synth.mix(
+                0f to Synth.tone(
+                    durationSeconds = 0.34f,
+                    frequencyAt = fall(740f),
+                    amplitudeAt = Synth.pluck(decay = 9f, peak = 0.5f),
+                    harmonics = listOf(1f to 1f, 2f to 0.28f, 3f to 0.1f),
+                ),
+                // Der zweite Ton setzt einen Hauch später ein — dadurch wirkt
+                // es wie ein Zusammenzucken statt wie ein Signalton.
+                0.02f to Synth.tone(
+                    durationSeconds = 0.32f,
+                    frequencyAt = fall(1046f),
+                    amplitudeAt = Synth.pluck(decay = 11f, peak = 0.38f),
+                    harmonics = listOf(1f to 1f, 2f to 0.2f),
+                ),
+            ),
+            target = 0.45f,
+        )
+    }
 
     /** Das Zurücknehmen einer Fee: ein kurzes Abwärts-Wispern. */
     fun undo(): FloatArray = Synth.normalize(
@@ -181,104 +173,4 @@ object FairySounds {
         return Synth.normalize(Synth.mix(*layers.toTypedArray()), target = 0.7f)
     }
 
-
-    /**
-     * Eine Fee wurde falsch gesetzt und erschrickt.
-     *
-     * **Er muss aus der Leiter fallen — das ist seine ganze Aufgabe.** Die zehn
-     * Feentöne stehen auf einer Pentatonik und klingen nie schief; sie sagen
-     * „richtig". Ein Fehlerklang, der ebenfalls hineinpasste, sagte gar nichts.
-     * Deshalb gleitet dieser hier **stufenlos nach oben**, statt eine Stufe zu
-     * treffen, und trägt Rauschen darüber. Man hört den Unterschied, ohne
-     * hinzusehen und ohne dass jemand es erklären muss.
-     *
-     * Ersetzt `fairy_startled.mp3` — die letzte Aufnahme im Spiel neben dem
-     * Waldteppich. Ein Klang, den niemand aufgenommen hat, gehört dem, der ihn
-     * berechnet.
-     */
-    fun startled(): FloatArray {
-        val random = kotlin.random.Random(4711)
-        return Synth.normalize(
-            Synth.mix(
-                // Das Aufschrecken: die Tonhöhe steigt, kurz und hell.
-                0f to Synth.tone(
-                    durationSeconds = 0.45f,
-                    frequencyAt = { progress -> 760f + 1_500f * progress },
-                    amplitudeAt = Synth.pluck(decay = 7f, peak = 0.85f),
-                    harmonics = listOf(1f to 1f, 2.76f to 0.28f),
-                ),
-                // Der Flügelschlag: schmales Rauschen, das schnell verklingt.
-                0f to Synth.bandpass(
-                    Synth.noise(0.45f, Synth.pluck(decay = 10f, peak = 0.5f), random),
-                    centerHz = 2_600f,
-                    guete = 3.5f,
-                ),
-            ),
-            target = 0.7f,
-        )
-    }
-
-    /**
-     * Der Waldteppich für den Pfad.
-     *
-     * **Ersetzt `ambient_forest.mp3`** — die letzte Aufnahme im Spiel. Ein
-     * Klang, den niemand aufgenommen hat, gehört dem, der ihn berechnet; damit
-     * ist die Lizenzfrage nicht geklärt, sondern gegenstandslos.
-     *
-     * **Kein stehender Klang.** Das ist die Lehre aus dem Weltraumspiel: Ein
-     * gehaltener Akkord klingt nach Orgel und fällt aus einer Welt heraus, in
-     * der alles angeschlagen wird. Hier sind es tiefe, weiche Anschläge, die
-     * lange ausklingen und sich immer überlappen — eine Fläche, die atmet.
-     *
-     * **Die Schleife schließt ohne Naht, weil sie ein Kreis ist.** Was am Ende
-     * über den Rand hinausklingt, wird vorn wieder eingesetzt. Dadurch gibt es
-     * keinen Punkt, an dem etwas anfängt oder aufhört — anders als beim
-     * Überblenden, das immer ein Stück Klang kostet und bei getragenen Tönen
-     * ein Schweben erzeugt.
-     *
-     * Dieselbe Leiter wie die zehn Feentöne, nur zwei Oktaven tiefer: Der
-     * Teppich liegt unter ihnen und stört sie nie.
-     */
-    fun forest(): FloatArray {
-        val laenge = Synth.secondsToSamples(LOOP_SEKUNDEN)
-        val aus = FloatArray(laenge)
-
-        // Anschlag und Stufe. Unregelmäßig, damit sich kein Takt einstellt —
-        // ein Wald hat keinen.
-        val anschlaege = listOf(
-            0.0f to 0, 2.3f to 2, 4.1f to 1, 6.4f to 3,
-            8.0f to 0, 9.7f to 2, 11.2f to 4,
-        )
-        val leiter = floatArrayOf(130.81f, 164.81f, 196.00f, 220.00f, 261.63f)
-
-        anschlaege.forEach { (zeit, stufe) ->
-            val ton = waldton(leiter[stufe])
-            val beginn = Synth.secondsToSamples(zeit)
-            for (i in ton.indices) {
-                aus[(beginn + i) % laenge] += ton[i]
-            }
-        }
-        return Synth.normalize(aus, target = 0.45f)
-    }
-
-    private fun waldton(frequenz: Float): FloatArray = Synth.tone(
-        durationSeconds = 5.5f,
-        frequencyAt = { frequenz },
-        amplitudeAt = { fortschritt ->
-            val anschlag = 0.22f
-            val huelle = if (fortschritt < anschlag) {
-                fortschritt / anschlag
-            } else {
-                Math.E.toFloat().let { e -> Math.pow(e.toDouble(), (-1.7f * fortschritt).toDouble()).toFloat() }
-            }
-            val schluss = 0.8f
-            if (fortschritt <= schluss) huelle else huelle * (1f - (fortschritt - schluss) / 0.2f)
-        },
-        // Weniger unrein als die Feen: Der Teppich soll tragen, nicht klirren.
-        // Ein Hauch Unreinheit bleibt, damit er zur selben Welt gehört.
-        harmonics = listOf(1f to 1f, 2.02f to 0.2f, 3.11f to 0.06f),
-    )
-
-    /** Wie lang die Waldschleife ist. Zwölf Sekunden, siehe [forest]. */
-    const val LOOP_SEKUNDEN = 12f
 }

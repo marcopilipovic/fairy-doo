@@ -1,5 +1,7 @@
 package com.fairydoo.game.audio
 
+import com.fairydoo.game.game.FairySpecies
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -23,8 +25,8 @@ class SoundRenderTest {
 
     @Test
     fun `alle Klaenge sind hoerbar und uebersteuern nicht`() {
-        // Der Aufschrei ist eine Aufnahme und daher nicht Teil dieser Prüfung
-        // — hier geht es nur um die berechneten Klänge.
+        // Seit der Aufschreck gerechnet wird, ist keine einzige Aufnahme mehr
+        // im Spiel — alles hier ist prüfbar.
         val sounds = buildMap {
             put("jubel", FairySounds.cheer())
             put("feenstaub", FairySounds.sparkle())
@@ -33,6 +35,7 @@ class SoundRenderTest {
             put("merkzeichen", FairySounds.tick())
             put("ruecknahme", FairySounds.undo())
             put("spielende", FairySounds.gameOver())
+            put("aufschreck", FairySounds.startled())
         }
 
         for ((name, samples) in sounds) {
@@ -50,22 +53,65 @@ class SoundRenderTest {
     }
 
     @Test
-    fun `das Ueberblenden schliesst die Schleifennaht`() {
-        // Ein Sägezahn mit hartem Sprung am Ende: Ohne Überblenden stünde dort
-        // ein Knacks, mit Überblenden geht der Schluss in den Anfang über.
-        val period = Synth.SAMPLE_RATE / 220
-        val raw = ShortArray(Synth.SAMPLE_RATE * 2) { index ->
-            ((index % period).toFloat() / period * 20_000 - 10_000).toInt().toShort()
+    fun `jede Fee hat ihren eigenen Ton`() {
+        val toene = FairySpecies.entries.associateWith { FairyChimes.render(it) }
+
+        for ((species, samples) in toene) {
+            val peak = samples.maxOf { abs(it) }
+            assertTrue("${species.displayName} ist stumm", peak > 0.05f)
+            assertTrue("${species.displayName} übersteuert (Spitze $peak)", peak <= 1.0f)
+            writeWav(File(outputDir, "fee-${species.name.lowercase()}.wav"), samples)
         }
 
-        val looped = Synth.crossfadeLoop(raw, seconds = 0.2f)
+        // Zwei Feen mit derselben Tonhöhe wären am Klang nicht auseinander-
+        // zuhalten — und die Zuordnung entsteht von Hand.
+        val hoehen = FairySpecies.entries.map { FairyChimes.of(it).hertz }
+        assertEquals("Zwei Feen teilen sich eine Tonhöhe", hoehen.size, hoehen.toSet().size)
 
-        assertTrue("Die Schleife wurde nicht gekürzt", looped.size < raw.size)
+        // Sie sollen sich außerdem deutlich unterscheiden, nicht nur messbar:
+        // Ein Halbton Abstand hörte man beim Spielen nicht heraus.
+        val sortiert = hoehen.sorted()
+        for (i in 1 until sortiert.size) {
+            val verhaeltnis = sortiert[i] / sortiert[i - 1]
+            assertTrue(
+                "Zwei Tonhöhen liegen zu dicht beieinander ($verhaeltnis)",
+                verhaeltnis > 1.05f,
+            )
+        }
+    }
 
-        // Der Sprung vom letzten zum ersten Abtastwert muss kleiner sein als
-        // der eines vollen Sägezahn-Zyklus.
-        val naht = kotlin.math.abs(looped.first().toInt() - looped.last().toInt())
-        assertTrue("Die Naht springt zu weit ($naht)", naht < 12_000)
+    @Test
+    fun `beide Musikstuecke klingen und schliessen sich ohne Naht`() {
+        val stuecke = mapOf(
+            "musik-wald" to Music.forestLoop(),
+            "musik-feenpfad" to Music.pathLoop(),
+        )
+
+        for ((name, samples) in stuecke) {
+            val peak = samples.maxOf { abs(it) }
+            val rms = sqrt(samples.sumOf { (it * it).toDouble() } / samples.size).toFloat()
+
+            assertTrue("$name ist stumm", peak > 0.05f)
+            assertTrue("$name übersteuert (Spitze $peak)", peak <= 1.0f)
+            assertTrue("$name ist zu leise (RMS $rms)", rms > 0.02f)
+
+            // Die eigentliche Prüfung: Der Sprung von der letzten auf die erste
+            // Probe muss in derselben Größenordnung liegen wie ein gewöhnlicher
+            // Schritt mitten im Stück. Ist er das, gibt es an der Naht nichts
+            // zu hören — und genau daran krankte die Aufnahme vorher.
+            val schritte = (1 until samples.size).map { abs(samples[it] - samples[it - 1]) }
+            val ueblich = schritte.sorted()[schritte.size * 99 / 100]
+            val naht = abs(samples.first() - samples.last())
+
+            assertTrue(
+                "$name springt an der Naht ($naht gegen sonst höchstens $ueblich)",
+                naht <= ueblich * 2f,
+            )
+
+            writeWav(File(outputDir, "$name.wav"), samples)
+            println("$name: ${"%.1f".format(samples.size / Synth.SAMPLE_RATE.toFloat())} s, " +
+                "Naht $naht, sonst bis $ueblich")
+        }
     }
 
     /** Nutzt dieselbe WAV-Erzeugung wie die App, damit beides nicht auseinanderläuft. */

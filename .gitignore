@@ -15,3 +15,6 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Das Store-Paket entsteht aus dem Projekt; die APK darin gehört nicht ins Repo.
+storepaket/*.apk
