@@ -3,6 +3,8 @@ package com.fairydoo.game.ads
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.google.ads.mediation.admob.AdMobAdapter
 import com.google.android.gms.ads.AdError
@@ -75,6 +77,10 @@ class RewardedAdManager(private val appContext: Context) {
     private var rewardedAd: RewardedAd? = null
     private var sdkStarted = false
 
+    /** Für den Wachhund in [onAdRequested]; alle Rückrufe kommen ohnehin hier an. */
+    private val hauptSchleife = Handler(Looper.getMainLooper())
+    private var wachhund: Runnable? = null
+
     private val consent: ConsentInformation =
         UserMessagingPlatform.getConsentInformation(appContext)
 
@@ -104,8 +110,49 @@ class RewardedAdManager(private val appContext: Context) {
         onReward: () -> Unit,
         onFinished: () -> Unit = {},
     ) {
-        rewardedAd?.let { show(activity, it, onReward, onFinished) ; return }
-        if (_offer.value == AdOffer.Preparing) return
+        // Genau einmal, komme was wolle.
+        //
+        // An [onFinished] hängt, dass das Spiel weiterläuft — der Aufrufer hat
+        // es angehalten, bevor er hier hereinkam. Wird die Meldung verschluckt,
+        // bleibt das Spiel für immer stehen, und der Spieler kann sich nur noch
+        // durch Beenden und Neustarten befreien. Genau das ist passiert: Der
+        // Ausstieg „es lädt schon eine" unten meldete sich nicht zurück.
+        //
+        // Deshalb kommt jede Rückmeldung durch dieses Nadelöhr. Es lässt die
+        // erste durch und schluckt alle weiteren — doppelte Meldungen sind
+        // ebenso möglich wie gar keine.
+        var gemeldet = false
+        val fertig = {
+            if (!gemeldet) {
+                gemeldet = true
+                wachhund?.let(hauptSchleife::removeCallbacks)
+                wachhund = null
+                onFinished()
+            }
+        }
+
+        // Der Wachhund für die Vorbereitung: Einwilligungsdialog und Laden sind
+        // fremde Rückrufe, und ein Rückruf, der nie kommt, ist nicht
+        // auszuschließen — etwa wenn der Einwilligungsdialog durch einen
+        // Wechsel in den Hintergrund verschwindet. Bellt er, läuft das Spiel
+        // weiter, als wäre nichts gewesen.
+        //
+        // Er wird abbestellt, sobald eine Anzeige tatsächlich auf dem Schirm
+        // ist: Ab da ist Warten richtig, die Anzeige darf ruhig eine Minute
+        // dauern.
+        wachhund = Runnable {
+            Log.w(TAG, "Keine Rückmeldung nach ${WATCHDOG_MILLIS / 1000} s — Spiel läuft weiter")
+            _offer.value = AdOffer.Available
+            fertig()
+        }.also { hauptSchleife.postDelayed(it, WATCHDOG_MILLIS) }
+
+        rewardedAd?.let { show(activity, it, onReward, fertig) ; return }
+        if (_offer.value == AdOffer.Preparing) {
+            // Es lädt bereits eine Anzeige aus einem früheren Tippen. Hier fehlte
+            // die Rückmeldung — der Grund für die Hängepartie.
+            fertig()
+            return
+        }
 
         _offer.value = AdOffer.Preparing
         ensureConsent(activity) { stand ->
@@ -114,7 +161,7 @@ class RewardedAdManager(private val appContext: Context) {
                 // kostet ein Funkloch alle weiteren Anzeigen dieser Sitzung.
                 _offer.value =
                     if (stand == Consent.Abgelehnt) AdOffer.Unavailable else AdOffer.Available
-                onFinished()
+                fertig()
                 return@ensureConsent
             }
             startSdk()
@@ -123,12 +170,12 @@ class RewardedAdManager(private val appContext: Context) {
                     // Der Spieler wartet seit seinem Tippen — die Anzeige
                     // kommt jetzt von selbst, ohne dass er erneut drücken muss.
                     val ad = rewardedAd
-                    if (ad != null) show(activity, ad, onReward, onFinished) else onFinished()
+                    if (ad != null) show(activity, ad, onReward, fertig) else fertig()
                 } else {
                     // Kein Netz, kein Inventar: beim nächsten Tippen neu
                     // versuchen, statt den Knopf dauerhaft auszuschalten.
                     _offer.value = AdOffer.Available
-                    onFinished()
+                    fertig()
                 }
             }
         }
@@ -278,6 +325,13 @@ class RewardedAdManager(private val appContext: Context) {
         onFinished: () -> Unit,
     ) {
         _offer.value = AdOffer.Available
+
+        // Ab hier zählt nur noch, was das SDK meldet: Die Anzeige läuft, und
+        // sie darf so lange dauern, wie sie will. Der Wachhund aus
+        // [onAdRequested] hätte sonst mitten hineingebellt.
+        wachhund?.let(hauptSchleife::removeCallbacks)
+        wachhund = null
+
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
                 rewardedAd = null
@@ -298,5 +352,15 @@ class RewardedAdManager(private val appContext: Context) {
     private companion object {
         const val TAG = "RewardedAds"
         const val AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+
+        /**
+         * Wie lange auf Einwilligung und Ladevorgang gewartet wird, bevor das
+         * Spiel ohne Anzeige weiterläuft.
+         *
+         * Zwölf Sekunden: lang genug, dass eine langsame Verbindung eine
+         * Anzeige noch schafft, kurz genug, dass niemand glaubt, die App sei
+         * abgestürzt. Sobald eine Anzeige läuft, gilt die Frist nicht mehr.
+         */
+        const val WATCHDOG_MILLIS = 12_000L
     }
 }
