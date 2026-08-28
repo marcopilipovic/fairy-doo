@@ -13,7 +13,7 @@ App HUMB UG (haftungsbeschränkt)
 Parkstraße 9  
 31188 Holle
 
-### Vertreten durch
+### Vertreten durch den Geschäftsführer
 
 Marco Pilipovic
 
@@ -122,7 +122,7 @@ App HUMB UG (haftungsbeschränkt)
 Parkstraße 9  
 31188 Holle  
 E-Mail: info@humb.ug  
-Vertretungsberechtigt: Marco Pilipovic
+Vertreten durch den Geschäftsführer: Marco Pilipovic
 
 ### 2. Grundsatz der Datensparsamkeit
 

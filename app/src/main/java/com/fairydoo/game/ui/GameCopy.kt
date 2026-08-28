@@ -179,7 +179,7 @@ object GameCopy {
             Parkstraße 9
             31188 Holle
 
-            Vertreten durch
+            Vertreten durch den Geschäftsführer
             Marco Pilipovic
 
             Kontakt
@@ -273,7 +273,7 @@ object GameCopy {
             Parkstraße 9
             31188 Holle
             E-Mail: info@humb.ug
-            Vertretungsberechtigt: Marco Pilipovic
+            Vertreten durch den Geschäftsführer: Marco Pilipovic
 
             2. Grundsatz der Datensparsamkeit
             Fairydoku ist ein reines Logikspiel und kostenlos nutzbar. Wir erheben selbst keine personenbezogenen Daten und betreiben keine eigene Nutzerverwaltung. Eine Anmeldung findet nicht statt. Eine Datenverarbeitung erfolgt im Wesentlichen nur durch den eingebundenen Google-Dienst für Werbung, der im Folgenden beschrieben wird.
