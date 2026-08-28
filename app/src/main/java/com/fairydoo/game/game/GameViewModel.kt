@@ -151,9 +151,14 @@ class GameViewModel(
     }
 
     /**
-     * Werbung wird erst angeboten, nachdem die ersten zehn Level geschafft
-     * sind — wer gerade erst anfängt, soll nicht gleich mit Werbeangeboten
-     * begrüßt werden.
+     * Werbung wird erst angeboten, nachdem die ersten Level geschafft sind —
+     * wer gerade erst anfängt, soll nicht mit Werbeangeboten begrüßt werden.
+     * Bis dahin tritt an ihre Stelle ein Geschenk.
+     *
+     * Ab welchem Level, steht in [ADS_UNLOCK_AFTER_LEVEL]. Hier stand bis zum
+     * 28. August „nach den ersten zehn" — ein Rest aus der Zeit vor der
+     * Zusammenführung, als die Zahl noch 10 war. Die Zahl gehört an genau eine
+     * Stelle, und das ist die Konstante.
      */
     val adsUnlocked: StateFlow<Boolean> = profile
         .map { it.highestLevelUnlocked > ADS_UNLOCK_AFTER_LEVEL }
