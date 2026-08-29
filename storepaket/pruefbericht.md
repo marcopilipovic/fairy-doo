@@ -93,8 +93,9 @@ Schriften unter freier Lizenz.**
 | --- | --- | --- |
 | Die zehn Feen | Handoff „Feen schlicht", eigene Arbeit | eigen |
 | App-Symbol, Store-Bilder | aus derselben Zeichnung erzeugt | eigen |
-| Musik (zwei Stücke) | im Spiel berechnet | eigen, keine Aufnahme |
-| Alle Klänge, zehn Feentöne | im Spiel berechnet | eigen, keine Aufnahme |
+| Waldmusik, Schreckenslaut | ElevenLabs, Tarif Starter | lizenziert, gewerblich |
+| Alle übrigen Klänge, zehn Feentöne | im Spiel berechnet | eigen, keine Aufnahme |
+| Feenstimmen | Sprachausgabe des Geräts | keine Aufnahme im Spiel |
 | Cinzel Decorative, Quicksand | Google Fonts | **SIL OFL 1.1** |
 | Bibliotheken | AndroidX, Google, JetBrains | Apache 2.0 / Play-Bedingungen |
 
@@ -117,10 +118,17 @@ als aktueller Plan, 6 USD im Monat. Sein Leistungsumfang nennt ausdrücklich:
 Damit ist die Nutzung in einer verkauften oder werbefinanzierten App gedeckt —
 und zwar für beides, was hier verwendet wird: die Musik und den Laut.
 
-⬜ **Nachzutragen bleibt das Datum:** ob dieser Tarif am 1. August 2026 schon
-lief. Das Konto zeigt nur den *aktuellen* Plan, nicht seit wann. Zu finden im
-Zahlungsverlauf des Kontos — gesucht wird eine Rechnung mit einem Zeitraum, der
-den 1. August einschließt. Liegt sie vor, ist die Frage endgültig erledigt.
+✅ **Auch die Reihenfolge stimmt.** Das Abonnement wurde abgeschlossen und
+*danach* wurden die Klänge erzeugt — nicht umgekehrt, und zu keinem Zeitpunkt
+mit einer kostenlosen Testfassung. So von Nataly bestätigt, deren Mann das Konto
+führt.
+
+Damit ist der Punkt erledigt. Die Aufnahmen sind unter einem Tarif entstanden,
+der die gewerbliche Nutzung ausdrücklich einschließt.
+
+Wer es je genauer braucht — etwa weil jemand von außen fragt —, findet den
+Beleg im Zahlungsverlauf des ElevenLabs-Kontos: eine Rechnung, deren Zeitraum
+den 1. August 2026 einschließt.
 
 Zurückgeholt wurden sie, weil die Testrunde die berechnete Musik nicht mochte.
 Die Waldschleife ist dabei von 194 kbit/s Stereo auf 112 kbit/s Mono neu
