@@ -109,7 +109,7 @@ FAIR UND OHNE HAKEN
 Fairydoku ist ein Angebot für Personen ab 13 Jahren. Die Inhalte sind
 gewaltfrei und für jedes Alter unbedenklich.
 ```
-(ca. 2150 Zeichen)
+(2872)
 
 ---
 
