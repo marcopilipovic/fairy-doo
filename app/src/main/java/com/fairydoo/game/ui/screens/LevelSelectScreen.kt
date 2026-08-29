@@ -814,7 +814,7 @@ private fun ForestLivesBadge(
                     .padding(4.dp),
             )
         } else if (state.lives == 0) {
-            // Vor Level 11 gibt es noch keine Werbung — ein leeres Wald-Leben
+            // In den ersten Leveln gibt es noch keine Werbung — ein leeres Wald-Leben
             // wartet nicht auf den Countdown, sondern lässt sich sofort per
             // Geschenk auffüllen.
             Spacer(Modifier.height(4.dp))

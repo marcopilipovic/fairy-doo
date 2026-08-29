@@ -77,7 +77,7 @@ fun PowerUpBar(
     onOpenGiftForIrrlicht: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Vor Level 11 ersetzt ein Geschenk (sofortiges Auffüllen per Antippen)
+    // In den ersten Leveln ersetzt ein Geschenk (sofortiges Auffüllen per Antippen)
     // die Werbung — ein leerer Vorrat muss nie auf den Countdown warten.
     // Solange noch eines übrig ist, bleibt in beiden Fällen der normale
     // Hinweis-Knopf dran.

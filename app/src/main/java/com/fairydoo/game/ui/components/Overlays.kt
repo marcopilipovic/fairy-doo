@@ -57,6 +57,7 @@ import com.fairydoo.game.ui.theme.GoldLight
 import com.fairydoo.game.ui.theme.LeafGreen
 import com.fairydoo.game.ui.theme.TextOnGold
 import com.fairydoo.game.ui.theme.TextPrimary
+import com.fairydoo.game.game.GameViewModel
 
 /** Wie die Karte hereinkommt. */
 enum class OverlayEntrance { RiseUp, PopIn }
@@ -304,19 +305,27 @@ fun LevelUpOverlay(
 enum class GiftKind { FairyDust, Irrlicht, Life }
 
 /**
- * Das Geschenk-Popup vor Level 10: Bis dahin gibt es noch keine Werbung, ein
- * leerer Vorrat lässt sich stattdessen sofort per Antippen auffüllen. Ab
- * Level 11 übernimmt an derselben Stelle das Werbevideo — der Knopf ist dann
- * schon vertraut.
+ * Das Geschenk-Popup der ersten Level: So lange gibt es noch keine Werbung, ein
+ * leerer Vorrat lässt sich stattdessen sofort per Antippen auffüllen. Danach
+ * übernimmt an derselben Stelle das Werbevideo — der Knopf ist dann schon
+ * vertraut.
+ *
+ * Wie lange „so lange" ist, steht in [GameViewModel.ADS_UNLOCK_AFTER_LEVEL] und
+ * wird hier eingesetzt statt abgeschrieben. Hier stand bis zum 29. August „Bis
+ * Level 10" — eine Zahl aus der Zeit vor der Zusammenführung, die auch dann noch
+ * dastand, als die Geschenke längst nach dem dritten Level endeten. Wer bei
+ * Level 3 sein letztes Geschenk bekam, las darüber, dass es bis Level 10 welche
+ * gäbe.
  */
 @Composable
 fun GiftOverlay(kind: GiftKind, isLastGift: Boolean, onAccept: () -> Unit) {
+    val bis = GameViewModel.ADS_UNLOCK_AFTER_LEVEL
     val (icon, body) = when (kind) {
-        GiftKind.FairyDust -> "✨" to "Bis Level 10 schenke ich dir diesen Tipp! " +
+        GiftKind.FairyDust -> "✨" to "Bis Level $bis schenke ich dir diesen Tipp! " +
             "Hier ist neuer Feenstaub – nimm ihn und rätsle weiter."
-        GiftKind.Irrlicht -> "🔮" to "Bis Level 10 schenke ich dir dieses Irrlicht! " +
+        GiftKind.Irrlicht -> "🔮" to "Bis Level $bis schenke ich dir dieses Irrlicht! " +
             "Es zeigt dir ein Feld, auf dem keine Fee sitzt."
-        GiftKind.Life -> "💚" to "Bis Level 10 schenke ich dir dieses Leben! " +
+        GiftKind.Life -> "💚" to "Bis Level $bis schenke ich dir dieses Leben! " +
             "Kopf hoch – weiter geht's."
     }
 
