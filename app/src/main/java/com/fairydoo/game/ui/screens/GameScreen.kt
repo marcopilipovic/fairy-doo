@@ -367,19 +367,24 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     }
 
     // Wandert die App in den Hintergrund, wird pausiert statt weitergespielt.
+    //
+    // Die Musik hängt an ON_PAUSE, nicht an ON_STOP. Das ist der Unterschied
+    // zwischen „verdeckt" und „ganz weggeschoben": Eine Videoanzeige legt sich
+    // als eigener Bildschirm über das Spiel, und dabei kommt ON_PAUSE verlässlich
+    // — ON_STOP je nach Gerät verspätet oder gar nicht. Bis zum 29. August lief
+    // die Waldmusik deshalb unter der Werbung weiter, was beides gleichzeitig
+    // unerträglich machte.
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, audio) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_STOP -> {
-                    viewModel.pause()
-                    audio.pause()
-                }
+                Lifecycle.Event.ON_PAUSE -> audio.pause()
+                Lifecycle.Event.ON_RESUME -> audio.resume()
+                Lifecycle.Event.ON_STOP -> viewModel.pause()
                 Lifecycle.Event.ON_START -> {
                     // Steht die Levelkarte oder die Anleitung offen, bleibt
                     // das Spiel pausiert.
                     if (!showLevelSelect && !tutorialOpen) viewModel.resume()
-                    audio.resume()
                 }
                 else -> Unit
             }

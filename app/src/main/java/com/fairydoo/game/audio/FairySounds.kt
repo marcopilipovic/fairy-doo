@@ -55,20 +55,40 @@ object FairySounds {
             )
         }
 
-        return Synth.normalize(Synth.mix(*layers.toTypedArray()), target = 0.85f)
+        // Von 0,85 auf 0,40 zurückgenommen. Der Jubel war mit Abstand der
+        // lauteste Klang im Spiel — gut neun Dezibel über einem Feenton und
+        // zwölf über dem Merkzeichen. Er kommt einmal je Level und darf
+        // heraustreten, aber nicht erschrecken; zwei Sekunden dichter Satz
+        // wirken ohnehin lauter als ein einzelner kurzer Ton bei gleichem Pegel.
+        return Synth.normalize(Synth.mix(*layers.toTypedArray()), target = 0.40f)
     }
 
-    /** Der Feenstaub-Hinweis: eine aufsteigende Funkenkaskade. */
+    /**
+     * Der Feenstaub-Hinweis: eine aufsteigende Funkenkaskade.
+     *
+     * Die Stufen stammen seit dem 29. August aus derselben Pentatonik wie alles
+     * andere — D E G A C, aufwärts über gut eine Oktave.
+     *
+     * Vorher stiegen sie in Schritten von Faktor 1,16, beginnend bei 1200 Hz.
+     * Das sind rund zweieinhalb Halbtöne je Stufe und damit **keine Tonleiter**:
+     * Die Kaskade war der einzige melodische Klang des Spiels, der zu keinem
+     * anderen passte — sie stand quer zur Musik, zu den Feentönen und zum
+     * Jubel. Hörbar wurde das als „klingt nach Spielautomat", und genau das war
+     * es auch.
+     */
     fun sparkle(): FloatArray {
-        val layers = (0 until 7).map { index ->
-            index * 0.045f to Synth.tone(
+        val stufen = listOf(587.33f, 659.25f, 783.99f, 880.00f, 1046.50f, 1174.66f, 1318.51f)
+        val layers = stufen.mapIndexed { index, hertz ->
+            index * 0.055f to Synth.tone(
                 durationSeconds = 0.5f,
-                frequencyAt = { 1200f * 1.16f.pow(index) },
-                amplitudeAt = Synth.pluck(decay = 10f, peak = 0.3f),
-                harmonics = listOf(1f to 1f, 2f to 0.2f),
+                frequencyAt = { hertz },
+                amplitudeAt = Synth.pluck(decay = 9f, peak = 0.3f, attack = 0.03f),
+                harmonics = listOf(1f to 1f, 2.76f to 0.12f),
             )
         }
-        return Synth.normalize(Synth.mix(*layers.toTypedArray()), target = 0.6f)
+        // 0,6 war lauter als der Feenton, den die Kaskade ankündigt. Jetzt
+        // liegt sie knapp darunter — sie zeigt etwas, sie feiert nichts.
+        return Synth.normalize(Synth.mix(*layers.toTypedArray()), target = 0.28f)
     }
 
     /** Der Natur-Schild: ein warmer, sich öffnender Zweiklang. */

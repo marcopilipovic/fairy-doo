@@ -450,6 +450,27 @@ class FairyAudio(context: Context) {
             // Der ganze Puffer ist die Schleife — dadurch läuft die Musik ohne
             // Lücke weiter, ohne dass jemand nachfüllen muss.
             audioTrack.setLoopPoints(0, loop.size, -1)
+
+            // Nicht bei null einsteigen.
+            //
+            // Die Waldaufnahme blendet ein: Ihre ersten fünf Sekunden liegen
+            // rund sechs Dezibel unter dem Rest, es ist die dünnste Stelle des
+            // ganzen Stücks. Wer die App öffnet, hörte bis zum 29. August genau
+            // die — der erste Eindruck war ein zaghaftes Anfangen.
+            //
+            // Die Schleife selbst bleibt unangetastet: Der Einstiegspunkt
+            // verschiebt nur, wo man einsteigt, nicht wo sie umschlägt. Die
+            // dünne Stelle kommt nach einer vollen Runde wieder und wirkt dort
+            // als Atempause, wie die anderen leisen Takte auch.
+            runCatching {
+                val einstieg = MUSIC_ENTRY_SECONDS * Synth.SAMPLE_RATE
+                if (loop.size > einstieg * 2) audioTrack.playbackHeadPosition = einstieg
+            }.onFailure { error ->
+                // Nicht schlimm: Dann beginnt es eben vorn. Auf keinen Fall darf
+                // daran die ganze Musik scheitern.
+                Log.w(TAG, "Einstiegspunkt der Musik nicht setzbar", error)
+            }
+
             audioTrack.setVolume(musicVolume)
             audioTrack.play()
             music = audioTrack
@@ -544,7 +565,10 @@ class FairyAudio(context: Context) {
          * Auf 5 gesetzt, weil auch die Effekte seit „Musik lauter aussteuern"
          * veraltet im Zwischenspeicher lagen.
          */
-        const val SOUND_CACHE_VERSION = 7
+        const val SOUND_CACHE_VERSION = 8
+
+        /** Wo die Waldschleife beim Start einsetzt — siehe startMusic. */
+        const val MUSIC_ENTRY_SECONDS = 5
 
         /**
          * Hochzählen, wenn sich [Music] ändert — sonst spielt ein Gerät, auf
