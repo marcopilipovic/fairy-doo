@@ -31,8 +31,6 @@ class FairyAudio(context: Context) {
     private val appContext = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val voice = FairyVoice(appContext)
-
     /** SoundPool-Kennungen der berechneten Klänge. */
     private var effects: Map<String, Int> = emptyMap()
 
@@ -281,7 +279,7 @@ class FairyAudio(context: Context) {
     }
 
     /** Spielt, was das Spielgeschehen hergibt. */
-    fun play(event: SoundEvent, level: Int = 1, score: Int = 0) {
+    fun play(event: SoundEvent) {
         // Aufschrei liegt im SoundPool und die Sprachausgabe hat ihre eigene
         // Bereitschaftsprüfung — beides unabhängig von den berechneten
         // Klängen spielbereit, deshalb wird hier nicht auf `prepared` gewartet.
@@ -303,18 +301,12 @@ class FairyAudio(context: Context) {
             SoundEvent.Undo -> playEffect(KEY_UNDO)
             SoundEvent.FairyDustUsed -> playEffect(KEY_SPARKLE)
 
-            SoundEvent.LevelComplete -> {
-                playEffect(KEY_CHEER)
-                // Das Lob setzt erst ein, wenn der Jubel abgeklungen ist —
-                // sonst reden Fanfare und Stimme durcheinander.
-                val volume = voiceVolume
-                if (volume > 0f) {
-                    scope.launch {
-                        delay(PRAISE_DELAY_MILLIS)
-                        voice.praise(level, score, volume)
-                    }
-                }
-            }
+            // Nur der Jubel. Hier folgte bis zum 29. August ein gesprochener
+            // Lobsatz aus der Sprachausgabe des Geräts („Level 4 geschafft!").
+            // Er kam knapp eine Sekunde nach dem Jubel und dauerte zwei — beim
+            // Weiterspielen war er im Weg, und wer schnell mehrere Level
+            // schafft, hörte ihn immer wieder.
+            SoundEvent.LevelComplete -> playEffect(KEY_CHEER)
 
             SoundEvent.GameOver -> {
                 // Kurz warten, damit der Aufschrei des letzten Fehlers steht.
@@ -332,7 +324,6 @@ class FairyAudio(context: Context) {
 
     fun setVoiceVolume(volume: Float) {
         voiceVolume = volume.coerceIn(0f, 1f)
-        if (voiceVolume == 0f) voice.stop()
     }
 
     /**
@@ -413,10 +404,9 @@ class FairyAudio(context: Context) {
         MusicTrack.Forest, MusicTrack.Path -> "wald"
     }
 
-    /** Beim Verlassen des Spiels: Musik anhalten, Stimme verstummen lassen. */
+    /** Beim Verlassen des Spiels: Musik anhalten. */
     fun pause() {
         runCatching { music?.pause() }
-        voice.stop()
     }
 
     fun resume() {
@@ -426,7 +416,6 @@ class FairyAudio(context: Context) {
     fun release() {
         stopMusic()
         runCatching { clipPool.release() }
-        voice.release()
         scope.cancel()
     }
 
@@ -540,7 +529,6 @@ class FairyAudio(context: Context) {
          */
         const val MAX_CLIP_STREAMS = 12
 
-        const val PRAISE_DELAY_MILLIS = 900L
         const val GAME_OVER_DELAY_MILLIS = 450L
 
         const val CACHE_PREFIX = "sounds"

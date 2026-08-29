@@ -336,7 +336,7 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     }
 
     // Die Klangwelt lebt so lange wie der Bildschirm; beim Verlassen wird sie
-    // freigegeben, sonst liefen Musikspur und Sprachausgabe weiter.
+    // freigegeben, sonst liefe die Musikspur weiter.
     val context = LocalContext.current
     val audio = remember(context) { FairyAudio(context) }
     DisposableEffect(audio) {
@@ -358,13 +358,12 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
         audio.setMusicTrack(if (showLevelSelect) MusicTrack.Path else MusicTrack.Forest)
     }
 
-    // Spielgeschehen hörbar machen. Level und Punktestand gehen mit, damit die
-    // Feenstimme sie im Lob nennen kann.
+    // Spielgeschehen hörbar machen. Level und Punktestand gingen hier bis zum
+    // 29. August mit, damit der gesprochene Lobsatz sie nennen konnte — den
+    // gibt es nicht mehr, und damit auch keinen Grund, den Zustand zweimal zu
+    // lesen.
     LaunchedEffect(audio) {
-        viewModel.soundEvents.collect { event ->
-            val current = viewModel.state.value
-            audio.play(event, level = current.level, score = current.score)
-        }
+        viewModel.soundEvents.collect { event -> audio.play(event) }
     }
 
     // Wandert die App in den Hintergrund, wird pausiert statt weitergespielt.

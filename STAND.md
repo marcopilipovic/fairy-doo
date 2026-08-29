@@ -29,6 +29,12 @@ Overlays.
 gerechnet; ihre Schleifen schließen sich ohne Naht, weil `Synth.mixLooping` den
 Überhang nach vorn faltet.
 
+**Gesprochen wird nichts.** Bis zum 29. August folgte dem Jubel nach einem
+gelösten Level ein Lobsatz aus der Sprachausgabe des Geräts. Er ist beim Spielen
+als störend aufgefallen und ersatzlos entfallen; `FairyVoice.kt` ist damit
+gelöscht. Der Regler „Feenstimme" bleibt — er regelt den Eigenton, den jede Fee
+beim Setzen von sich gibt.
+
 Die Waldmusik und der Schreckenslaut sind seit dem 28. August wieder
 Aufnahmen — die berechneten Fassungen haben der Testrunde nicht gefallen.
 Dieselbe Musik liegt über beiden Bildschirmen und läuft beim Wechsel durch.

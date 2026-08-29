@@ -63,7 +63,7 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
 | Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern | berechnet |
 | Hilfe eingesetzt | Funkenkaskade | berechnet |
-| Rätsel gelöst | Glockenjubel und eine lobende Feenstimme | berechnet + Sprachausgabe |
+| Rätsel gelöst | Glockenjubel | berechnet |
 | Spielende | absteigende Molltonfolge | berechnet |
 | Hintergrund | ruhige Waldschleife, über Brett und Karte dieselbe | Aufnahme |
 
@@ -85,9 +85,17 @@ Kicherlaute; sie sind dem Eigenton gewichen und in `Audio/` aufgehoben.
 Rechtelage zu belegen wäre. Der Tarif ist inzwischen belegt
 (`storepaket/pruefbericht.md`), und die Testrunde wollte sie ohnehin zurück.*
 
-Die **Lobstimme** nutzt die Sprachausgabe des Geräts, nicht aufgenommene Sprache:
-Nur so kann das Lob den Spielstand nennen („Level 4 geschafft"). Fehlt eine
-deutsche Stimme, bleibt sie still — das Spiel funktioniert auch ohne.
+**Gesprochen wird nichts mehr.** Bis zum 29. August folgte dem Jubel ein
+Lobsatz aus der Sprachausgabe des Geräts — „Level 4 geschafft!", eine knappe
+Sekunde nach dem Jubel und selbst zwei lang. Beim Weiterspielen war er im Weg,
+und wer mehrere Level hintereinander schafft, hört ihn immer wieder. Mit ihm ist
+`FairyVoice.kt` verschwunden und damit die einzige Stelle, an der die App eine
+Systemkomponente ansprach, die auf jedem Gerät anders klingt oder ganz fehlt.
+
+Der Regler heißt weiter **Feenstimme** und regelt jetzt den Eigenton, den jede
+Fee beim Setzen von sich gibt. Er sitzt bewusst nicht auf dem Klang-Regler: Der
+Ton ertönt bei jedem Zug und ist damit das, was man am ehesten leiser haben
+will, ohne Tick und Jubel mit zu dämpfen.
 
 ### Lautstärke
 
@@ -113,8 +121,8 @@ hat, dessen „aus" wird beim ersten Start als Lautstärke null übernommen.
 Schreibt alle **berechneten** Klänge als WAV nach `app/build/sounds/`. Der
 schnellste Weg, eine Änderung an der Synthese zu beurteilen. Dieselben Tests
 prüfen auch, dass kein Klang stumm ist, keiner übersteuert und die Musikschleife
-ohne hörbaren Sprung schließt. Die aufgenommenen Feenstimmen sind davon nicht
-betroffen — die liegen als MP3 vor und lassen sich direkt anhören.
+ohne hörbaren Sprung schließt. Die beiden Aufnahmen sind davon nicht betroffen —
+die liegen als MP3 vor und lassen sich direkt anhören.
 
 ## Das Spielbrett
 
@@ -198,7 +206,6 @@ app/src/main/java/com/fairydoo/game/
 │   ├── Synth.kt                     Tonerzeugung (reines Kotlin, testbar)
 │   ├── FairySounds.kt               Die Klänge des Waldes
 │   ├── SoundEvent.kt                Welcher Spielzug wie klingt
-│   ├── FairyVoice.kt                Lobstimme über die Sprachausgabe
 │   └── FairyAudio.kt                Wiedergabe, Musikschleife, Schalter
 ├── data/
 │   └── GamePreferences.kt           DataStore: Highscore, Partien, Tonschalter
@@ -264,8 +271,8 @@ Bretts hängt an den Zonenfarben.
 - Die beiden Emoji in der Titelzeile und im „Level up"-Overlay sind noch
   Platzhalter.
 - Hintergrund-Illustration fehlt noch.
-- **Jubel und Effektklänge sind noch synthetisch.** Die Feenstimmen sind
-  inzwischen Aufnahmen; wer auch den Rest aufgenommen haben will, ersetzt die
+- **Jubel und Effektklänge sind synthetisch.** Waldmusik und Schreckenslaut
+  sind Aufnahmen; wer auch den Rest aufgenommen haben will, ersetzt die
   entsprechenden Zweige in `FairyAudio` durch weitere Clips — die Schnittstelle
   dafür ist `SoundEvent` und bleibt gleich.
 

@@ -189,7 +189,7 @@ zwischen heute und dem Play Store steht.
 | | Was |
 |---|---|
 | ✅ | **Die zehn Feenmotive** — entschieden am 28. August: die Zeichnungen aus dem Handoff „Feen schlicht", nachgebaut als Vektoren. |
-| ⬜ | **Die gesprochenen Lobsätze** — weglassen, oder leiser und kürzer? |
+| ✅ | **Die gesprochenen Lobsätze** — entschieden am 29. August beim Spielen: weglassen. Sie standen dem Weiterspielen im Weg. |
 
 ### Testen, nur auf dem Gerät möglich
 
@@ -211,7 +211,7 @@ zwischen heute und dem Play Store steht.
 | ✅ | **App-Symbol einreichfertig** | Salta in Gold, reiner Vektor — dieselbe Zeichnung wie im Spiel. `storepaket/play-store/symbol-512x512.png` für den Store. |
 | ⬜ | **Echte AdMob-Kennungen einsetzen** | Sobald das Konto steht. |
 | ✅ | **Feenmotive einbauen** | Zehn Vektorzeichnungen, alle PNG-Dateien und alle 🧚-Emoji sind raus. |
-| ⬜ | **Lobsätze anpassen** | Sobald entschieden. |
+| ✅ | **Lobsätze anpassen** | Erledigt: Sie sind ganz entfallen, mit ihnen die Sprachausgabe. |
 | ⬜ | **Signiertes AAB zum Hochladen** | Zuletzt, wenn alles andere steht. Baut fehlerfrei — zuletzt am 29. August. |
 
 ### Nach der Veröffentlichung

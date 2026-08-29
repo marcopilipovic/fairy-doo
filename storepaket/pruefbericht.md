@@ -59,8 +59,8 @@ danach dort abgelegt. Android darf diesen Ordner jederzeit löschen; die App
 rechnet dann neu. Er wächst nicht — ältere Fassungen werden beim Start
 entfernt.
 
-**Die App belegt damit rund 10 MB.** Zum Vergleich: Die Installationsdatei
-allein ist 3,3 MB.
+**Die App belegt damit rund 11 MB.** Zum Vergleich: Die Installationsdatei
+allein ist 4,1 MB — gut ein Fünftel davon ist die Waldmusik.
 
 ### Datensicherung
 
@@ -109,7 +109,6 @@ Schriften unter freier Lizenz.**
 | App-Symbol, Store-Bilder | aus derselben Zeichnung erzeugt | eigen |
 | Waldmusik, Schreckenslaut | ElevenLabs, Tarif Starter | lizenziert, gewerblich |
 | Alle übrigen Klänge, zehn Feentöne | im Spiel berechnet | eigen, keine Aufnahme |
-| Feenstimmen | Sprachausgabe des Geräts | keine Aufnahme im Spiel |
 | Cinzel Decorative, Quicksand | Google Fonts | **SIL OFL 1.1** |
 | Bibliotheken | AndroidX, Google, JetBrains | Apache 2.0 / Play-Bedingungen |
 
@@ -224,6 +223,7 @@ die ist eigene Arbeit.
 | Die berechnete Musik gefiel der Testrunde nicht | — kein Fehler, aber der Grund, die zwei Aufnahmen zurückzuholen | 28. Aug. |
 | Die Spieluhr | Sie bestrafte das Nachdenken, für das das Spiel gemacht ist; ersatzlos gestrichen | 28. Aug. |
 | Drei Bildschirmfotos zeigten die Uhr noch | Bilder, die etwas zeigen, was es nicht gibt | 29. Aug. |
+| Der gesprochene Lobsatz nach jedem Level | Er stand dem Weiterspielen im Weg; mit ihm ist die Sprachausgabe ganz aus der App verschwunden | 29. Aug. |
 
 ---
 
