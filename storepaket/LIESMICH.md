@@ -1,6 +1,6 @@
 # Fairydoku — alles für die Veröffentlichung
 
-Stand: 28. August 2026. Alles in diesem Ordner ist fertig zum Verwenden, außer
+Stand: 29. August 2026. Alles in diesem Ordner ist fertig zum Verwenden, außer
 dem, was unter „Was noch fehlt" steht.
 
 **Es gibt nur noch eine Fassung des Spiels.** Bis zum 28. August liefen zwei
@@ -26,11 +26,17 @@ Emulator aufgenommen, ohne Statusleiste und Navigationsleiste. Die ersten
 beiden erscheinen in der Suchliste, oft ohne dass jemand den Eintrag öffnet —
 deshalb stehen Spielbrett und Feenpfad vorn.
 
-> **Anmerkung zum ersten Bild.** Nach der Umbenennung der Waldfee zeigte es
-> unten einen Namen, den die App nicht mehr kennt. Ersetzt wurde nur diese eine
-> Zeile, in derselben Schrift, Größe und Farbe, die die App dafür benutzt. Das
-> Bild zeigt, was die App heute anzeigt — beim nächsten Emulator-Durchgang
-> gehört es trotzdem frisch aufgenommen.
+> **Anmerkung zu den Bildern.** Zwei Stellen sind nachträglich bearbeitet, beide
+> aus demselben Grund: Die Aufnahmen zeigten etwas, das die App nicht mehr
+> zeigt.
+>
+> 1. Auf Bild 1 stand unten der alte Name der Waldfee. Ersetzt wurde nur diese
+>    eine Zeile, in derselben Schrift, Größe und Farbe.
+> 2. Auf den Bildern 1, 3 und 4 lief noch die Spieluhr. Sie ist herausgenommen
+>    und die Blätterzeile wieder mittig gesetzt — genau so, wie die App sie seit
+>    dem 28. August zeichnet.
+>
+> Beim nächsten Emulator-Durchgang gehören die drei trotzdem frisch aufgenommen.
 
 ## Für die Webseite
 
@@ -41,8 +47,10 @@ deshalb stehen Spielbrett und Feenpfad vorn.
 | `rechtstexte.html` | fertige Seite, hell und dunkel, ohne fremde Abhängigkeiten |
 | `rechtstexte.md` | dieselben Texte als Markdown, falls die Seite anders gebaut wird |
 
-Die Seite enthält Impressum, AGB und Datenschutzerklärung mit den echten
-Angaben der App HUMB UG.
+Die Seite enthält vier Teile — Impressum, AGB, Datenschutzerklärung und
+Lizenzen — mit den echten Angaben der App HUMB UG. Die Lizenzseite führt die
+SIL Open Font License 1.1 und die Apache License 2.0 im englischen Wortlaut;
+beide verlangen genau das, wenn man Schriften oder Bibliotheken mitliefert.
 
 **Die Adresse dieser Seite gehört in den Play-Store-Eintrag**, und sie muss
 erreichbar sein, bevor die App eingereicht wird — Google ruft sie ab und lehnt
@@ -68,12 +76,32 @@ durchlaufen.
 
 ## Die App
 
-`Fairydoku-2026-08-26-debug.apk` — zum Ausprobieren auf einem echten Telefon.
-Debug-Fassung, deshalb 22 MB statt gut 3; sie ist unverkleinert und nicht
-verschleiert.
+**Im Repository liegt bewusst keine APK.** Eine mitgelieferte Datei ist nach
+zwei Änderungen veraltet, und niemand sieht ihr das an. Im weitergereichten
+Paket liegt trotzdem eine unter `app/` — sonst müsste der Kollege erst bauen
+können. Was dort liegt, ist der Stand vom 29. August:
 
-**Nicht diese Datei hochladen.** Der Play Store will ein signiertes App-Bundle
-(`.aab`) — siehe unten.
+| Datei | Wofür |
+| --- | --- |
+| `Fairydoku-0.7.1-18.apk` | zum Ausprobieren auf einem Telefon |
+| `Fairydoku-0.7.1-18.aab` | die Bauform, die der Store haben will |
+
+**Beide tragen noch Googles Testkennungen für die Werbung** (siehe „Was noch
+fehlt", Punkt 1). Sie zeigen, wie die App aussieht und läuft — hochgeladen wird
+erst eine Fassung mit den echten Kennungen.
+
+Selbst bauen geht in einer Minute:
+
+```
+gradlew.bat assembleRelease     → app/build/outputs/apk/release/  (rund 4 MB)
+gradlew.bat bundleRelease       → app/build/outputs/bundle/release/  (rund 7 MB)
+```
+
+Die **APK** ist zum Ausprobieren auf einem Telefon. Das **App Bundle** (`.aab`)
+ist das, was der Play Store haben will — die APK dort hochzuladen geht nicht.
+
+Beides ist bereits signiert, sofern `keystore.properties` im Projektordner
+liegt. Der Stand vom 29. August: versionCode 18, versionName 0.7.1.
 
 ---
 
@@ -83,12 +111,16 @@ verschleiert.
 | --- | --- |
 | Haftungsklausel aus den AGB entfernt | auf Weisung; §§ 11–13 wurden zu 10–12 |
 | Rechtstexte gegliedert | Überschriften und Aufzählungen; Seite und App aus einer Quelle |
+| Vierte Rechtliches-Seite: Lizenzen | OFL 1.1 und Apache 2.0 verlangen, dass ihr Text mitgeliefert wird |
 | Waldfee heißt Viridis statt Flora | „Flora" ist zugleich eine Fee bei Disney und bei Winx Club |
 | Store-Text berichtigt | das Gitter wächst alle **zwei** Level, nicht mit jedem |
 | Ziel-API 36 | ab 31.08.2026 nimmt Google nichts Niedrigeres mehr an |
 | Werkzeugkette angehoben | AGP 8.13.2, Gradle 8.13 |
 | Brett auf flache Fenster vorbereitet | Android 16 erzwingt auf großen Bildschirmen kein Hochformat mehr |
 | **Die zwei Linien zusammengeführt** | siehe unten — dabei kamen vier Fehler ans Licht |
+| **Die Spieluhr ist raus** | Sie bestrafte das Nachdenken, für das das Spiel gemacht ist |
+| Werbung kann das Spiel nicht mehr einfrieren | Kam keine Anzeige, blieb das Spiel stehen — nur ein Neustart half |
+| Waldmusik und Schreckenslaut sind wieder Aufnahmen | Die berechneten Fassungen gefielen der Testrunde nicht |
 
 ### Was die Zusammenführung ans Licht brachte
 
@@ -105,9 +137,7 @@ und sind es jetzt nicht mehr:
 - **Vier Statusmeldungen waren zu lang** und brachen auf dem Gerät ab, unter
   anderem „✨ Der Feenstaub zeigt dir ein sicheres Feld!" mit 44 Zeichen.
 
-Die vollständige Prüfung aller Inhalte steht in `pruefbericht.md` (19.08.,
-Rechte und Stabilität) — die Markenlage und die Store-Texte sind am 25.08.
-getrennt geprüft worden.
+Die vollständige Prüfung aller Inhalte steht in `pruefbericht.md`.
 
 ---
 
@@ -138,36 +168,45 @@ Dialog, bekommt aber keinen Inhalt dafür.
 `webseite/rechtstexte.html` braucht nur einen öffentlich erreichbaren Ort.
 Vorgesehen ist `https://humb.ug/fairydoku/rechtstexte`.
 
-### 4. Der Signierschlüssel
+### 4. Der Signierschlüssel sichern
 
-Er liegt nur auf einem Rechner und ist absichtlich nicht im Repository. Zwei
-Dinge sind offen: ihn an einen zweiten Ort zu sichern, und zu klären, welcher
-der beiden vorhandenen der richtige ist — auf dem einen Rechner liegt
-`fairydoku-upload.keystore`, auf dem anderen wird `fairydoku-release.jks`
-genannt.
+Die Frage, welcher der richtige ist, ist beantwortet: Es ist
+`fairydoku-upload.keystore` im Projektordner, RSA 4096 Bit, gültig bis zum
+22. Dezember 2053. Von `fairydoku-release.jks` gibt es keine Spur; der Name
+stammt aus einer Notiz, nicht aus dem Projekt.
+
+Zu sichern sind **zwei** Dateien, und nur zusammen nützen sie etwas:
+
+- `fairydoku-upload.keystore` — der Schlüssel
+- `keystore.properties` — die zwei Kennwörter und der Alias
+
+Beide sind absichtlich nicht im Repository.
 
 Zur Beruhigung: Neue Apps nutzen Play App Signing. Google verwahrt den
 eigentlichen Signaturschlüssel, ihr signiert nur mit einem *Upload*-Schlüssel.
 Geht der verloren, lässt er sich über den Play-Support zurücksetzen — lästig,
 aber nicht endgültig.
 
-### 5. Das App-Bundle
+### 5. Das App-Bundle bauen
 
-Sobald 1, 2 und 4 stehen, mit angelegter `keystore.properties`:
+Sobald Punkt 1 erledigt ist:
 
 ```
 gradlew.bat bundleRelease
 ```
 
 Das Ergebnis liegt unter `app/build/outputs/bundle/release/`. **Das** ist die
-Datei, die hochgeladen wird.
+Datei, die hochgeladen wird. Sie ist am 29. August zuletzt fehlerfrei gebaut
+worden — signiert, verkleinert, nicht debugfähig.
 
-### 6. Einmal auf einem echten Telefon durchspielen
+### 6. Einmal in Ruhe auf einem echten Telefon durchspielen
 
-Bisher ist alles im Emulator geprüft. Seit der Umstellung auf Ziel-API 36
-lohnt ein gezielter Blick auf das Querformat: Android 16 achtet auf großen
-Bildschirmen nicht mehr auf die Festlegung auf Hochformat. Das Brett ist darauf
-vorbereitet, gesehen hat es dort aber noch niemand.
+Die Testrunde hat inzwischen einiges abgedeckt; von dort kamen die Einrückung
+der Rechtstexte, die stehengebliebene Werbung und der Wunsch, die Uhr und die
+berechnete Musik loszuwerden. Nicht angesehen hat bisher jemand das
+**Querformat**: Android 16 achtet auf großen Bildschirmen nicht mehr auf die
+Festlegung auf Hochformat. Das Brett ist darauf vorbereitet, gesehen hat es dort
+aber noch niemand.
 
 ### 7. Zwei Dinge, die eine Viertelstunde kosten
 

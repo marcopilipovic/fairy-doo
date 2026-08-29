@@ -27,49 +27,63 @@ eine Fee gesetzt wird. Und weil das Brett keinen Doppeltipp kennt, erscheint das
 ✕ ohne jede Wartezeit — bei einem Doppeltipp müsste jeder einzelne Tipp erst
 abwarten, ob noch einer folgt.
 
-Eine Fee, die beim Setzen kollidiert, kostet ein Leben. Drei Leben, dann ist der
-Lauf vorbei — ebenso, wenn die Zeit abläuft.
+Eine Fee, die beim Setzen kollidiert, kostet einen von drei Versuchen. Sind alle
+drei verbraucht, ist das Level verloren — und erst das kostet eines der fünf
+Wald-Leben.
 
-## Der Feenstaub
+**Eine Spieluhr gibt es nicht.** Bis zum 28. August lief ein Countdown, dessen
+Ablauf das Level ebenfalls beendete. Er ist ersatzlos gestrichen: Ein Rätsel,
+das vom Nachdenken lebt, straft mit einer Uhr genau das ab, wofür es gemacht
+ist. Geblieben sind die drei Versuche als einziges Ende.
 
-Die einzige Hilfe im Spiel: **✨ Feenstaub** setzt eine Fee auf ein garantiert
-sicheres Feld, das zwei Sekunden golden nachleuchtet.
+## Die Hilfen
 
-Der Vorrat fasst **drei** Stück und gehört dem Spieler, nicht dem Level — er
-geht in das nächste Level mit und überlebt den Neustart der App. Ein
-verbrauchtes Stück wächst in **zwei Stunden** nach; ist der Vorrat voll,
-steht die Uhr still. Das Nachwachsen läuft über einen gespeicherten Zeitpunkt
-und holt deshalb auch nach, was während geschlossener App fällig geworden wäre
+Zwei, und beide zeigen nur, was ohnehin beweisbar ist:
+
+- **✨ Feenstaub** setzt eine Fee auf ein garantiert sicheres Feld, das zwei
+  Sekunden golden nachleuchtet.
+- **🔮 Irrlicht** deckt umgekehrt ein Feld auf, auf dem keine Fee sitzt.
+
+Beide Vorräte fassen **drei** Stück und gehören dem Spieler, nicht dem Level —
+sie gehen in das nächste Level mit und überleben den Neustart der App. Ein
+verbrauchtes Stück wächst in **zwei Stunden** nach; ist der Vorrat voll, ruht
+das Nachwachsen. Es läuft über einen gespeicherten Zeitpunkt und holt deshalb
+auch nach, was während geschlossener App fällig geworden wäre
 (`RegeneratingSupply`, geteilt mit den Wald-Leben).
 
 Früher standen hier drei Fähigkeiten. Der **Natur-Schild** nahm dem Fehler die
-Folge und die **Zeiten-Blüte** der Uhr den Druck; zusammen machten sie das
-Rätsel beliebig. Geblieben ist die eine Hilfe, die weiterbringt, ohne das
-Nachdenken abzunehmen.
+Folge und die **Zeiten-Blüte** dem Countdown den Druck; zusammen machten sie das
+Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 
 ## Klang
 
 | Ereignis | Klang | Herkunft |
 | --- | --- | --- |
-| Fee richtig gesetzt | Kichern in sechs Varianten | Aufnahme |
+| Fee richtig gesetzt | der Eigenton der Fee, zehn verschiedene | berechnet |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
 | Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern | berechnet |
-| Fähigkeit eingesetzt | Funkenkaskade, Schild-Zweiklang, schwebender Ton | berechnet |
+| Hilfe eingesetzt | Funkenkaskade | berechnet |
 | Rätsel gelöst | Glockenjubel und eine lobende Feenstimme | berechnet + Sprachausgabe |
 | Spielende | absteigende Molltonfolge | berechnet |
-| Hintergrund | Ambient-Schleife aus vier Akkorden mit Glockentönen | berechnet |
+| Hintergrund | ruhige Waldschleife, über Brett und Karte dieselbe | Aufnahme |
 
-**Die Feenstimmen sind echte Aufnahmen** (`res/raw/fairy_giggle_1..6.mp3`,
-`fairy_startled.mp3`), abgespielt über `SoundPool` — es dekodiert MP3 selbst,
-hält die Clips im Speicher und mischt mehrere gleichzeitig, sodass sich beim
-schnellen Setzen mehrerer Feen die Stimmen überlagern statt abzuschneiden. Die
-Originale liegen unter `Audio/`.
+**Zwei Aufnahmen liegen bei** (`res/raw/ambient_forest.mp3`,
+`fairy_startled.mp3`), erzeugt mit ElevenLabs unter bezahltem Tarif; die
+Originale samt Zeitstempel liegen unter `Audio/`. Der Aufschrei läuft über
+`SoundPool`, die Waldschleife über `MusicDecoder` — der packt die MP3 einmal
+nach rohem PCM aus, weil MP3 am Schleifenende sonst eine hörbare Naht setzt.
 
 **Alles andere wird beim Start berechnet** (`audio/Synth.kt`,
-`audio/FairySounds.kt`). Für Instrumente und Ambiente ist Synthese ideal: Sie
-kostet keinen Speicherplatz und jede Tonhöhe ist über eine Zahl änderbar. Für
-eine Stimme ist sie es nicht — deren Klangfarbe lässt sich aus Sinustönen nicht
-überzeugend bauen, und genau deshalb sind Kichern und Aufschrei Aufnahmen.
+`audio/FairySounds.kt`, `audio/FairyChimes.kt`). Für Instrumente ist Synthese
+ideal: Sie kostet keinen Speicherplatz, und jede Tonhöhe ist über eine Zahl
+änderbar. Beim Setzen einer Fee ist sie sogar das bessere Mittel — die zehn
+Eigentöne stammen aus einer Tonleiter, es kann also nichts schief klingen, egal
+wie schnell gesetzt wird. Bis zum 5. August lagen hier sechs aufgenommene
+Kicherlaute; sie sind dem Eigenton gewichen und in `Audio/` aufgehoben.
+
+*Beide Aufnahmen waren im August einmal draußen — es war unklar, wie ihre
+Rechtelage zu belegen wäre. Der Tarif ist inzwischen belegt
+(`storepaket/pruefbericht.md`), und die Testrunde wollte sie ohnehin zurück.*
 
 Die **Lobstimme** nutzt die Sprachausgabe des Geräts, nicht aufgenommene Sprache:
 Nur so kann das Lob den Spielstand nennen („Level 4 geschafft"). Fehlt eine
@@ -78,7 +92,7 @@ deutsche Stimme, bleibt sie still — das Spiel funktioniert auch ohne.
 ### Lautstärke
 
 Das Lautsprecher-Zeichen oben rechts öffnet die Klang-Einstellungen: **Musik,
-Klänge und Feenstimme sind getrennt regelbar**, die Uhr pausiert dabei. Ein
+Klänge und Feenstimme sind getrennt regelbar**. Ein
 Regler auf null ist zugleich der Stummschalter — dafür braucht es keinen
 zweiten Bedienweg, und das Zeichen am Rand zeigt an, wenn alles stumm ist.
 
@@ -177,7 +191,7 @@ app/src/main/java/com/fairydoo/game/
 │   │   └── PuzzleGenerator.kt       Erzeugt Rätsel mit eindeutiger Lösung
 │   ├── GameState.kt                 Unveränderlicher Partie-Zustand
 │   ├── GameEngine.kt                FairydokuEngine: Züge, Feenstaub, Punkte
-│   └── GameViewModel.kt             Spieluhr, Zustandsverwaltung, Persistenz
+│   └── GameViewModel.kt             Zustandsverwaltung, Persistenz, Klangausgabe
 ├── art/
 │   └── FairySprites.kt              Der Eigenton jeder Fee (Android-frei)
 ├── audio/
@@ -262,22 +276,32 @@ Alle Stellschrauben stehen als Konstanten in `GameState.Companion` und
 
 | Schraube | Aktuell |
 | --- | --- |
-| Gittergröße | 4×4, wächst alle zwei Level, Maximum 8×8 |
-| Zeit je Level | 60 s + 15 s je Gitterfeld |
-| Leben | 3 |
-| Feenstaub | 3 Stück, nachwachsend alle 30 Minuten |
-| Punkte je Level | 100 × Gittergröße + 5 je Restsekunde |
-| Feen-Arten | Blüten → Wasser → Feuer → Sternen, dann von vorn |
+| Gittergröße | 4×4, wächst alle zwei Level, Maximum 8×8 ab Level 9 |
+| Versuche je Level | 3 |
+| Wald-Leben | 5, nachwachsend alle zwei Stunden |
+| Feenstaub, Irrlicht | je 3 Stück, nachwachsend alle zwei Stunden |
+| Punkte je Level | 175 × Gittergröße + 300 |
+| Feen-Arten | zehn, je Zone eine andere; über zehn Level jede einmal je Zone |
+
+Zu den Punkten: In der Formel steht noch `POINTS_PER_CELL × Größe +
+Restsekunden × POINTS_PER_SECOND`. Seit die Spieluhr weg ist, zählt
+`remainingMillis` nicht mehr herunter, der Zeitanteil ist also für jede
+Gittergröße derselbe — herausgerechnet ergibt das die Zeile oben. Die Formel
+umzuschreiben würde am Ergebnis nichts ändern und wartet deshalb auf einen
+ruhigeren Zeitpunkt als die Woche vor der Veröffentlichung.
 
 ## Technischer Stand
 
 | | |
 | --- | --- |
 | minSdk | 26 (Android 8.0) — Voraussetzung für die Variable Font |
-| compileSdk / targetSdk | 35 |
-| Kotlin | 2.0.21 · AGP 8.7.3 · Gradle 8.9 · JDK 21 |
+| compileSdk / targetSdk | 36 |
+| Kotlin | 2.0.21 · AGP 8.13.2 · Gradle 8.13 · JDK 17 |
 
-**Offen vor einer Veröffentlichung:** Google Play verlangt fortlaufend neuere
-`targetSdk`-Stände; ein Upgrade auf AGP 8.9+/`targetSdk 36` ist ein eigener
-Schritt. Ebenfalls offen: Signierschlüssel für Release-Builds
-(`keystore.properties` ist in `.gitignore` vorgesehen).
+`targetSdk 36` ist keine Kür: Google Play verlangt ihn ab dem **31. August
+2026** für neue Apps. Damit gilt auch, dass Android 16 auf großen Bildschirmen
+die Festlegung auf Hochformat nicht mehr beachtet — deshalb steht das Brett in
+einer Box, die nie höher wird als der Platz, der ihr bleibt.
+
+**Offen vor einer Veröffentlichung:** siehe `STAND.md` — nichts davon ist
+Programmierarbeit.

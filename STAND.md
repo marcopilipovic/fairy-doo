@@ -1,4 +1,4 @@
-# Stand: 28. August 2026
+# Stand: 29. August 2026
 
 Diese Datei ist der Einstieg für jede neue Sitzung in diesem Ordner. Sie sagt,
 wo das Projekt steht und was noch fehlt — damit niemand aus Gesprächsresten
@@ -31,22 +31,36 @@ gerechnet; ihre Schleifen schließen sich ohne Naht, weil `Synth.mixLooping` den
 
 Die Waldmusik und der Schreckenslaut sind seit dem 28. August wieder
 Aufnahmen — die berechneten Fassungen haben der Testrunde nicht gefallen.
-Dieselbe Musik liegt über beiden Bildschirmen und läuft beim Wechsel
-durch. Erzeugt mit ElevenLabs am 1. August 2026 unter bezahltem Tarif;
-der Beleg dazu ist im `pruefbericht.md` noch als offener Punkt vermerkt.
+Dieselbe Musik liegt über beiden Bildschirmen und läuft beim Wechsel durch.
+Erzeugt mit ElevenLabs am 1. August 2026 unter dem Tarif *Starter*, der die
+gewerbliche Lizenz für Sprache und Musik ausdrücklich einschließt. **Die
+Rechtefrage ist damit erledigt** — Einzelheiten im `pruefbericht.md`.
 
-**Werbung.** Nur freiwillige Videos für Feenstaub, Irrlicht oder ein Leben, ab
-Level 3. Keine Banner. Das Werbe-SDK startet erst beim ersten Tippen auf einen
-Werbe-Knopf; Googles Einwilligungswerkzeug (UMP) läuft davor. Die Spieluhr
-steht währenddessen still — nachgemessen.
+**Keine Spieluhr.** Der Countdown je Level ist am 28. August ersatzlos
+gestrichen. Ein Level endet seither nur noch durch drei verbrauchte Versuche.
+Ein Rätsel, das vom Nachdenken lebt, soll nicht genau dafür bestraft werden.
 
-**Rechtstexte.** Echte Angaben (App HUMB UG, Parkstraße 9, HRB 208491),
-Zielgruppe ab 13 Jahren, keine Platzhalter. Als Webseite in
-`storepaket/webseite/`.
+**Werbung.** Nur freiwillige Videos für Feenstaub, Irrlicht oder ein Leben, und
+erst nach den ersten drei Leveln (`ADS_UNLOCK_AFTER_LEVEL`); davor tritt an ihre
+Stelle ein Geschenk. Keine Banner. Das Werbe-SDK startet erst beim ersten Tippen auf einen
+Werbe-Knopf; Googles Einwilligungswerkzeug (UMP) läuft davor. Bleibt eine
+Anzeige aus — kein Netz, kein Vorrat, abgelehnte Einwilligung —, meldet der
+`RewardedAdManager` das in jedem Fall zurück; ein Wachhund nach zwölf Sekunden
+fängt auch den Fall ab, in dem Google gar nichts sagt. Vorher konnte das Spiel
+dabei stehenbleiben und ließ sich nur durch einen Neustart lösen.
+
+**Rechtstexte.** Vier Seiten — Impressum, AGB, Datenschutz, Lizenzen —, echte
+Angaben (App HUMB UG, Parkstraße 9, HRB 208491), Zielgruppe ab 13 Jahren, keine
+Platzhalter. Sie stehen einmal in `ui/GameCopy.kt` und werden von dort in die
+App, auf die Webseite (`storepaket/webseite/`) und in die PDFs ausgegeben; ein
+Test hält beide Ausgaben mit der App gleich. Die Lizenzseite trägt OFL 1.1 und
+Apache 2.0 im Wortlaut — beide verlangen das.
 
 **Store-Paket.** `storepaket/` enthält APK, fünf Bildschirmfotos, Symbol 512,
 Feature-Grafik, alle Texte, die Antworten für Datensicherheit und
-Alterseinstufung sowie `pruefbericht.md`.
+Alterseinstufung sowie `pruefbericht.md`. Auf drei der Fotos stand noch die
+Spieluhr; sie ist am 29. August herausgenommen und die Blätterzeile wieder
+mittig gesetzt worden, damit die Bilder zeigen, was die App zeigt.
 
 ---
 
@@ -60,22 +74,33 @@ Alterseinstufung sowie `pruefbericht.md`.
    Inhalt.
 3. **Datenschutz-Seite ins Netz stellen.** Google ruft die Adresse beim
    Einreichen ab. Fertige Datei: `storepaket/webseite/rechtstexte.html`.
-4. **Einmal auf einem echten Telefon durchspielen.** Bisher alles im Emulator
-   geprüft, und seit der Zusammenführung ist noch gar nichts auf einem Gerät
-   gelaufen. Besonders anzusehen: die Tageswertung im Spielverlauf und das
-   Querformat — Android 16 achtet auf großen Bildschirmen nicht mehr auf die
-   Festlegung auf Hochformat.
-5. **Das fünfte Bildschirmfoto.** Die Reihe springt von 4 auf 6, weil die
-   Tageswertung auf der alten Linie fehlte. Jetzt ist sie wieder da und kann
-   aufgenommen werden. Nicht zwingend — Google verlangt mindestens zwei.
+4. **Einmal auf einem echten Telefon durchspielen.** Besonders anzusehen: die
+   Tageswertung im Spielverlauf und das Querformat — Android 16 achtet auf
+   großen Bildschirmen nicht mehr auf die Festlegung auf Hochformat. Die
+   Testrunde hat inzwischen das meiste davon abgedeckt; von dort kamen die
+   Einrückung der Rechtstexte, die stehengebliebene Werbung und der Wunsch,
+   die Uhr und die berechnete Musik loszuwerden.
+5. **Markenrecherche.** Eine Viertelstunde bei DPMAregister und TMview auf
+   „Fairydoku" und die zehn Feennamen. Nichts deutet auf ein Problem hin — es
+   ist nur nicht nachgesehen worden.
 
 ---
 
 ## Zwei Dinge, die man wissen muss
 
-**Der Signierschlüssel liegt nur auf diesem PC** (`keystore/fairydoku-release.jks`,
-absichtlich nicht im Repository). Geht er verloren, lässt sich die App im Play
-Store nie wieder aktualisieren. Er gehört an einen zweiten Ort gesichert.
+**Der Signierschlüssel liegt nur auf diesem PC.** Zwei Dateien im Projektordner,
+beide absichtlich nicht im Repository (`.gitignore` Zeile 16 und 17):
+
+| Datei | Was drin steht |
+| --- | --- |
+| `fairydoku-upload.keystore` | der Schlüssel selbst, 4302 Byte |
+| `keystore.properties` | die zwei Kennwörter und der Alias |
+
+**Beide zusammen** gehören an einen zweiten Ort — ein Stick, ein Kennwortsafe,
+ein verschlüsseltes Verzeichnis. Gehen sie verloren, lässt sich die App im Play
+Store nie wieder aktualisieren; der Eintrag wäre dann verloren, und nicht einmal
+Google kann das rückgängig machen. Das ist der einzige unwiederbringliche Punkt
+im ganzen Projekt.
 
 **Auf die anwaltliche Prüfung der Rechtstexte wurde bewusst verzichtet.** Als
 Rechtsgrundlage für die Werbung steht die Einwilligung (Art. 6 Abs. 1 lit. a

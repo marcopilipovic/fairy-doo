@@ -168,7 +168,8 @@ auch wenn der Fehler in einer Stunde behoben ist.
 
 ## Die vollständige Liste
 
-Stand 7. August 2026. Alles, was zwischen heute und dem Play Store steht.
+Angelegt am 7. August 2026, fortgeschrieben bis zum 29. August. Alles, was
+zwischen heute und dem Play Store steht.
 
 ### Nur Nataly
 
@@ -181,36 +182,37 @@ Stand 7. August 2026. Alles, was zwischen heute und dem Play Store steht.
 | ⬜ | **Datenschutzseite hochladen** | Datei entsteht per Test, braucht nur einen öffentlich erreichbaren Ort. |
 | ⬜ | **Zweite Sicherung des Schlüssels** | Der USB-Stick ist die erste. Eine reicht nicht. |
 | ✅ | **App-Namen festlegen** | „Fairydoku", 9 Zeichen. Steht in `storepaket/play-store/texte.md`. |
-| ✅ | **Klang-Lizenz klären** | Erledigt durch Wegfall: `ambient_forest.mp3` und `fairy_startled.mp3` sind aus der App entfernt. Musik und Klänge werden im Spiel gerechnet — in der APK liegt keine einzige Tondatei mehr. |
+| ✅ | **Klang-Lizenz klären** | Erledigt am 29. August: ElevenLabs, Tarif *Starter*, dessen Leistungsumfang die kommerzielle Lizenz für Sprache und Musik ausdrücklich nennt. Das Abo bestand, bevor die Klänge erzeugt wurden. Deshalb sind `ambient_forest.mp3` und `fairy_startled.mp3` seit dem 28. August wieder in der App. |
 
 ### Zu entscheiden
 
 | | Was |
 |---|---|
-| ⬜ | **Die zehn Feenmotive** — bleiben sie, und welche müssen nachgebessert werden? |
+| ✅ | **Die zehn Feenmotive** — entschieden am 28. August: die Zeichnungen aus dem Handoff „Feen schlicht", nachgebaut als Vektoren. |
 | ⬜ | **Die gesprochenen Lobsätze** — weglassen, oder leiser und kürzer? |
 
 ### Testen, nur auf dem Gerät möglich
 
 | | Was | Warum |
 |---|---|---|
-| ⬜ | **Tagesabschluss** | Kommt das Overlay nach 4 Uhr? Kommt der Feenstaub im Vorrat an? Erscheint es nur einmal? |
-| ⬜ | **Release-Fassung** | Ist noch nie gelaufen. Die Verkleinerung für den Store kann still etwas zerstören. |
-| ⬜ | **Werbung** | Ab Level 11. Kommt die Belohnung an? |
+| ⬜ | **Tagesabschluss** | Kommt das Overlay nach 4 Uhr früh? Kommt der Feenstaub im Vorrat an? Erscheint es nur einmal? |
+| ✅ | **Release-Fassung** | Läuft. Die Testrunde spielt seit dem 28. August signierte Release-APKs. |
+| ⬜ | **Werbung** | Nach den ersten drei Leveln. Kommt die Belohnung an? |
 | ⬜ | **Einwilligungsdialog** | Nur bei frischer Installation und nur in der EU. Ablehnen muss sauber funktionieren. |
-| ⬜ | **Klang insgesamt** | Mit Kopfhörern. Niemand hat das Spiel bisher gehört. |
+| ✅ | **Klang insgesamt** | Gehört. Genau deshalb sind die berechnete Musik und der Schreckenslaut wieder durch die Aufnahmen ersetzt. |
 | ⬜ | **Neustart** | Stand nach vollständigem Schließen noch vollständig da? |
+| ⬜ | **Querformat** | Neu seit Ziel-API 36: Android 16 erzwingt auf großen Bildschirmen kein Hochformat mehr. Das Brett ist vorbereitet, gesehen hat es dort noch niemand. |
 
 ### Bei mir
 
 | | Was | Dringlichkeit |
 |---|---|---|
-| ⬜ | **`targetSdk` von 35 auf 36** | **Zuerst.** Google verlangt für neue Apps ein aktuelles Ziel-Level; die Frist läuft üblicherweise Ende August. |
-| ⬜ | **App-Symbol einreichfertig** | `Bilder/app-icon-512.png` liegt in 512 × 512 bereit, muss nur geprüft werden. |
+| ✅ | **`targetSdk` von 35 auf 36** | Erledigt am 25. August, zusammen mit AGP 8.13.2 und Gradle 8.13. |
+| ✅ | **App-Symbol einreichfertig** | Salta in Gold, reiner Vektor — dieselbe Zeichnung wie im Spiel. `storepaket/play-store/symbol-512x512.png` für den Store. |
 | ⬜ | **Echte AdMob-Kennungen einsetzen** | Sobald das Konto steht. |
-| ⬜ | **Feenmotive einbauen** | Sobald entschieden. |
+| ✅ | **Feenmotive einbauen** | Zehn Vektorzeichnungen, alle PNG-Dateien und alle 🧚-Emoji sind raus. |
 | ⬜ | **Lobsätze anpassen** | Sobald entschieden. |
-| ⬜ | **Signiertes AAB zum Hochladen** | Zuletzt, wenn alles andere steht. |
+| ⬜ | **Signiertes AAB zum Hochladen** | Zuletzt, wenn alles andere steht. Baut fehlerfrei — zuletzt am 29. August. |
 
 ### Nach der Veröffentlichung
 

@@ -997,7 +997,7 @@ private fun LevelProgress(state: GameState) {
     }
 }
 
-/** Leben, Uhr und Schild-Hinweis. */
+/** Die drei Versuche des laufenden Levels — verbrauchte als welkes Blatt. */
 @Composable
 private fun StatusRow(state: GameState) {
     Row(

@@ -1,7 +1,10 @@
 # Fairydoku — Prüfbericht vor der Veröffentlichung
 
-Stand: 19. August 2026, geprüft an der Release-APK (versionName 0.1.0,
-3.327.731 Byte) auf einem Pixel-5-Emulator mit Android 15.
+Stand: 29. August 2026, geprüft an der Release-APK (versionName 0.7.1,
+versionCode 18, 4.175.734 Byte) auf einem Pixel-5-Emulator mit Android 15 und,
+seit der Zusammenführung, laufend auf den Telefonen der Testrunde. Die erste
+Fassung dieses Berichts stammt vom 19. August; was seither dazukam, steht unten
+in der Tabelle.
 
 Drei Fragen: Können die Rechte an Mitgeliefertem Ärger machen? Kann der Store
 Ärger machen? Und kann die App auf fremden Telefonen Schaden anrichten?
@@ -23,7 +26,10 @@ Die App selbst fordert zwei an:
 
 Das Werbe-SDK bringt weitere mit, die im fertigen Paket landen: `AD_ID`,
 `ACCESS_ADSERVICES_AD_ID`, `ACCESS_ADSERVICES_ATTRIBUTION`,
-`ACCESS_ADSERVICES_TOPICS`, `WAKE_LOCK`, `FOREGROUND_SERVICE`.
+`ACCESS_ADSERVICES_TOPICS`, `WAKE_LOCK`, `FOREGROUND_SERVICE`. Dazu kommt
+`com.fairydoo.game.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` — die meldet die
+App sich selbst; AndroidX benutzt sie, um interne Empfänger gegen fremde Apps
+abzuriegeln. Sie ist eine Schutzmaßnahme, kein Zugriff.
 
 **Keines davon ist ein gefährliches Recht.** Android fragt bei keinem einzigen
 nach — es erscheint kein Dialog, weil keines nachfragepflichtig ist. Und es
@@ -73,14 +79,22 @@ Abschaltweg. (Bis heute stand dort das Gegenteil — behoben.)
   Anleitung, Levelkarte, Spiel, Klang und Musik funktionieren. Nur die Werbung
   entfällt, und der Knopf sagt das.
 - Der Release-Build ist **nicht debugfähig**, verkleinert, verschleiert und
-  signiert.
+  signiert. Nachgeprüft am fertigen Paket:
+
+| | |
+| --- | --- |
+| Signatur | gültig, ein Unterzeichner, Schema v2 |
+| Schlüssel | RSA 4096 Bit, SHA384withRSA |
+| Gültig bis | 22. Dezember 2053 — Google verlangt mindestens 2033 |
+| SHA-256 | `75f99f…d87d3ef4` |
 
 ### Batterie
 
-Die Spieluhr läuft mit 16-ms-Schritten, aber nur während eines laufenden
-Levels. Beim Wechsel in den Hintergrund halten Uhr und Musik an, seit heute
-auch während einer Werbeanzeige. Keine Hintergrunddienste, keine Weckzeiten,
-keine Standortabfragen.
+Seit dem 28. August läuft überhaupt keine Uhr mehr: Der Countdown je Level ist
+gestrichen, und mit ihm der Takt, der bis dahin 16-ms-weise weiterlief. Was
+bleibt, ist die Musik, und die hält beim Wechsel in den Hintergrund an — auch
+während einer Werbeanzeige. Keine Hintergrunddienste, keine Weckzeiten, keine
+Standortabfragen.
 
 ---
 
@@ -151,7 +165,10 @@ die ist eigene Arbeit.
 
 ### Was passt
 
-- **Ziel-API 35** — erfüllt die aktuelle Anforderung für neue Apps.
+- **Ziel-API 36** — Google Play verlangt sie ab dem 31. August 2026 für neue
+  Apps. Der Schritt ist gemacht, samt der Folge daraus: Android 16 beachtet auf
+  großen Bildschirmen die Festlegung auf Hochformat nicht mehr, das Brett rechnet
+  seine Größe deshalb aus dem Platz, der ihm bleibt.
 - **Werbung**: ausschließlich freiwillige Videoanzeigen. Keine Banner, keine
   Unterbrechungen, nichts, was von selbst erscheint. Nichts davon ist eine
   Richtlinienfrage; es ist die zurückhaltendste Form, die es gibt.
@@ -181,7 +198,9 @@ die ist eigene Arbeit.
 
 ---
 
-## Was heute behoben wurde
+## Was behoben wurde
+
+**Am 19. August, beim ersten Durchgang:**
 
 | Befund | Folge, wenn ungefixt |
 | --- | --- |
@@ -191,13 +210,38 @@ die ist eigene Arbeit.
 | Schriftlizenz nicht mitgeliefert | Verstoß gegen die OFL |
 | Uhr lief während der Werbung weiter | Spieler verliert das Level, während er Werbung ansieht |
 
+**Seither:**
+
+| Befund | Folge, wenn ungefixt | Wann |
+| --- | --- | --- |
+| Eine Anzeige, die nicht kam, meldete sich nicht zurück — das Spiel blieb stehen | Nur noch mit einem Neustart der App zu lösen | 28. Aug. |
+| `targetSdk` stand auf 35 | Google Play nimmt ab dem 31. August 2026 keine neue App mehr an | 25. Aug. |
+| Die Lizenzen der fremden Bestandteile fehlten in der App | Verstoß gegen OFL 1.1 und Apache 2.0 — jetzt eine eigene Seite im Wortlaut | 28. Aug. |
+| Eine Fee hieß „Flora" | Eingetragene Marke in mehreren Klassen; heißt jetzt Viridis | 25. Aug. |
+| Die AGB trugen eine Haftungsklausel | Gegenüber Verbrauchern in Teilen unwirksam, und für ein kostenloses Spiel überflüssig | 24. Aug. |
+| Die Rechtstexte liefen in der App ohne Absätze durch | Unlesbar auf dem Telefon — jetzt aus derselben Quelle gegliedert wie die Webseite | 24. Aug. |
+| Zwei Fassungen des Spiels liefen drei Wochen nebeneinander | Dieselbe Arbeit zweimal; jetzt gibt es nur noch `main` | 28. Aug. |
+| Die berechnete Musik gefiel der Testrunde nicht | — kein Fehler, aber der Grund, die zwei Aufnahmen zurückzuholen | 28. Aug. |
+| Die Spieluhr | Sie bestrafte das Nachdenken, für das das Spiel gemacht ist; ersatzlos gestrichen | 28. Aug. |
+| Drei Bildschirmfotos zeigten die Uhr noch | Bilder, die etwas zeigen, was es nicht gibt | 29. Aug. |
+
 ---
 
 ## Bewertung
 
 Aus meiner Sicht ist die App aus Nutzersicht unbedenklich und aus Rechtesicht
-sauber. Was bleibt, sind drei Handgriffe im AdMob-Konto und auf der Webseite —
-keine Programmierarbeit.
+sauber. Am Quelltext und an den Texten ist nichts mehr zu tun; was bleibt, sind
+fünf Handgriffe außerhalb des Projekts:
+
+1. Echte AdMob-Kennungen eintragen (Manifest und `RewardedAdManager`).
+2. Einwilligungsnachricht im AdMob-Konto anlegen und veröffentlichen.
+3. Datenschutz-Seite unter der angegebenen Adresse erreichbar machen.
+4. Signierschlüssel und `keystore.properties` an einem zweiten Ort sichern.
+5. Eine Viertelstunde Markenrecherche bei DPMAregister und TMview.
+
+Nur der vierte Punkt ist unwiederbringlich, wenn er ausbleibt. Die anderen vier
+lassen sich jederzeit nachholen — der erste allerdings *muss* vor dem Einreichen
+erledigt sein, sonst läuft die App mit Googles Testanzeigen.
 
 Ein Vorbehalt, der genannt gehört: Ich habe die App geprüft, nicht juristisch
 begutachtet. Die Aussagen zu Urheberrecht und Store-Richtlinien beruhen darauf,
