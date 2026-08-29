@@ -544,7 +544,7 @@ class FairyAudio(context: Context) {
          * Auf 5 gesetzt, weil auch die Effekte seit „Musik lauter aussteuern"
          * veraltet im Zwischenspeicher lagen.
          */
-        const val SOUND_CACHE_VERSION = 6
+        const val SOUND_CACHE_VERSION = 7
 
         /**
          * Hochzählen, wenn sich [Music] ändert — sonst spielt ein Gerät, auf

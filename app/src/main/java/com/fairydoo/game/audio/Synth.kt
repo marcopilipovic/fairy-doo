@@ -121,15 +121,25 @@ object Synth {
         }
     }
 
-    /** Anschlag mit exponentiellem Ausklang — für Glocken und Funken. */
-    fun pluck(decay: Float = 6f, peak: Float = 1f): (Float) -> Float = { progress ->
-        val attack = 0.01f
-        if (progress < attack) {
-            peak * (progress / attack)
-        } else {
-            peak * exp(-decay * progress)
+    /**
+     * Anschlag mit exponentiellem Ausklang — für Glocken und Funken.
+     *
+     * [attack] ist ein Anteil der Gesamtdauer, nicht eine Zeit: Der Aufrufer
+     * kennt seine Dauer und rechnet um. Bei einem Hundertstel setzt der Ton
+     * praktisch sofort ein — das hört man als Klick, und ein Klick zieht
+     * Aufmerksamkeit auf sich, ganz gleich wie leise er ist. Wer einen Ton
+     * unauffälliger haben will, dreht zuerst hier und erst danach an der
+     * Lautstärke: Ein Ton, der in zehn Millisekunden aufblüht statt in einer,
+     * verschwindet im Hintergrund, bleibt aber genauso gut hörbar.
+     */
+    fun pluck(decay: Float = 6f, peak: Float = 1f, attack: Float = 0.01f): (Float) -> Float =
+        { progress ->
+            if (progress < attack) {
+                peak * (progress / attack)
+            } else {
+                peak * exp(-decay * progress)
+            }
         }
-    }
 
     /** Legt Klänge übereinander; [offsetSeconds] verschiebt sie auf der Zeitachse. */
     fun mix(vararg layers: Pair<Float, FloatArray>): FloatArray {

@@ -101,15 +101,32 @@ object FairySounds {
         return Synth.normalize(shimmer, target = 0.55f)
     }
 
-    /** Das Setzen eines Merkzeichens: ein leiser, trockener Tick. */
+    /**
+     * Das Setzen eines Merkzeichens: ein leiser, trockener Tick.
+     *
+     * Der häufigste Klang im ganzen Spiel — beim Ausschließen fällt er
+     * dutzendfach je Level. Deshalb ist er am 29. August zurückgenommen worden,
+     * an vier Stellen zugleich:
+     *
+     * - **Tiefer.** Statt 1500 Hz beginnt er bei 780. Das Ohr ist um 1,5 kHz
+     *   am empfindlichsten; derselbe Pegel eine Oktave tiefer wirkt spürbar
+     *   sanfter, ohne undeutlich zu werden.
+     * - **Weicherer Anschlag.** 6 ms statt einer. Das nimmt ihm den Klick, und
+     *   der Klick war das, was auffiel.
+     * - **Weniger Oberton.** Der dritte Teilton macht das Spitze aus.
+     * - **Leiser**, zuletzt: von 0,35 auf 0,22.
+     *
+     * Die Reihenfolge ist Absicht. Nur leiser zu drehen hätte den Tick
+     * undeutlich gemacht, ohne ihn unauffälliger zu machen.
+     */
     fun tick(): FloatArray = Synth.normalize(
         Synth.tone(
-            durationSeconds = 0.09f,
-            frequencyAt = { progress -> 1500f - 400f * progress },
-            amplitudeAt = Synth.pluck(decay = 24f, peak = 0.3f),
-            harmonics = listOf(1f to 1f, 3f to 0.2f),
+            durationSeconds = 0.11f,
+            frequencyAt = { progress -> 780f - 190f * progress },
+            amplitudeAt = Synth.pluck(decay = 20f, peak = 0.3f, attack = 0.055f),
+            harmonics = listOf(1f to 1f, 3f to 0.07f),
         ),
-        target = 0.35f,
+        target = 0.22f,
     )
 
     /**
@@ -149,14 +166,17 @@ object FairySounds {
     }
 
     /** Das Zurücknehmen einer Fee: ein kurzes Abwärts-Wispern. */
+    // Mit dem Tick zusammen zurückgenommen: Wäre nur der Tick leiser geworden,
+    // wäre ausgerechnet das Wegnehmen der lautere der beiden Züge — und das
+    // Wegnehmen ist der seltenere.
     fun undo(): FloatArray = Synth.normalize(
         Synth.tone(
             durationSeconds = 0.28f,
-            frequencyAt = { progress -> 900f - 420f * progress },
-            amplitudeAt = Synth.pluck(decay = 8f, peak = 0.3f),
-            harmonics = listOf(1f to 1f, 2f to 0.2f),
+            frequencyAt = { progress -> 700f - 330f * progress },
+            amplitudeAt = Synth.pluck(decay = 8f, peak = 0.3f, attack = 0.03f),
+            harmonics = listOf(1f to 1f, 2f to 0.12f),
         ),
-        target = 0.4f,
+        target = 0.25f,
     )
 
     /** Das Spielende: eine absteigende Molltonfolge, die verklingt. */

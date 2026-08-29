@@ -61,17 +61,36 @@ object FairyChimes {
      */
     fun render(species: FairySpecies): FloatArray {
         val chime = of(species)
+
+        // Je höher die Fee, desto weniger Metall.
+        //
+        // Das Spitze eines Glockentons steckt nicht im Grundton, sondern im
+        // Teilton darüber. Bei Ignis liegt der Grundton auf 2093 Hz — der
+        // Glockenton daraus landet bei 5,8 kHz, also genau dort, wo ein
+        // Handylautsprecher am schärfsten ist. Bei Terra auf 587 Hz ist
+        // derselbe Anteil völlig harmlos. Deshalb wird er nicht pauschal
+        // gekürzt, sondern nach Tonhöhe: unten bleibt die Glocke, oben wird
+        // sie zu Holz.
+        val metall = (900f / chime.hertz).coerceIn(0.4f, 1f)
+
         return Synth.normalize(
             Synth.tone(
                 durationSeconds = 0.42f,
                 frequencyAt = { progress -> chime.hertz * (1f - 0.012f * progress) },
-                amplitudeAt = Synth.pluck(decay = chime.decay, peak = 0.5f),
+                // 15 ms Anschlag statt 4. Der Ton blüht auf, statt anzuschlagen
+                // — das ist der Unterschied zwischen einer Bestätigung und
+                // einem Signal.
+                amplitudeAt = Synth.pluck(decay = chime.decay, peak = 0.5f, attack = 0.036f),
                 // Der zweite Teilton liegt bewusst nicht auf einem ganzen
                 // Vielfachen: So klingen echte Glocken, und der Ton bekommt
                 // seinen Schimmer, ohne dass eine zweite Tonhöhe hörbar wird.
-                harmonics = listOf(1f to 1f, 2.76f to chime.bell, 5.4f to chime.bell * 0.28f),
+                harmonics = listOf(
+                    1f to 1f,
+                    2.76f to chime.bell * metall * 0.6f,
+                    5.4f to chime.bell * metall * metall * 0.1f,
+                ),
             ),
-            target = 0.42f,
+            target = 0.30f,
         )
     }
 }
