@@ -25,15 +25,21 @@ Overlays.
 (`mipmap-anydpi-v26/ic_launcher_foreground.xml` übernimmt den Inhalt aus
 `drawable/fairy_salta.xml`). Reiner Vektor, keine Dichtestufen mehr.
 
-**Klang und Musik.** Die zehn Feentöne und alle Effekte werden im Spiel
-gerechnet; ihre Schleifen schließen sich ohne Naht, weil `Synth.mixLooping` den
-Überhang nach vorn faltet.
+**Klang und Musik.** Merkzeichen, Rücknahme, Feenstaub, Jubel und Spielende
+werden im Spiel gerechnet; ihre Schleifen schließen sich ohne Naht, weil
+`Synth.mixLooping` den Überhang nach vorn faltet.
+
+Sitzt eine Fee richtig, **kichert sie** — eine von sechs Aufnahmen, gewürfelt,
+ohne Zuordnung zur Art. Dazwischen lag vom 5. bis zum 29. August ein
+berechneter Eigenton je Fee. Beide Kehrtwenden kamen aus dem Spielen, nicht aus
+der Theorie; `FairyChimes` bleibt samt Tests im Projekt, falls es ein drittes
+Mal zurückgeht.
 
 **Gesprochen wird nichts.** Bis zum 29. August folgte dem Jubel nach einem
 gelösten Level ein Lobsatz aus der Sprachausgabe des Geräts. Er ist beim Spielen
 als störend aufgefallen und ersatzlos entfallen; `FairyVoice.kt` ist damit
-gelöscht. Der Regler „Feenstimme" bleibt — er regelt den Eigenton, den jede Fee
-beim Setzen von sich gibt.
+gelöscht. Der Regler „Feenstimme" bleibt — er regelt, wie laut die Fee beim
+Setzen kichert.
 
 Die Waldmusik und der Schreckenslaut sind seit dem 28. August wieder
 Aufnahmen — die berechneten Fassungen haben der Testrunde nicht gefallen.

@@ -60,9 +60,8 @@ DER WALD WIRD DICHTER
 
 Das erste Gitter ist 4×4. Alle zwei Level wächst es um eine Reihe und eine
 Spalte, bis ab Level 9 ein 8×8-Gitter mit acht Feen vor dir liegt. In jeder
-Waldzone lebt eine andere Fee, und über zehn Level kommt
-jede von ihnen einmal in jeder Zone vorbei — zehn Figuren mit eigenem Namen,
-eigener Farbe und eigenem Klang.
+Waldzone lebt eine andere Fee, und über zehn Level kommt jede von ihnen einmal
+in jeder Zone vorbei — zehn Figuren mit eigenem Namen und eigener Farbe.
 
 WENN ES KLEMMT
 
@@ -91,10 +90,10 @@ wiederzukommen.
 KLANG
 
 Über dem ganzen Wald liegt eine ruhige Fläche — sie läuft weiter, auch wenn du
-zwischen Rätsel und Karte wechselst. Jede Fee hat ihren eigenen Glockenton, alle aus derselben Tonleiter — es kann
-also nichts schief klingen, egal wie schnell du setzt. Musik, Klänge und
-Feenstimmen lassen sich getrennt regeln; jeder Regler auf null ist zugleich der
-Stummschalter.
+zwischen Rätsel und Karte wechselst. Sitzt eine Fee richtig, kichert sie; sechs
+verschiedene wechseln sich ab. Alles andere klingt gedämpft und knapp, damit es
+beim Nachdenken nicht stört. Musik, Klänge und Feenstimmen lassen sich getrennt
+regeln; jeder Regler auf null ist zugleich der Stummschalter.
 
 FAIR UND OHNE HAKEN
 
@@ -109,7 +108,7 @@ FAIR UND OHNE HAKEN
 Fairydoku ist ein Angebot für Personen ab 13 Jahren. Die Inhalte sind
 gewaltfrei und für jedes Alter unbedenklich.
 ```
-(2872)
+(2876)
 
 ---
 

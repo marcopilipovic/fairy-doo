@@ -104,10 +104,11 @@ fun SoundSettingsOverlay(
                 value = soundVolume,
                 onChange = onSoundChange,
             )
-            // Ein Klangzeichen, kein sprechender Kopf: Seit der Lobsatz weg ist,
-            // regelt dieser Regler nur noch den Eigenton, den jede Fee beim
-            // Setzen von sich gibt. Der Name bleibt — es ist ja immer noch ihre
-            // Äußerung, nur ohne Worte.
+            // Ein Klangzeichen, kein sprechender Kopf: Der Lobsatz aus der
+            // Sprachausgabe ist weg, geblieben ist der Laut der Fee beim Setzen
+            // — seit dem 29. August wieder ihr Kichern. Der Name passt also
+            // besser denn je; nur das Zeichen sollte keine Sprache mehr
+            // versprechen.
             VolumeRow(
                 glyph = "🎐",
                 label = "Feenstimme",

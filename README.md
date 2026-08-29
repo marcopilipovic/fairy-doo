@@ -59,27 +59,38 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 
 | Ereignis | Klang | Herkunft |
 | --- | --- | --- |
-| Fee richtig gesetzt | der Eigenton der Fee, zehn verschiedene | berechnet |
+| Fee richtig gesetzt | ein Kichern, sechs verschiedene, gewürfelt | Aufnahme |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
 | Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern | berechnet |
-| Hilfe eingesetzt | Funkenkaskade | berechnet |
+| Hilfe eingesetzt | aufsteigende Funkenkaskade durch die Pentatonik | berechnet |
 | Rätsel gelöst | Glockenjubel | berechnet |
 | Spielende | absteigende Molltonfolge | berechnet |
 | Hintergrund | ruhige Waldschleife, über Brett und Karte dieselbe | Aufnahme |
 
-**Zwei Aufnahmen liegen bei** (`res/raw/ambient_forest.mp3`,
-`fairy_startled.mp3`), erzeugt mit ElevenLabs unter bezahltem Tarif; die
-Originale samt Zeitstempel liegen unter `Audio/`. Der Aufschrei läuft über
-`SoundPool`, die Waldschleife über `MusicDecoder` — der packt die MP3 einmal
-nach rohem PCM aus, weil MP3 am Schleifenende sonst eine hörbare Naht setzt.
+**Acht Aufnahmen liegen bei** — die Waldschleife, der Schreckenslaut und seit
+dem 29. August wieder die sechs Kicherlaute (`res/raw/`). Alle mit ElevenLabs
+unter bezahltem Tarif erzeugt; die Originale samt Zeitstempel liegen unter
+`Audio/`. Die kurzen laufen über `SoundPool`, die Waldschleife über
+`MusicDecoder` — der packt die MP3 einmal nach rohem PCM aus, weil MP3 am
+Schleifenende sonst eine hörbare Naht setzt.
+
+Die sechs Kicherlaute sind **auf einen gemeinsamen Pegel gebracht** (rund
+−26 dB RMS). Im Original lagen zwischen dem leisesten und dem lautesten
+vierzehn Dezibel; roh eingebaut hätte jeder zweite Zug erschreckt. Eine
+Zuordnung zur Feenart gibt es nicht — es wird gewürfelt.
 
 **Alles andere wird beim Start berechnet** (`audio/Synth.kt`,
 `audio/FairySounds.kt`, `audio/FairyChimes.kt`). Für Instrumente ist Synthese
 ideal: Sie kostet keinen Speicherplatz, und jede Tonhöhe ist über eine Zahl
 änderbar. Beim Setzen einer Fee ist sie sogar das bessere Mittel — die zehn
 Eigentöne stammen aus einer Tonleiter, es kann also nichts schief klingen, egal
-wie schnell gesetzt wird. Bis zum 5. August lagen hier sechs aufgenommene
-Kicherlaute; sie sind dem Eigenton gewichen und in `Audio/` aufgehoben.
+wie schnell gesetzt wird.
+
+Beim Setzen einer Fee ist es trotzdem wieder eine Aufnahme. Die Reihenfolge
+dieser Kehrtwenden gehört zur Geschichte: Kichern (bis 5. August) → berechneter
+Eigenton je Fee (bis 29. August) → wieder Kichern. Den Ausschlag gab jedes Mal
+das Spielen, nicht die Theorie. [FairyChimes] bleibt samt Tests im Projekt,
+falls die dritte Runde zurückführt.
 
 *Beide Aufnahmen waren im August einmal draußen — es war unklar, wie ihre
 Rechtelage zu belegen wäre. Der Tarif ist inzwischen belegt
@@ -92,10 +103,10 @@ und wer mehrere Level hintereinander schafft, hört ihn immer wieder. Mit ihm is
 `FairyVoice.kt` verschwunden und damit die einzige Stelle, an der die App eine
 Systemkomponente ansprach, die auf jedem Gerät anders klingt oder ganz fehlt.
 
-Der Regler heißt weiter **Feenstimme** und regelt jetzt den Eigenton, den jede
-Fee beim Setzen von sich gibt. Er sitzt bewusst nicht auf dem Klang-Regler: Der
-Ton ertönt bei jedem Zug und ist damit das, was man am ehesten leiser haben
-will, ohne Tick und Jubel mit zu dämpfen.
+Der Regler heißt weiter **Feenstimme** und regelt, wie laut die Fee beim Setzen
+kichert. Er sitzt bewusst nicht auf dem Klang-Regler: Der Laut ertönt bei jedem
+Zug und ist damit das, was man am ehesten leiser haben will, ohne Tick und Jubel
+mit zu dämpfen.
 
 ### Lautstärke
 

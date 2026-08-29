@@ -107,15 +107,16 @@ Schriften unter freier Lizenz.**
 | --- | --- | --- |
 | Die zehn Feen | Handoff „Feen schlicht", eigene Arbeit | eigen |
 | App-Symbol, Store-Bilder | aus derselben Zeichnung erzeugt | eigen |
-| Waldmusik, Schreckenslaut | ElevenLabs, Tarif Starter | lizenziert, gewerblich |
-| Alle übrigen Klänge, zehn Feentöne | im Spiel berechnet | eigen, keine Aufnahme |
+| Waldmusik, Schreckenslaut, sechs Kicherlaute | ElevenLabs, Tarif Starter | lizenziert, gewerblich |
+| Alle übrigen Klänge | im Spiel berechnet | eigen, keine Aufnahme |
 | Cinzel Decorative, Quicksand | Google Fonts | **SIL OFL 1.1** |
 | Bibliotheken | AndroidX, Google, JetBrains | Apache 2.0 / Play-Bedingungen |
 
-**Nachtrag vom 28. August:** Zwei Aufnahmen sind zurück in der App — die
-Waldmusik (`ambient_forest.mp3`, 821 KB) und der Schreckenslaut
-(`fairy_startled.mp3`, 6 KB). Der Rest wird weiterhin berechnet: alle übrigen
-Effekte und die zehn Feentöne.
+**Nachtrag vom 28. und 29. August:** Acht Aufnahmen sind zurück in der App — die
+Waldmusik (`ambient_forest.mp3`, 821 KB), der Schreckenslaut
+(`fairy_startled.mp3`, 6 KB) und die sechs Kicherlaute der Feen (je 6 KB). Der
+Rest wird weiterhin berechnet: Merkzeichen, Rücknahme, Feenstaub, Jubel,
+Spielende. Alle acht stammen aus demselben ElevenLabs-Konto und demselben Tag.
 
 Beide waren im August entfernt worden, weil hier stand, ihre Rechtelage sei
 nicht zu belegen. Das war zu vorsichtig formuliert — es war eine offene Frage,

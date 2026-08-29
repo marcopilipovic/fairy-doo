@@ -8,7 +8,6 @@ import android.media.AudioTrack
 import android.media.SoundPool
 import android.util.Log
 import com.fairydoo.game.data.PlayerProfile
-import com.fairydoo.game.game.FairySpecies
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,6 +17,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.random.Random
 
 /**
  * Spielt die Klangwelt ab.
@@ -137,14 +137,14 @@ class FairyAudio(context: Context) {
             KEY_GAME_OVER to FairySounds::gameOver,
         )
 
-        // Dazu die zehn Feentöne — einer je Art. Sie sind winzig (0,42 s) und
-        // werden beim Setzen jeder Fee gebraucht, gehören also in denselben
-        // Pool wie die übrigen Effekte.
-        val alle = builders + FairySpecies.entries.associate { species ->
-            chimeKey(species) to { FairyChimes.render(species) }
-        }
-
-        effects = alle.mapNotNull { (key, build) ->
+        // Die zehn berechneten Feentöne standen bis zum 29. August hier
+        // daneben — einer je Art, die Tonhöhe nach dem Wesen der Figur. Sie
+        // sind den sechs Kicheraufnahmen gewichen (siehe unten).
+        //
+        // [FairyChimes] bleibt im Projekt, samt Tests: Wer sie zurückholen
+        // will, hängt sie hier wieder an `builders` und tauscht in `play` den
+        // Kicherlaut gegen `chimeKey(event.species)`.
+        effects = builders.mapNotNull { (key, build) ->
             runCatching {
                 val file = File(cacheDir, "$key.wav")
                 if (!file.exists() || file.length() == 0L) {
@@ -171,6 +171,29 @@ class FairyAudio(context: Context) {
             effects = effects + (KEY_STARTLED to clipPool.load(appContext, R.raw.fairy_startled, 1))
         }.onFailure { error ->
             Log.w(TAG, "Schreckenslaut nicht ladbar", error)
+        }
+
+        // Und die sechs Kicherlaute — der Klang, wenn eine Fee richtig sitzt.
+        //
+        // Keine Zuordnung zur Art: Es wird gewürfelt. Sechs Aufnahmen auf zehn
+        // Feen ließen sich ohnehin nicht sauber verteilen, und beim Spielen
+        // fällt die Abwechslung angenehmer auf als eine feste Zuordnung, die
+        // niemand heraushört.
+        //
+        // Alle sechs sind auf denselben Pegel gebracht (rund -26 dB RMS, Spitze
+        // unter -8 dB). Im Original lagen zwischen dem leisesten und dem
+        // lautesten vierzehn Dezibel — roh eingebaut hätte jeder zweite Zug
+        // erschreckt.
+        runCatching {
+            val kichern = listOf(
+                R.raw.fairy_giggle_1, R.raw.fairy_giggle_2, R.raw.fairy_giggle_3,
+                R.raw.fairy_giggle_4, R.raw.fairy_giggle_5, R.raw.fairy_giggle_6,
+            )
+            effects = effects + kichern.mapIndexed { index, res ->
+                giggleKey(index) to clipPool.load(appContext, res, 1)
+            }
+        }.onFailure { error ->
+            Log.w(TAG, "Kicherlaute nicht ladbar", error)
         }
 
         prepared = true
@@ -291,12 +314,10 @@ class FairyAudio(context: Context) {
 
         when (event) {
             SoundEvent.FairyStartled -> playEffect(KEY_STARTLED)
-            // Der Ton der Fee läuft über die Feenstimmen-Lautstärke, nicht über
-            // die der Klänge: Er ertönt bei jedem Zug und ist damit das, was
-            // man am ehesten leiser haben will, ohne Tick und Jubel mit zu
-            // dämpfen. Der Regler heißt weiter „Feenstimme" — es ist ja immer
-            // noch die Äußerung der Fee, nur ohne Worte.
-            is SoundEvent.FairyPlaced -> playEffect(chimeKey(event.species), voiceVolume)
+            // Das Kichern läuft über die Feenstimmen-Lautstärke, nicht über die
+            // der Klänge: Es ertönt bei jedem Zug und ist damit das, was man am
+            // ehesten leiser haben will, ohne Tick und Jubel mit zu dämpfen.
+            is SoundEvent.FairyPlaced -> playEffect(giggleKey(Random.nextInt(GIGGLES)), voiceVolume)
             SoundEvent.Ward -> playEffect(KEY_TICK)
             SoundEvent.Undo -> playEffect(KEY_UNDO)
             SoundEvent.FairyDustUsed -> playEffect(KEY_SPARKLE)
@@ -410,7 +431,21 @@ class FairyAudio(context: Context) {
     }
 
     fun resume() {
-        if (musicEnabled && prepared) runCatching { music?.play() }
+        if (!musicEnabled) return
+
+        // `prepared` hing hier bis zum 29. August mit drin. Das war falsch: Es
+        // meldet, ob die *berechneten Klänge* fertig sind, und mit der Musik
+        // hat das nichts zu tun. Kam die App zurück, bevor die Klänge standen,
+        // blieb sie stumm — und niemand versuchte es später noch einmal.
+        val laufend = music
+        if (laufend != null) {
+            runCatching { laufend.play() }
+            return
+        }
+
+        // Gar keine Spur da: neu aufbauen statt schweigen. Das fängt jeden
+        // Aufbau ab, der unterwegs abgebrochen wurde.
+        if (musicJob?.isActive != true) musicJob = scope.launch { startMusic() }
     }
 
     fun release() {
@@ -440,10 +475,19 @@ class FairyAudio(context: Context) {
             val loop = withContext(Dispatchers.Default) {
                 loadOrRenderMusic(wanted, soundCacheDir())
             }
-            // Beim ersten Mal dauert das Rechnen; wer in dieser Zeit auf die
-            // Levelkarte wechselt, bekäme sonst noch das Waldstück zu hören —
-            // und der Wechsel danach fiele aus, weil ja schon etwas läuft.
-            if (musicTrack != wanted) return@runCatching
+            // Beim ersten Mal dauert das Entpacken; wer in dieser Zeit den
+            // Bildschirm wechselt, bekäme sonst noch das alte Stück zu hören.
+            //
+            // Verglichen wird die **Quelle**, nicht der Bildschirm — und darin
+            // lag der Aussetzer, den Nataly am 29. August beim Spielen gemeldet
+            // hat: Wald und Feenpfad tragen dieselbe Aufnahme, aber hier stand
+            // `musicTrack != wanted`. Wer während des Aufbaus vom Feenpfad ins
+            // Level wechselte, brach ihn damit ab — obwohl der fertige Puffer
+            // genau der richtige gewesen wäre. Und niemand startete neu, denn
+            // `setMusicTrack` hält sich bei gleicher Quelle absichtlich heraus.
+            // Ergebnis: Stille bis zum nächsten Anlass. „Manchmal", weil es nur
+            // traf, wer schnell genug tippte.
+            if (musicSource(musicTrack) != musicSource(wanted)) return@runCatching
 
             val audioTrack = createMusicTrack(loop.size)
             audioTrack.write(loop, 0, loop.size)
@@ -528,7 +572,7 @@ class FairyAudio(context: Context) {
     }
 
     /** Der Schlüssel, unter dem der Ton einer Fee im Pool liegt. */
-    private fun chimeKey(species: FairySpecies) = "fee-${species.name.lowercase()}"
+    private fun giggleKey(index: Int) = "kichern-$index"
 
     private companion object {
         const val TAG = "FairyAudio"
@@ -542,6 +586,9 @@ class FairyAudio(context: Context) {
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"
         const val KEY_STARTLED = "startled"
+
+        /** So viele Kicherlaute liegen bei. */
+        const val GIGGLES = 6
 
         /**
          * Kanäle für gleichzeitige Klänge. Stimmen und Effekte teilen sie sich,
@@ -565,7 +612,7 @@ class FairyAudio(context: Context) {
          * Auf 5 gesetzt, weil auch die Effekte seit „Musik lauter aussteuern"
          * veraltet im Zwischenspeicher lagen.
          */
-        const val SOUND_CACHE_VERSION = 8
+        const val SOUND_CACHE_VERSION = 9
 
         /** Wo die Waldschleife beim Start einsetzt — siehe startMusic. */
         const val MUSIC_ENTRY_SECONDS = 5
