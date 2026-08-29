@@ -109,9 +109,18 @@ keine Absage. Erzeugt wurden sie am **1. August 2026 zwischen 5:56 und 12:53
 Uhr** mit ElevenLabs, und zwar unter einem bezahlten Tarif; die Zeitstempel
 stehen in den Dateinamen unter `Audio/`.
 
-⬜ **Nachzutragen:** die Abo-Bestätigung für den 1. August 2026 — Tarifname und
-Zeitraum. Erst damit ist die Herkunft belegt statt erinnert. Solange das fehlt,
-gilt dieser Punkt als offen.
+**Der Tarif ist belegt (29. August 2026).** Im ElevenLabs-Konto steht *Starter*
+als aktueller Plan, 6 USD im Monat. Sein Leistungsumfang nennt ausdrücklich:
+
+> Kommerzielle Lizenz für Sprache und Musik
+
+Damit ist die Nutzung in einer verkauften oder werbefinanzierten App gedeckt —
+und zwar für beides, was hier verwendet wird: die Musik und den Laut.
+
+⬜ **Nachzutragen bleibt das Datum:** ob dieser Tarif am 1. August 2026 schon
+lief. Das Konto zeigt nur den *aktuellen* Plan, nicht seit wann. Zu finden im
+Zahlungsverlauf des Kontos — gesucht wird eine Rechnung mit einem Zeitraum, der
+den 1. August einschließt. Liegt sie vor, ist die Frage endgültig erledigt.
 
 Zurückgeholt wurden sie, weil die Testrunde die berechnete Musik nicht mochte.
 Die Waldschleife ist dabei von 194 kbit/s Stereo auf 112 kbit/s Mono neu
