@@ -158,6 +158,36 @@ einen Kanal herunter.
 mitgeliefert werden. Beides steht jetzt im Impressum. Die OFL erlaubt das
 Einbetten in Anwendungen ausdrücklich, auch kommerziell.
 
+### Der Name: ein Fund, kein Hindernis
+
+Eine offene Suche am 30. August 2026 hat einen Treffer ergeben, den es zu
+kennen lohnt: **„FairyDoku" gibt es bereits als Titel einer Rätselheft-Reihe.**
+Selbstverlegte Sudoku-Hefte für Kinder mit 4×4-Gittern, erschienen bei „Lake
+Cottage Press" über Amazon, Teil einer Serie nach demselben Muster (DinoDoku
+und weitere). Dasselbe Wort, dieselbe Rätselgattung, aber gedruckt statt App
+und auf dem US-Markt.
+
+Eine **Markeneintragung dazu war nicht zu finden** — weder bei Justia noch über
+die Register von USPTO und EUIPO, soweit sie offen durchsuchbar sind.
+
+Warum das kein Hindernis ist, aber genannt gehört:
+
+- Ein Buchtitel ist keine Marke. Werktitel genießen nach § 5 MarkenG einen
+  eigenen, deutlich schwächeren Schutz — und der setzt voraus, dass das Werk
+  hierzulande verbreitet oder bekannt ist.
+- Die Waren sind verschieden: gedruckte Rätselhefte liegen in Klasse 16, eine
+  Spiele-App in Klasse 9 und 41.
+- Gefunden wurde ein Amazon-Eintrag, keine Eintragung in einem Register.
+
+**Was die offene Suche nicht leisten kann:** Register enthalten Marken, die im
+Netz nirgends auftauchen. Weder eine Websuche noch die Auskunft eines
+Sprachmodells ersetzt einen Blick in DPMAregister und TMview — die Klassen 9
+und 41 sind die einschlägigen. Das bleibt der offene Punkt.
+
+**Falls das Restrisiko stören sollte:** Die Veröffentlichung lässt sich in der
+Play Console zunächst auf den deutschsprachigen Raum begrenzen. Der Fund liegt
+in den USA.
+
 Was nicht schützbar ist und deshalb auch keine Gefahr darstellt: die
 Spielregel. „Eine Fee je Reihe, Spalte und Zone" ist ein bekanntes
 Rätselprinzip; Spielregeln sind nicht urheberrechtlich geschützt. Geschützt ist
