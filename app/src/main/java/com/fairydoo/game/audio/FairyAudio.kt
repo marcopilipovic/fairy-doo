@@ -131,7 +131,6 @@ class FairyAudio(context: Context) {
         // Effekte zuerst: Sie sind billiger als die Musikschleife, und ein
         // stummer Tastendruck fällt eher auf als fehlende Hintergrundmusik.
         val builders: Map<String, () -> FloatArray> = mapOf(
-            KEY_TICK to FairySounds::tick,
             KEY_UNDO to FairySounds::undo,
             KEY_SHIELD to FairySounds::shield,
             KEY_FREEZE to FairySounds::timeFreeze,
@@ -173,6 +172,22 @@ class FairyAudio(context: Context) {
             effects = effects + (KEY_STARTLED to clipPool.load(appContext, R.raw.fairy_startled, 1))
         }.onFailure { error ->
             Log.w(TAG, "Schreckenslaut nicht ladbar", error)
+        }
+
+        // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
+        //
+        // In dem Stück, das den Levelbeginn liefert, setzt bei 2,6 Sekunden ein
+        // weicher Anschlag ein, der nach Klavier klingt. Genau der liegt jetzt
+        // unter dem ✕: 150 ms davon, unterhalb von 180 Hz beschnitten, damit
+        // die Fläche darunter nicht mitkommt.
+        //
+        // Er ist kein Klick mehr. Der gerechnete Tick hatte 19 dB Abstand
+        // zwischen Spitze und Mittel — das ist ein Schlag. Dieser hat 10; er
+        // schlägt nicht an, er klingt an. Genau darum ging es.
+        runCatching {
+            effects = effects + (KEY_TICK to clipPool.load(appContext, R.raw.ward, 1))
+        }.onFailure { error ->
+            Log.w(TAG, "Merkzeichen nicht ladbar", error)
         }
 
         // Der Klang beim Beginn des nächsten Levels — eine Aufnahme.

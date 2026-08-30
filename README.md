@@ -61,14 +61,16 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | --- | --- | --- |
 | Fee richtig gesetzt | ein Kichern, sechs verschiedene, gewürfelt | Aufnahme |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
-| Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern | berechnet |
+| Merkzeichen | ein weicher Anschlag, 150 ms | Aufnahme |
+| Rücknahme | kurzes Abwärts-Wispern | berechnet |
 | Rätsel gelöst | Glockenjubel | berechnet |
 | Nächstes Level beginnt | eine kurze Sequenz aus dem Feenwald, 2,0 s | Aufnahme |
 | Spielende | absteigende Molltonfolge | berechnet |
 | Hintergrund | ruhige Waldschleife, über Brett und Karte dieselbe | Aufnahme |
 
-**Neun Aufnahmen liegen bei** — die Waldschleife, der Schreckenslaut, die sechs
-Kicherlaute und der Klang zum Levelbeginn (`res/raw/`). Alle mit ElevenLabs
+**Zehn Aufnahmen liegen bei** — die Waldschleife, der Schreckenslaut, die sechs
+Kicherlaute, der Klang zum Levelbeginn und der Anschlag unter dem ✕
+(`res/raw/`). Alle mit ElevenLabs
 unter bezahltem Tarif erzeugt; die Originale samt Zeitstempel liegen unter
 `Audio/`. Die kurzen laufen über `SoundPool`, die Waldschleife über
 `MusicDecoder` — der packt die MP3 einmal nach rohem PCM aus, weil MP3 am

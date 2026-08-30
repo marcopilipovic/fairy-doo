@@ -181,6 +181,12 @@ object FairySounds {
     /**
      * Das Setzen eines Merkzeichens: ein leiser, trockener Tick.
      *
+     * **Wird seit dem 30. August nicht mehr abgespielt** — an seiner Stelle
+     * liegt ein Anschlag aus der Levelbeginn-Vorlage (`res/raw/ward.mp3`).
+     * Er bleibt samt Test hier, falls der gerechnete Tick zurück soll; die
+     * Abwägungen darunter gelten weiter, sie sind der Grund, warum der
+     * Nachfolger ebenfalls tief, weich und leise ist.
+     *
      * Der häufigste Klang im ganzen Spiel — beim Ausschließen fällt er
      * dutzendfach je Level. Deshalb ist er am 29. August zurückgenommen worden,
      * an vier Stellen zugleich:

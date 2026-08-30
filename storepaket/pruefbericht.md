@@ -107,7 +107,7 @@ Schriften unter freier Lizenz.**
 | --- | --- | --- |
 | Die zehn Feen | Handoff „Feen schlicht", eigene Arbeit | eigen |
 | App-Symbol, Store-Bilder | aus derselben Zeichnung erzeugt | eigen |
-| Waldmusik, Schreckenslaut, sechs Kicherlaute, Levelbeginn | ElevenLabs, Tarif Starter | lizenziert, gewerblich |
+| Waldmusik, Schreckenslaut, sechs Kicherlaute, Levelbeginn, Merkzeichen | ElevenLabs, Tarif Starter | lizenziert, gewerblich |
 | Alle übrigen Klänge | im Spiel berechnet | eigen, keine Aufnahme |
 | Cinzel Decorative, Quicksand | Google Fonts | **SIL OFL 1.1** |
 | Bibliotheken | AndroidX, Google, JetBrains | Apache 2.0 / Play-Bedingungen |
@@ -115,8 +115,9 @@ Schriften unter freier Lizenz.**
 **Nachtrag vom 28. und 29. August:** Acht Aufnahmen sind zurück in der App — die
 Waldmusik (`ambient_forest.mp3`, 821 KB), der Schreckenslaut
 (`fairy_startled.mp3`, 6 KB), die sechs Kicherlaute der Feen (je 6 KB) und der
-Klang zum Levelbeginn (`level_start.mp3`, 75 KB). Der Rest wird weiterhin
-berechnet: Merkzeichen, Rücknahme, Jubel, Spielende.
+Klang zum Levelbeginn (`level_start.mp3`, 28 KB) und der Anschlag unter dem
+Merkzeichen (`ward.mp3`, 3 KB). Der Rest wird weiterhin berechnet: Rücknahme,
+Jubel, Spielende.
 
 Acht der neun stammen vom 1. August und damit aus demselben Vorgang; der
 Levelbeginn ist am **30. August 2026** dazugekommen, unter demselben Konto und
