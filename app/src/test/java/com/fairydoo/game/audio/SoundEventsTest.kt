@@ -194,4 +194,21 @@ class SoundEventsTest {
         }
         return state
     }
+
+    /**
+     * Auch das Wegnehmen eines Merkzeichens ist zu hören.
+     *
+     * Bis zum 30. August war es das nicht: Der Klang hing an der Bedingung,
+     * dass vorher eine Fee auf dem Feld stand. Das Setzen des ✕ antwortete
+     * also, das Wegnehmen blieb stumm — beim Spielen gemeldet.
+     */
+    @Test
+    fun `auch das Wegnehmen eines Merkzeichens klingt`() {
+        val gesetzt = tap(startedGame(), requireNotNull(startedGame().puzzle).solution.first())
+        val pos = requireNotNull(gesetzt.puzzle).solution.first()
+
+        val events = SoundEvents.diff(gesetzt, tap(gesetzt, pos))
+
+        assertEquals(listOf(SoundEvent.Undo), events)
+    }
 }

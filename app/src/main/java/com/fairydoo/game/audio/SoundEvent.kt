@@ -105,7 +105,15 @@ object SoundEvents {
                 }
 
                 CellMark.Warded -> events += SoundEvent.Ward
-                CellMark.Empty -> if (before == CellMark.Fairy) events += SoundEvent.Undo
+                // Jedes Wegnehmen klingt, nicht nur das einer Fee.
+                //
+                // Bis zum 30. August stand hier `if (before == CellMark.Fairy)`
+                // — ein Merkzeichen wieder abzuräumen blieb also stumm. Beim
+                // Spielen fällt genau das auf: Das Setzen des ✕ antwortet, das
+                // Wegnehmen nicht. Eine Geste, die in eine Richtung Rückmeldung
+                // gibt und in die andere nicht, fühlt sich an, als hätte der
+                // zweite Tipp nicht gezählt.
+                CellMark.Empty -> events += SoundEvent.Undo
             }
         }
         return events

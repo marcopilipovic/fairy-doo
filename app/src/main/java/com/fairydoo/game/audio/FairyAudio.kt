@@ -202,7 +202,7 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // Ein A aus dem zweiten Stück, „Feenwald Level Up".
+        // Ein D aus dem zweiten Stück, „Feenwald Level Up".
         //
         // Sieben Anläufe hat dieser Klang gebraucht. Die ersten sechs stammten
         // aus dem ersten Stück und scheiterten der Reihe nach an zu viel
@@ -212,13 +212,17 @@ class FairyAudio(context: Context) {
         // Das zweite Stück ist anders gebaut: ein durchgehender Bogen, der aus
         // der Stille anschwillt und wieder verschwindet, ganz ohne Anschläge.
         // Deshalb ist dieser Ton nicht herausgeschnitten, sondern
-        // **herausgefiltert** — ein schmales Band (Güte 6) um 440 Hz löst das A
-        // aus dem Zusammenklang. Was übrig bleibt, ist ein einzelner Ton statt
-        // eines Ausschnitts.
+        // **herausgefiltert** — ein Band um 587 Hz löst das D aus dem
+        // Zusammenklang. Was übrig bleibt, ist ein einzelner Ton statt eines
+        // Ausschnitts.
         //
-        // Die Hüllkurve kommt weiterhin von hier: 30 ms hinein, dann ein
-        // langsames Abklingen über 750 ms. Langsam, weil das die Fassung war,
-        // die Nataly aus zehn Vorschlägen ausgesucht hat.
+        // Die Güte des Filters ist dabei bewusst niedrig, 2 statt 6: Ein enges
+        // Band lässt fast nur die Grundfrequenz übrig und klingt dann nach
+        // Sinuston. Ein breiteres nimmt die Nachbarn mit, und der Ton behält
+        // seinen Körper.
+        //
+        // Die Hüllkurve kommt von hier: 30 ms hinein, dann Abklingen über
+        // 500 ms. Aus zehn Vorschlägen ausgesucht.
         //
         // Zur Tonart: Das zweite Stück steht in D, als offene Quinte aus D und
         // A ohne Terz. Beide Töne liegen zugleich in B-Dur, der Tonart des
