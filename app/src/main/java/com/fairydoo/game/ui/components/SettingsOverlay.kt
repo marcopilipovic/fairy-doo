@@ -24,6 +24,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,6 +33,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -47,6 +52,7 @@ import com.fairydoo.game.ui.sprites.FairySpriteCache
 import com.fairydoo.game.ui.theme.CardBottom
 import com.fairydoo.game.ui.theme.CardTop
 import com.fairydoo.game.ui.theme.Gold
+import com.fairydoo.game.ui.theme.LeafGreen
 import com.fairydoo.game.ui.theme.GoldLight
 import com.fairydoo.game.ui.theme.PanelBorder
 import com.fairydoo.game.ui.theme.StatusPurple
@@ -121,6 +127,29 @@ fun SettingsOverlay(
             Spacer(Modifier.height(4.dp))
 
             PlayerNameField(value = playerName, onValueChange = onPlayerNameChange)
+
+            Spacer(Modifier.height(5.dp))
+
+            // Es gab bisher keine Rückmeldung darauf, dass der Name ankommt.
+            // Gespeichert wurde er von Anfang an — bei jedem Tastendruck, ohne
+            // Knopf —, aber wer das nicht weiß, sucht vergeblich nach einem
+            // „Übernehmen". Deshalb steht es jetzt da, und der Name selbst
+            // steht in der Tageswertung.
+            Text(
+                text = if (playerName.isBlank()) {
+                    "Ohne Namen stehst du in der Tageswertung als Du."
+                } else {
+                    "✓ Gespeichert — in der Tageswertung stehst du als $playerName."
+                },
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 11.sp,
+                color = if (playerName.isBlank()) {
+                    TextPrimary.copy(alpha = 0.45f)
+                } else {
+                    LeafGreen
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             Spacer(Modifier.height(12.dp))
 
@@ -221,12 +250,22 @@ private fun SectionLabel(text: String) {
 /** Eingabefeld im dunklen Fassungs-Look der Vorlage — kein Material-Textfeld-Chrome. */
 @Composable
 private fun PlayerNameField(value: String, onValueChange: (String) -> Unit) {
+    val focusManager = LocalFocusManager.current
+
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
         textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp),
         cursorBrush = Brush.verticalGradient(listOf(Gold, Gold)),
+        // „Fertig" statt eines Zeilenumbruchs, der in einem einzeiligen Feld
+        // ohnehin nichts täte: Damit lässt sich die Tastatur schließen, ohne
+        // daneben zu tippen und dabei versehentlich das Overlay zu verlassen.
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Words,
+            imeAction = ImeAction.Done,
+        ),
+        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))

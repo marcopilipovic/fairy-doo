@@ -44,7 +44,12 @@ import com.fairydoo.game.ui.theme.TextPrimary
  * unten, ohne dass sich der Aufbau ändert.
  */
 @Composable
-fun DailyScoreOverlay(daily: DailyScoreState, onClose: () -> Unit) {
+fun DailyScoreOverlay(daily: DailyScoreState, playerName: String, onClose: () -> Unit) {
+    // Der eigene Name stand hier bis zum 30. August nicht — obwohl er in den
+    // Einstellungen eingetragen werden konnte und dort auch ankam. Damit war er
+    // eine Angabe ohne Wirkung: Man trug ihn ein und sah ihn nie wieder. Genau
+    // an dieser Stelle gehört er hin, denn sie ist schon als Rangliste gebaut.
+    val name = playerName.ifBlank { "Du" }
     OverlayScaffold(
         borderColor = Gold.copy(alpha = 0.5f),
         entrance = OverlayEntrance.RiseUp,
@@ -69,14 +74,19 @@ fun DailyScoreOverlay(daily: DailyScoreState, onClose: () -> Unit) {
 
         Spacer(Modifier.height(14.dp))
 
-        ScoreRow(icon = "🌅", label = "Heute", value = daily.points, highlighted = true)
+        ScoreRow(icon = "🌅", label = name, value = daily.points, highlighted = true)
 
         Spacer(Modifier.height(6.dp))
 
         // Erst zeigen, wenn es überhaupt einen abgeschlossenen Tag gab — sonst
         // stünde am ersten Tag eine Null als „Bestleistung" daneben.
         if (daily.bestPoints > 0) {
-            ScoreRow(icon = "🏆", label = "Bester Tag", value = daily.bestPoints, highlighted = false)
+            ScoreRow(
+                icon = "🏆",
+                label = "$name · bester Tag",
+                value = daily.bestPoints,
+                highlighted = false,
+            )
             Spacer(Modifier.height(6.dp))
         }
 

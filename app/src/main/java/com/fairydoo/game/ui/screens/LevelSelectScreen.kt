@@ -316,7 +316,11 @@ fun LevelSelectScreen(
         }
 
         if (showDailyScore) {
-            DailyScoreOverlay(daily = daily, onClose = { showDailyScore = false })
+            DailyScoreOverlay(
+                daily = daily,
+                playerName = profile.playerName,
+                onClose = { showDailyScore = false },
+            )
         }
 
         legalPage?.let { page ->

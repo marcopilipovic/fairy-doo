@@ -15,17 +15,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -34,8 +44,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.fairydoo.game.data.PlayerProfile
 import com.fairydoo.game.ui.theme.CardBottom
 import com.fairydoo.game.ui.theme.CardTop
+import com.fairydoo.game.ui.theme.DangerRose
 import com.fairydoo.game.ui.theme.Gold
 import com.fairydoo.game.ui.theme.GoldLight
 import com.fairydoo.game.ui.theme.TextOnGold
@@ -97,12 +109,14 @@ fun SoundSettingsOverlay(
                 label = "Musik",
                 value = musicVolume,
                 onChange = onMusicChange,
+                standard = PlayerProfile.DEFAULT_MUSIC_VOLUME,
             )
             VolumeRow(
                 glyph = "🔔",
                 label = "Klänge",
                 value = soundVolume,
                 onChange = onSoundChange,
+                standard = PlayerProfile.DEFAULT_SOUND_VOLUME,
             )
             // Ein Klangzeichen, kein sprechender Kopf: Der Lobsatz aus der
             // Sprachausgabe ist weg, geblieben ist der Laut der Fee beim Setzen
@@ -114,6 +128,7 @@ fun SoundSettingsOverlay(
                 label = "Feenstimme",
                 value = voiceVolume,
                 onChange = onVoiceChange,
+                standard = PlayerProfile.DEFAULT_VOICE_VOLUME,
             )
 
             Spacer(Modifier.height(20.dp))
@@ -143,14 +158,30 @@ fun SoundSettingsOverlay(
     }
 }
 
+/**
+ * Ein Regler mit Stummschalter.
+ *
+ * Der Schalter rechts ist am 30. August dazugekommen. Der Regler auf null war
+ * zwar immer schon der Stummschalter, aber man musste ihn dorthin *ziehen* —
+ * und wer nur schnell die Musik ausmachen will, während er nachdenkt, will
+ * nicht zielen müssen. Zurück geht es auf denselben Weg; getroffen wird dabei
+ * die zuletzt eingestellte Lautstärke, nicht die Voreinstellung. Wer bei 30 %
+ * hörte, hört danach wieder 30 % und nicht plötzlich 70.
+ *
+ * War schon vor dem Stummschalten alles auf null, ist [standard] der Rückweg —
+ * sonst führte der Schalter aus der Stille nicht wieder heraus.
+ */
 @Composable
 private fun VolumeRow(
     glyph: String,
     label: String,
     value: Float,
     onChange: (Float) -> Unit,
+    standard: Float,
 ) {
     val percent = (value * 100).roundToInt()
+    var letzteLaute by rememberSaveable { mutableFloatStateOf(standard) }
+    if (value > 0f) letzteLaute = value
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -166,12 +197,30 @@ private fun VolumeRow(
                     color = TextPrimary,
                 )
             }
-            Text(
-                // „stumm" statt „0 %": Der Zustand ist wichtiger als die Zahl.
-                text = if (percent == 0) "stumm" else "$percent %",
-                style = MaterialTheme.typography.labelSmall,
-                color = if (percent == 0) TextPrimary.copy(alpha = 0.5f) else Gold,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    // „stumm" statt „0 %": Der Zustand ist wichtiger als die Zahl.
+                    text = if (percent == 0) "stumm" else "$percent %",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (percent == 0) TextPrimary.copy(alpha = 0.5f) else Gold,
+                )
+                Spacer(Modifier.width(10.dp))
+                Icon(
+                    imageVector = if (percent == 0) Icons.AutoMirrored.Filled.VolumeOff
+                    else Icons.AutoMirrored.Filled.VolumeUp,
+                    contentDescription = if (percent == 0) "$label einschalten" else "$label stummschalten",
+                    tint = if (percent == 0) DangerRose else Gold,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { onChange(if (percent == 0) letzteLaute else 0f) },
+                        )
+                        .padding(4.dp),
+                )
+            }
         }
 
         Slider(

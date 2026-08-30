@@ -148,6 +148,13 @@ ununterbrochen und stört beim Nachdenken schneller, die Klänge sind Rückmeldu
 auf eigene Züge und dürfen lauter bleiben. Deshalb ist die Musik auch
 voreingestellt leiser (70 % gegen 90 %).
 
+Neben jedem Regler steht seit dem 30. August ein **Lautsprecher-Schalter**. Der
+Regler auf null war zwar immer schon der Stummschalter, aber man musste ihn
+dorthin *ziehen* — und wer nur schnell die Musik ausmachen will, während er
+nachdenkt, will nicht zielen müssen. Zurück führt derselbe Schalter, und zwar
+auf die zuletzt eingestellte Lautstärke: Wer bei 30 % hörte, hört danach wieder
+30 % und nicht plötzlich 70.
+
 Die Einstellung wird gespeichert. Wer früher die alten Ein/Aus-Schalter benutzt
 hat, dessen „aus" wird beim ersten Start als Lautstärke null übernommen.
 
