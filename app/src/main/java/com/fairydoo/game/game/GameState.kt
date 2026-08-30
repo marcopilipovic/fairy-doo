@@ -26,9 +26,20 @@ enum class GameStatus {
 /** Die drei Magie-Fähigkeiten aus dem Feenreich. */
 
 
-/** Warum die Partie endete. */
+/**
+ * Warum die Partie endete.
+ *
+ * Nur noch ein Grund. Daneben stand bis zum 30. August `TimeUp` — das Ende
+ * durch die abgelaufene Spieluhr. Die Uhr ist am 28. August gestrichen worden,
+ * der Grund blieb zwei Tage länger stehen und mit ihm ein Satz in der
+ * Oberfläche („Die Zeit ist verronnen"), den kein Spieler je zu sehen bekommen
+ * konnte.
+ *
+ * Die Aufzählung bleibt trotzdem eine: Sie benennt, *warum* ein Level verloren
+ * ist, und das ist eine Information, die die Oberfläche braucht — auch wenn es
+ * im Moment nur eine Antwort darauf gibt.
+ */
 enum class GameOverReason {
-    TimeUp,
     TooManyConflicts,
 }
 

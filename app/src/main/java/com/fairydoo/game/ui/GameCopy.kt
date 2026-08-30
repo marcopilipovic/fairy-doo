@@ -48,7 +48,6 @@ object GameCopy {
     }
 
     fun gameOverReason(reason: GameOverReason?): String = when (reason) {
-        GameOverReason.TimeUp -> "Die Zeit ist verronnen – der Wald schläft ein."
         GameOverReason.TooManyConflicts -> "Zu viele Zauberkräfte sind kollidiert."
         null -> ""
     }
@@ -111,13 +110,6 @@ object GameCopy {
     }
 
     private const val MAX_TEASER_NAMES = 3
-
-    /** Formatiert die Restzeit als m:ss — für den Level-Timer, der sekundengenau tickt. */
-    fun formatTime(totalSeconds: Int): String {
-        val minutes = totalSeconds / 60
-        val seconds = totalSeconds % 60
-        return "$minutes:${seconds.toString().padStart(2, '0')}"
-    }
 
     /**
      * Formatiert eine Wartezeit im Stunden-Bereich (Vorräte, Wald-Leben).
