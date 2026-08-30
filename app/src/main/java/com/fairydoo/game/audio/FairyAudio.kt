@@ -202,10 +202,20 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // In dem Stück, das den Levelbeginn liefert, setzt bei 2,6 Sekunden ein
-        // weicher Anschlag ein, der nach Klavier klingt. Genau der liegt jetzt
-        // unter dem ✕: 150 ms davon, unterhalb von 180 Hz beschnitten, damit
-        // die Fläche darunter nicht mitkommt.
+        // In dem Stück, aus dem auch Jubel und Rücknahme stammen, setzt bei
+        // 2,6 Sekunden ein weicher Anschlag ein, der nach Klavier klingt. Genau
+        // der liegt unter dem ✕ — **eine Oktave höher gestimmt**.
+        //
+        // In seiner ursprünglichen Lage war er zu dunkel für einen Zug, den man
+        // dutzendfach je Level macht. Eine hellere Stelle im Stück gibt es aber
+        // nicht: Was dort hell klingt, ist Nachklang ohne Anschlag, und ein
+        // Merkzeichen ohne Anschlag ist kein Merkzeichen. Also derselbe Ton,
+        // nur höher — die Oktave ist das einzige Intervall, das die Tonstufe
+        // unverändert lässt, der Ton passt also weiterhin zur Musik.
+        //
+        // Das Höherstimmen kürzt ihn nebenbei von 150 auf 130 Millisekunden,
+        // was einem so häufigen Klang guttut. Unterhalb von 350 Hz beschnitten,
+        // damit die Fläche darunter nicht mitkommt.
         //
         // Er ist kein Klick mehr. Der gerechnete Tick hatte 19 dB Abstand
         // zwischen Spitze und Mittel — das ist ein Schlag. Dieser hat 10; er
