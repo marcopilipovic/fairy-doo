@@ -63,12 +63,12 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
 | Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern | berechnet |
 | Rätsel gelöst | Glockenjubel | berechnet |
-| Nächstes Level beginnt | derselbe Jubel, eine Oktave höher und 10 dB leiser | berechnet |
+| Nächstes Level beginnt | ein Anschwellen im Feenwald, 5,4 s | Aufnahme |
 | Spielende | absteigende Molltonfolge | berechnet |
 | Hintergrund | ruhige Waldschleife, über Brett und Karte dieselbe | Aufnahme |
 
-**Acht Aufnahmen liegen bei** — die Waldschleife, der Schreckenslaut und seit
-dem 29. August wieder die sechs Kicherlaute (`res/raw/`). Alle mit ElevenLabs
+**Neun Aufnahmen liegen bei** — die Waldschleife, der Schreckenslaut, die sechs
+Kicherlaute und der Klang zum Levelbeginn (`res/raw/`). Alle mit ElevenLabs
 unter bezahltem Tarif erzeugt; die Originale samt Zeitstempel liegen unter
 `Audio/`. Die kurzen laufen über `SoundPool`, die Waldschleife über
 `MusicDecoder` — der packt die MP3 einmal nach rohem PCM aus, weil MP3 am

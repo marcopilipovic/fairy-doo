@@ -37,6 +37,12 @@ object FairySounds {
     /**
      * Der Klang beim Beginn des nächsten Levels.
      *
+     * **Wird seit dem 30. August nicht mehr abgespielt** — an seiner Stelle
+     * liegt eine Aufnahme (`res/raw/level_start.mp3`). Der Grund war nicht die
+     * Lautstärke, sondern die Gebärde: Aufsteigend und in Dur klingt nach „gut
+     * gemacht", und beim Beginn eines Levels kommt man an, statt etwas zu
+     * schaffen. Er bleibt samt Test hier, falls er zurück soll.
+     *
      * **Derselbe Satz wie der Jubel**, nur eine Oktave höher und so leise, dass
      * er unter dem Bildwechsel liegt statt über ihm — so gewünscht, und es hat
      * einen Grund, dass es dieselbe Figur ist: Was man eben als „geschafft"

@@ -133,7 +133,6 @@ class FairyAudio(context: Context) {
             KEY_SHIELD to FairySounds::shield,
             KEY_FREEZE to FairySounds::timeFreeze,
             KEY_CHEER to FairySounds::cheer,
-            KEY_LEVEL_START to FairySounds::levelStart,
             KEY_GAME_OVER to FairySounds::gameOver,
         )
 
@@ -171,6 +170,22 @@ class FairyAudio(context: Context) {
             effects = effects + (KEY_STARTLED to clipPool.load(appContext, R.raw.fairy_startled, 1))
         }.onFailure { error ->
             Log.w(TAG, "Schreckenslaut nicht ladbar", error)
+        }
+
+        // Der Klang beim Beginn des nächsten Levels — eine Aufnahme.
+        //
+        // Bis zum 30. August war es der gerechnete Jubel, eine Oktave höher und
+        // leise: zwar am richtigen Ort, aber die falsche Gebärde. Aufsteigend
+        // und in Dur klingt nach „gut gemacht", und das war eine Ansage zu viel
+        // an einer Stelle, an der man ankommt statt etwas zu schaffen.
+        //
+        // Jetzt liegt hier ein eigens erzeugtes Stück, 5,4 Sekunden aus einer
+        // zwanzig Sekunden langen Vorlage. [FairySounds.levelStart] bleibt samt
+        // Test stehen, falls es zurück soll.
+        runCatching {
+            effects = effects + (KEY_LEVEL_START to clipPool.load(appContext, R.raw.level_start, 1))
+        }.onFailure { error ->
+            Log.w(TAG, "Levelbeginn nicht ladbar", error)
         }
 
         // Und die sechs Kicherlaute — der Klang, wenn eine Fee richtig sitzt.

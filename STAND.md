@@ -25,12 +25,15 @@ Overlays.
 (`mipmap-anydpi-v26/ic_launcher_foreground.xml` übernimmt den Inhalt aus
 `drawable/fairy_salta.xml`). Reiner Vektor, keine Dichtestufen mehr.
 
-**Klang und Musik.** Merkzeichen, Rücknahme, Feenstaub, Jubel und Spielende
-werden im Spiel gerechnet; ihre Schleifen schließen sich ohne Naht, weil
+**Klang und Musik.** Merkzeichen, Rücknahme, Jubel und Spielende werden im
+Spiel gerechnet; ihre Schleifen schließen sich ohne Naht, weil
 `Synth.mixLooping` den Überhang nach vorn faltet.
 
 Sitzt eine Fee richtig, **kichert sie** — eine von sechs Aufnahmen, gewürfelt,
-ohne Zuordnung zur Art. Dazwischen lag vom 5. bis zum 29. August ein
+ohne Zuordnung zur Art. Beginnt ein Level, schwillt ein eigens dafür erzeugtes
+Stück an (`level_start.mp3`, 5,4 s aus einer 20-Sekunden-Vorlage). Feenstaub und
+Irrlicht haben **keinen eigenen Klang**: Sie sind eine andere Art, denselben Zug
+zu tun, also klingen sie wie er. Dazwischen lag vom 5. bis zum 29. August ein
 berechneter Eigenton je Fee. Beide Kehrtwenden kamen aus dem Spielen, nicht aus
 der Theorie; `FairyChimes` bleibt samt Tests im Projekt, falls es ein drittes
 Mal zurückgeht.
