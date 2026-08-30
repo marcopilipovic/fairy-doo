@@ -24,15 +24,55 @@ object FairySounds {
      * Läuft in Dur und endet auf der Oktave — die Auflösung nach oben ist das,
      * was als „geschafft" gehört wird.
      */
-    fun cheer(): FloatArray {
-        val melody = listOf(0, 2, 4, 7).map { step -> 523.25f * 2f.pow(step / 12f) }
+    fun cheer(): FloatArray = fanfare(
+        grundton = 523.25f,
+        glitzer = 14,
+        anschlag = 0.01f,
+        ziel = 0.40f,
+    )
+
+    /**
+     * Der Klang beim Beginn des nächsten Levels.
+     *
+     * **Derselbe Satz wie der Jubel**, nur eine Oktave höher und so leise, dass
+     * er unter dem Bildwechsel liegt statt über ihm — so gewünscht, und es hat
+     * einen Grund, dass es dieselbe Figur ist: Was man eben als „geschafft"
+     * gehört hat, kommt als Echo zurück, wenn das neue Brett erscheint. Ein
+     * fremder Klang an dieser Stelle wäre eine zweite Ansage; dieser ist die
+     * Erinnerung an die erste.
+     *
+     * Der Glitzerregen ist auf ein Drittel zurück und der Anschlag weich — er
+     * soll nicht anschlagen, sondern schon da sein.
+     */
+    fun levelStart(): FloatArray = fanfare(
+        grundton = 1046.50f,
+        glitzer = 5,
+        anschlag = 0.05f,
+        ziel = 0.13f,
+    )
+
+    /**
+     * Die gemeinsame Figur hinter Jubel und Levelbeginn.
+     *
+     * Bewusst eine Funktion für beide statt zweier ähnlicher: Der leise Klang
+     * *ist* der laute, nur anders eingestellt. Zwei Fassungen nebeneinander
+     * liefen früher oder später auseinander, und dann wäre der Zusammenhang
+     * weg, der den Klang an dieser Stelle überhaupt richtig macht.
+     */
+    private fun fanfare(
+        grundton: Float,
+        glitzer: Int,
+        anschlag: Float,
+        ziel: Float,
+    ): FloatArray {
+        val melody = listOf(0, 2, 4, 7).map { step -> grundton * 2f.pow(step / 12f) }
         val layers = mutableListOf<Pair<Float, FloatArray>>()
 
         melody.forEachIndexed { index, frequency ->
             layers += index * 0.11f to Synth.tone(
                 durationSeconds = 1.1f,
                 frequencyAt = { frequency },
-                amplitudeAt = Synth.pluck(decay = 4.5f, peak = 0.42f),
+                amplitudeAt = Synth.pluck(decay = 4.5f, peak = 0.42f, attack = anschlag),
                 harmonics = listOf(1f to 1f, 2f to 0.4f, 3f to 0.18f, 5f to 0.07f),
             )
         }
@@ -40,13 +80,13 @@ object FairySounds {
         // Schlussakkord eine Oktave höher, als Krönung.
         layers += 0.44f to Synth.tone(
             durationSeconds = 1.6f,
-            frequencyAt = { 1046.5f },
-            amplitudeAt = Synth.pluck(decay = 3f, peak = 0.5f),
+            frequencyAt = { grundton * 2f },
+            amplitudeAt = Synth.pluck(decay = 3f, peak = 0.5f, attack = anschlag),
             harmonics = listOf(1f to 1f, 1.5f to 0.4f, 2f to 0.3f, 3f to 0.12f),
         )
 
         // Glitzerregen aus schnellen, hohen Funken.
-        repeat(14) { index ->
+        repeat(glitzer) { index ->
             val random = Random(index * 104_729L)
             layers += random.between(0.05f, 1.0f) to Synth.tone(
                 durationSeconds = 0.4f,
@@ -55,12 +95,12 @@ object FairySounds {
             )
         }
 
-        // Von 0,85 auf 0,40 zurückgenommen. Der Jubel war mit Abstand der
-        // lauteste Klang im Spiel — gut neun Dezibel über einem Feenton und
+        // Der Jubel stand bis zum 29. August auf 0,85 und war damit mit Abstand
+        // der lauteste Klang im Spiel — gut neun Dezibel über einem Feenton und
         // zwölf über dem Merkzeichen. Er kommt einmal je Level und darf
         // heraustreten, aber nicht erschrecken; zwei Sekunden dichter Satz
         // wirken ohnehin lauter als ein einzelner kurzer Ton bei gleichem Pegel.
-        return Synth.normalize(Synth.mix(*layers.toTypedArray()), target = 0.40f)
+        return Synth.normalize(Synth.mix(*layers.toTypedArray()), target = ziel)
     }
 
     /**

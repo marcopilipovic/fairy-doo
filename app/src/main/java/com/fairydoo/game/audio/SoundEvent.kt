@@ -23,8 +23,11 @@ sealed interface SoundEvent {
     /** Der Feenstaub wurde eingesetzt. */
     data object FairyDustUsed : SoundEvent
 
-    /** Rätsel gelöst — Jubel und Lob. */
+    /** Rätsel gelöst — der Jubel. */
     data object LevelComplete : SoundEvent
+
+    /** Das nächste Rätsel liegt bereit — derselbe Jubel, heller und ganz leise. */
+    data object LevelStart : SoundEvent
 
     data object GameOver : SoundEvent
 }
@@ -40,6 +43,23 @@ sealed interface SoundEvent {
 object SoundEvents {
 
     fun diff(previous: GameState, next: GameState): List<SoundEvent> {
+        // Ein frisches Brett ist kein Zug.
+        //
+        // Beim Wechsel ins nächste Level — und ebenso beim Neustart eines
+        // verlorenen — wird aus jeder gesetzten Fee ein leeres Feld.
+        // [markChangeEvents] las daraus für jede einzelne eine Rücknahme: bei
+        // einem gelösten 8×8-Brett acht Abwärts-Wispern auf einen Schlag. Genau
+        // das war das Geräusch beim Levelwechsel.
+        //
+        // Erkannt wird es am Rätsel selbst, nicht an der Levelnummer: Ein
+        // Neustart nach drei verbrauchten Versuchen behält die Nummer, legt aber
+        // ebenso ein neues Brett hin. Verglichen wird die Kennung, nicht der
+        // Inhalt — zwei Level können zufällig dieselbe Lösung tragen.
+        val frischesBrett = previous.puzzle != null &&
+            next.puzzle != null &&
+            previous.puzzle !== next.puzzle
+        if (frischesBrett) return listOf(SoundEvent.LevelStart)
+
         val events = mutableListOf<SoundEvent>()
 
         // Der Feenstaub zuerst: Sein Klang ersetzt den des Zuges, den er

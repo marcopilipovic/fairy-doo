@@ -25,10 +25,12 @@ class SoundRenderTest {
 
     @Test
     fun `alle Klaenge sind hoerbar und uebersteuern nicht`() {
-        // Seit der Aufschreck gerechnet wird, ist keine einzige Aufnahme mehr
-        // im Spiel — alles hier ist prüfbar.
+        // Was hier steht, wird gerechnet und ist damit prüfbar. Die acht
+        // Aufnahmen — Waldmusik, Aufschreck, sechs Kicherlaute — liegen als MP3
+        // bei und lassen sich unmittelbar anhören.
         val sounds = buildMap {
             put("jubel", FairySounds.cheer())
+            put("levelbeginn", FairySounds.levelStart())
             put("feenstaub", FairySounds.sparkle())
             put("natur-schild", FairySounds.shield())
             put("zeiten-bluete", FairySounds.timeFreeze())

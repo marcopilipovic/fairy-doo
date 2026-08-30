@@ -64,6 +64,7 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern | berechnet |
 | Hilfe eingesetzt | aufsteigende Funkenkaskade durch die Pentatonik | berechnet |
 | Rätsel gelöst | Glockenjubel | berechnet |
+| Nächstes Level beginnt | derselbe Jubel, eine Oktave höher und 10 dB leiser | berechnet |
 | Spielende | absteigende Molltonfolge | berechnet |
 | Hintergrund | ruhige Waldschleife, über Brett und Karte dieselbe | Aufnahme |
 

@@ -134,6 +134,7 @@ class FairyAudio(context: Context) {
             KEY_SHIELD to FairySounds::shield,
             KEY_FREEZE to FairySounds::timeFreeze,
             KEY_CHEER to FairySounds::cheer,
+            KEY_LEVEL_START to FairySounds::levelStart,
             KEY_GAME_OVER to FairySounds::gameOver,
         )
 
@@ -328,6 +329,9 @@ class FairyAudio(context: Context) {
             // Weiterspielen war er im Weg, und wer schnell mehrere Level
             // schafft, hörte ihn immer wieder.
             SoundEvent.LevelComplete -> playEffect(KEY_CHEER)
+
+            // Über die Klang-Lautstärke wie der Jubel, dem er entstammt.
+            SoundEvent.LevelStart -> playEffect(KEY_LEVEL_START)
 
             SoundEvent.GameOver -> {
                 // Kurz warten, damit der Aufschrei des letzten Fehlers steht.
@@ -585,6 +589,7 @@ class FairyAudio(context: Context) {
         const val KEY_TICK = "tick"
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"
+        const val KEY_LEVEL_START = "levelStart"
         const val KEY_STARTLED = "startled"
 
         /** So viele Kicherlaute liegen bei. */
@@ -612,7 +617,7 @@ class FairyAudio(context: Context) {
          * Auf 5 gesetzt, weil auch die Effekte seit „Musik lauter aussteuern"
          * veraltet im Zwischenspeicher lagen.
          */
-        const val SOUND_CACHE_VERSION = 9
+        const val SOUND_CACHE_VERSION = 10
 
         /** Wo die Waldschleife beim Start einsetzt — siehe startMusic. */
         const val MUSIC_ENTRY_SECONDS = 5

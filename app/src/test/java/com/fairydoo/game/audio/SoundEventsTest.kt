@@ -152,4 +152,32 @@ class SoundEventsTest {
         assertTrue("Der Schreck fehlt: $events", SoundEvent.FairyStartled in events)
         assertTrue("Das Spielende fehlt: $events", SoundEvent.GameOver in events)
     }
+
+    /**
+     * Das Aufräumen des Bretts ist kein Zug.
+     *
+     * Bis zum 30. August war es einer: Beim Wechsel ins nächste Level wurden aus
+     * den gesetzten Feen leere Felder, und daraus las [SoundEvents] für jede
+     * einzelne eine Rücknahme. Bei einem gelösten 8×8-Brett waren das acht
+     * Abwärts-Wispern auf einen Schlag — das „komische Geräusch", das Nataly
+     * beim Spielen gemeldet hat.
+     */
+    @Test
+    fun `der Levelwechsel raeumt das Brett ohne Ruecknahmen`() {
+        val geloest = solvedGame()
+        val naechstes = engine.onInput(geloest, GameInput.NextLevel)
+
+        val events = SoundEvents.diff(geloest, naechstes)
+
+        assertEquals(listOf(SoundEvent.LevelStart), events)
+    }
+
+    /** Löst das erste Level, indem alle Feen der Lösung gesetzt werden. */
+    private fun solvedGame(): GameState {
+        var state = startedGame()
+        for (pos in requireNotNull(state.puzzle).solution) {
+            state = place(state, pos)
+        }
+        return state
+    }
 }
