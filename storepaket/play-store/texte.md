@@ -84,16 +84,19 @@ Video an.
 DER FEENPFAD
 
 Deine Level liegen als leuchtender Pfad durch einen nächtlichen Wald. Punkte,
-Leben und die Tageswertung stehen darüber — der Grund, am nächsten Tag
-wiederzukommen.
+Leben und die Tageswertung stehen darüber — unter deinem Namen, wenn du magst.
+Das ist der Grund, am nächsten Tag wiederzukommen.
 
 KLANG
 
 Über dem ganzen Wald liegt eine ruhige Fläche — sie läuft weiter, auch wenn du
 zwischen Rätsel und Karte wechselst. Sitzt eine Fee richtig, kichert sie; sechs
 verschiedene wechseln sich ab. Alles andere klingt gedämpft und knapp, damit es
-beim Nachdenken nicht stört. Musik, Klänge und Feenstimmen lassen sich getrennt
-regeln; jeder Regler auf null ist zugleich der Stummschalter.
+beim Nachdenken nicht stört. Nur wenn du ein Level schaffst, tritt die Waldmusik
+kurz beiseite und lässt dem Jubel den Vortritt.
+
+Musik, Klänge und Feenstimmen lassen sich getrennt regeln — mit dem Schieber
+oder mit einem Tipp auf den Lautsprecher daneben.
 
 FAIR UND OHNE HAKEN
 
@@ -108,7 +111,7 @@ FAIR UND OHNE HAKEN
 Fairydoku ist ein Angebot für Personen ab 13 Jahren. Die Inhalte sind
 gewaltfrei und für jedes Alter unbedenklich.
 ```
-(2876)
+(3034)
 
 ---
 

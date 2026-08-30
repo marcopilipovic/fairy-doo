@@ -1,7 +1,7 @@
 # Fairydoku — Prüfbericht vor der Veröffentlichung
 
-Stand: 29. August 2026, geprüft an der Release-APK (versionName 0.7.1,
-versionCode 18, 4.175.734 Byte) auf einem Pixel-5-Emulator mit Android 15 und,
+Stand: 30. August 2026, geprüft an der Release-APK (versionName 0.9.4,
+versionCode 35, 4.260.398 Byte) auf einem Pixel-5-Emulator mit Android 15 und,
 seit der Zusammenführung, laufend auf den Telefonen der Testrunde. Die erste
 Fassung dieses Berichts stammt vom 19. August; was seither dazukam, steht unten
 in der Tabelle.
@@ -230,6 +230,13 @@ die ist eigene Arbeit.
 | Die Spieluhr | Sie bestrafte das Nachdenken, für das das Spiel gemacht ist; ersatzlos gestrichen | 28. Aug. |
 | Drei Bildschirmfotos zeigten die Uhr noch | Bilder, die etwas zeigen, was es nicht gibt | 29. Aug. |
 | Der gesprochene Lobsatz nach jedem Level | Er stand dem Weiterspielen im Weg; mit ihm ist die Sprachausgabe ganz aus der App verschwunden | 29. Aug. |
+| Das Geschenk versprach Level 10 statt Level 3 | Eine Zusage, die das Spiel im selben Fenster widerrief | 29. Aug. |
+| Der Feenstaub hatte einen eigenen Klang statt des Zuges | Eine Hilfe klang nach Belohnung statt nach dem, was sie tut | 30. Aug. |
+| Der Levelwechsel löste acht Rücknahmen auf einmal aus | Das Geräusch beim Beginn eines Levels, das keines sein sollte | 30. Aug. |
+| Die Levelkarte zeigte immer das weiteste Level als aktuelles | Wer ein früheres Level wiederholte, sah den Pfad wegspringen | 30. Aug. |
+| Level 1 verschwand hinter einer Tanne des Vordergrunds | Der erste Knoten war verdeckt | 30. Aug. |
+| Das Merkzeichen lag 1,6 dB unter der Waldmusik | Der häufigste Klang des Spiels ging in der Musik unter | 30. Aug. |
+| Der Spielername wurde gespeichert, aber nirgends gezeigt | Eine Eingabe ohne Wirkung, samt Datenschutzsatz, der das Gegenteil behauptete | 30. Aug. |
 
 ---
 

@@ -36,8 +36,8 @@ android {
         // Seither zählt sie über beiden bisherigen Ständen weiter und wird bei
         // jeder Fassung erhöht, die auf ein Telefon geht. Für den Store ist die
         // Zahl der ersten Einreichung beliebig; nur steigen muss sie danach.
-        versionCode = 34
-        versionName = "0.9.3"
+        versionCode = 35
+        versionName = "0.9.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

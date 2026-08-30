@@ -50,6 +50,12 @@ und ohne Werbung ist die App vollständig spielbar.
 Kontakte, Fotos, Dateien, Kalender, Gesundheitsdaten, Zahlungsdaten,
 Sprachaufnahmen, Nachrichten. Nichts davon wird angefasst.
 
+Zum Feld „Name" eine Klarstellung, falls jemand nachfragt: In den Einstellungen
+lässt sich ein **Anzeigename** eintragen, der in der eigenen Tageswertung
+erscheint. Er wird ausschließlich auf dem Gerät gespeichert und an niemanden
+übertragen — auch nicht an uns. Googles Fragebogen fragt nach Erhebung und
+Weitergabe, nicht nach lokalem Speichern; das Feld bleibt deshalb leer.
+
 **Spielstand und Bestleistung nicht als „erhoben" angeben** — sie verlassen das
 Gerät nicht. Der Fragebogen fragt nach Übertragung, nicht nach lokalem
 Speichern.

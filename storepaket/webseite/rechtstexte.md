@@ -148,7 +148,7 @@ Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst s
 
 Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden lokal auf deinem Gerät gespeichert. Eine Übermittlung an uns findet nicht statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
 
-Die Tageswertung speichert dazu, wie viele Punkte am laufenden Tag gesammelt wurden, das beste Tagesergebnis und den Zeitpunkt des letzten Tageswechsels. Ein Anzeigename und eine Avatar-Fee lassen sich in den Einstellungen hinterlegen; beides wird ebenfalls nur lokal gespeichert und niemandem angezeigt.
+Die Tageswertung speichert dazu, wie viele Punkte am laufenden Tag gesammelt wurden, das beste Tagesergebnis und den Zeitpunkt des letzten Tageswechsels. Ein Anzeigename und eine Avatar-Fee lassen sich in den Einstellungen hinterlegen; beides wird ebenfalls nur lokal gespeichert. Der Anzeigename erscheint in deiner eigenen Tageswertung auf diesem Gerät; an uns oder an andere Spieler:innen wird er nicht übermittelt.
 
 Eine Ausnahme, die wir offen nennen wollen: Android sichert App-Daten auf Wunsch in deinem eigenen Google-Konto („Automatische Datensicherung"), und Fairydoku nimmt daran teil. Dadurch findest du deinen Spielstand auf einem neuen Telefon wieder. Diese Sicherung liegt in deinem Konto, nicht bei uns — wir haben darauf keinen Zugriff. Abschalten kannst du sie in den Android-Einstellungen unter „Sicherung" bzw. „Google – Datensicherung".
 
