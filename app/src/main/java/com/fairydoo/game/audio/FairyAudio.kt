@@ -202,20 +202,23 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // In dem Stück, aus dem auch Jubel und Rücknahme stammen, setzt bei
-        // 2,6 Sekunden ein weicher Anschlag ein, der nach Klavier klingt. Genau
-        // der liegt unter dem ✕ — **eine Oktave höher gestimmt**.
+        // Eine helle Glocke aus dem Levelstück, bei 5,8 Sekunden.
         //
-        // In seiner ursprünglichen Lage war er zu dunkel für einen Zug, den man
-        // dutzendfach je Level macht. Eine hellere Stelle im Stück gibt es aber
-        // nicht: Was dort hell klingt, ist Nachklang ohne Anschlag, und ein
-        // Merkzeichen ohne Anschlag ist kein Merkzeichen. Also derselbe Ton,
-        // nur höher — die Oktave ist das einzige Intervall, das die Tonstufe
-        // unverändert lässt, der Ton passt also weiterhin zur Musik.
+        // Sie zu finden hat zwei Anläufe gebraucht, und der erste war ein
+        // Denkfehler: Ich habe die Vorlage nach *lauten* Stellen abgesucht und
+        // daraus geschlossen, es gebe keine hellen mit Anschlag. In Wahrheit
+        // liegt über dem ganzen Stück eine Fläche, die den Gesamtpegel
+        // bestimmt — die Glocken darüber gehen darin unter, obwohl man sie
+        // deutlich hört.
         //
-        // Das Höherstimmen kürzt ihn nebenbei von 150 auf 130 Millisekunden,
-        // was einem so häufigen Klang guttut. Unterhalb von 350 Hz beschnitten,
-        // damit die Fläche darunter nicht mitkommt.
+        // Sichtbar werden sie, wenn man nur den Bereich über 2 kHz betrachtet.
+        // Dort stehen sie klar da: bei 4,7 / 5,3 / 5,8 / 6,6 Sekunden, dazu
+        // einige im Nachklang ab 11,7. Genommen ist die von 5,8 — die hellste
+        // mit dem klarsten Anschlag.
+        //
+        // 180 ms, unterhalb von 900 Hz beschnitten. Der Schnitt liegt hoch,
+        // weil genau das die Glocke von der Fläche trennt; tiefer käme das
+        // Tragende mit, und der Ton wäre wieder dumpf.
         //
         // Er ist kein Klick mehr. Der gerechnete Tick hatte 19 dB Abstand
         // zwischen Spitze und Mittel — das ist ein Schlag. Dieser hat 10; er
