@@ -193,7 +193,7 @@ class FairyAudio(context: Context) {
         // Ausschnitte.
         runCatching {
             effects = effects + mapOf(
-                KEY_UNDO to clipPool.load(appContext, R.raw.undo, 1),
+                KEY_MARK to clipPool.load(appContext, R.raw.mark, 1),
                 KEY_CHEER to clipPool.load(appContext, R.raw.level_complete, 1),
             )
         }.onFailure { error ->
@@ -202,32 +202,22 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // Setzen und Aufheben aus derselben Stelle — eine Quinte auseinander.
+        // Setzen und Aufheben klingen gleich — dasselbe Nachklingen aus dem
+        // ersten Stück, bei 12,95 Sekunden.
         //
-        // Neun Anläufe hat dieser Klang gebraucht. Der Umschwung kam von einer
-        // Nebenbemerkung: „Das Aufheben finde ich gut, aber das Setzen ist noch
-        // gruselig." Damit war zum ersten Mal etwas *bestätigt* statt verworfen
-        // — und das Bestätigte war der Rücknahmeklang, ein leises Nachklingen
-        // aus dem ersten Stück bei 12,95 Sekunden.
+        // Zehn Anläufe hat das gebraucht, und neun davon suchten einen
+        // *eigenen* Klang fürs Merkzeichen. Der Vorschlag, einfach denselben zu
+        // nehmen, kam von Nataly, und er ist der bessere: Zwei Klänge, die sich
+        // unterscheiden müssen, machen aus jedem Tipp eine kleine Entscheidung
+        // — was war das jetzt? Einer für beides sagt schlicht „angekommen" und
+        // verlangt nichts.
         //
-        // Bis dahin hatte ich jeden neuen Vorschlag aus einer anderen Ecke
-        // geholt: mal ein Anschlag, mal eine gehaltene Mitte, mal eine eigens
-        // erzeugte Glocke. Jeder war für sich begründbar und keiner passte zum
-        // Nachbarn. Ein Klangpaar entsteht aber nicht aus zwei guten Einzelnen,
-        // sondern aus einer Quelle.
+        // Es ist auch das Ehrlichere. Das ✕ zu setzen und wieder wegzunehmen
+        // ist dieselbe Geste auf demselben Feld; sie unterschiedlich klingen zu
+        // lassen behauptet einen Unterschied, den es für die Hand nicht gibt.
+        // Was passiert ist, sieht man ohnehin.
         //
-        // Deshalb kommt das Setzen jetzt aus **derselben** Stelle wie das
-        // Aufheben, nur eine Quinte höher gestimmt. Die Quinte ist das
-        // konsonanteste Intervall nach der Oktave; zwei Klänge in diesem
-        // Abstand hört man als Paar und nicht als zwei Dinge.
-        //
-        // Zwei Dezibel über dem Aufheben (−24 gegen −26,4): Setzen kommt
-        // häufiger und darf führen.
-        runCatching {
-            effects = effects + (KEY_TICK to clipPool.load(appContext, R.raw.ward, 1))
-        }.onFailure { error ->
-            Log.w(TAG, "Merkzeichen nicht ladbar", error)
-        }
+        // Der Klang liegt bei −26,4 dB und dauert 350 ms.
 
         // Und die sechs Kicherlaute — der Klang, wenn eine Fee richtig sitzt.
         //
@@ -374,8 +364,7 @@ class FairyAudio(context: Context) {
             // der Klänge: Es ertönt bei jedem Zug und ist damit das, was man am
             // ehesten leiser haben will, ohne Tick und Jubel mit zu dämpfen.
             is SoundEvent.FairyPlaced -> playEffect(giggleKey(Random.nextInt(GIGGLES)), voiceVolume)
-            SoundEvent.Ward -> playEffect(KEY_TICK)
-            SoundEvent.Undo -> playEffect(KEY_UNDO)
+            SoundEvent.Ward, SoundEvent.Undo -> playEffect(KEY_MARK)
 
             // Nur der Jubel. Hier folgte bis zum 29. August ein gesprochener
             // Lobsatz aus der Sprachausgabe des Geräts („Level 4 geschafft!").
@@ -679,8 +668,8 @@ class FairyAudio(context: Context) {
         const val KEY_CHEER = "cheer"
         const val KEY_SHIELD = "shield"
         const val KEY_FREEZE = "freeze"
-        const val KEY_TICK = "tick"
-        const val KEY_UNDO = "undo"
+        /** Setzen wie Wegnehmen — ein Klang für beide Richtungen derselben Geste. */
+        const val KEY_MARK = "mark"
         const val KEY_GAME_OVER = "gameOver"
 
         /** Wie lange die Musik unter dem Jubel beiseitetritt — seine Dauer plus ein Atemzug. */

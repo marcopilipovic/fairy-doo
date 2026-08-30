@@ -61,8 +61,7 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | --- | --- | --- |
 | Fee richtig gesetzt | ein Kichern, sechs verschiedene, gewürfelt | Aufnahme |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
-| Merkzeichen | dasselbe Nachklingen wie die Rücknahme, eine Quinte höher | Aufnahme · 13,0 s |
-| Rücknahme — Fee **und** Merkzeichen | ein hohes Nachklingen, 350 ms | Aufnahme · 13,0 s |
+| Merkzeichen setzen **und** wegnehmen, Fee wegnehmen | ein hohes Nachklingen, 350 ms | Aufnahme · 13,0 s |
 | Rätsel gelöst | der Höhepunkt, 2,5 s | Aufnahme · 3,2 s |
 | Nächstes Level beginnt | nichts — die Waldmusik läuft weiter | — |
 | Spielende | absteigende Molltonfolge | berechnet |
@@ -80,7 +79,7 @@ Klang, erst gerechnet, dann als Ausschnitt. Beide sind wieder weg: Die Waldmusik
 läuft ohnehin durch, und ein Anfang braucht keine Ansage. Nur das Gewinnen
 bekommt eine — und dafür tritt die Musik dann auch beiseite.
 
-**Zwölf Aufnahmen liegen bei** (`res/raw/`) — die Waldschleife, der
+**Elf Aufnahmen liegen bei** (`res/raw/`) — die Waldschleife, der
 Schreckenslaut, die sechs Kicherlaute und die drei Ausschnitte aus dem
 Levelstück. Alle mit ElevenLabs
 unter bezahltem Tarif erzeugt; die Originale samt Zeitstempel liegen unter
@@ -92,6 +91,16 @@ Die sechs Kicherlaute sind **auf einen gemeinsamen Pegel gebracht** (rund
 −26 dB RMS). Im Original lagen zwischen dem leisesten und dem lautesten
 vierzehn Dezibel; roh eingebaut hätte jeder zweite Zug erschreckt. Eine
 Zuordnung zur Feenart gibt es nicht — es wird gewürfelt.
+
+**Setzen und Wegnehmen klingen gleich.** Zehn Anläufe lang habe ich einen
+eigenen Klang fürs Merkzeichen gesucht; der Vorschlag, einfach denselben zu
+nehmen, kam von Nataly und ist der bessere. Zwei Klänge, die sich unterscheiden
+*müssen*, machen aus jedem Tipp eine kleine Entscheidung — was war das jetzt?
+Einer für beides sagt „angekommen" und verlangt nichts.
+
+Es ist auch das Ehrlichere: Ein ✕ zu setzen und wieder wegzunehmen ist dieselbe
+Geste auf demselben Feld. Sie unterschiedlich klingen zu lassen behauptet einen
+Unterschied, den es für die Hand nicht gibt — was passiert ist, sieht man ohnehin.
 
 Feenstaub und Irrlicht haben **keinen eigenen Klang**. Sie sind keine eigenen
 Ereignisse, sondern eine andere Art, denselben Zug zu tun: Der Feenstaub setzt
