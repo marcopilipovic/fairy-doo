@@ -202,28 +202,30 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // Die ruhige Mitte des ersten Melodietons, ab 1,30 Sekunden.
+        // Der erste Melodieton mit einer Glockenhüllkurve, ab 1,16 Sekunden.
         //
-        // Fünf Anläufe hat dieser eine Klang gebraucht, und vier davon sind an
-        // derselben falschen Frage gescheitert: Ich habe nach einem *Anschlag*
-        // gesucht. Erst nach einem hellen, dann nach einem reinen, dann nach
-        // einem, der ausklingen darf. Alle vier klangen falsch, und Nataly hat
-        // jedes Mal recht gehabt.
+        // Sechs Anläufe. Die Reihe der Fehlschläge ist lehrreich, deshalb steht
+        // sie hier:
         //
-        // Der Anschlag ist das Problem, nicht seine Beschaffenheit. Ein Ton,
-        // der beim ersten Mal angenehm zupackt, sticht beim fünfundzwanzigsten
-        // Mal — und fünfundzwanzig Mal je Level ist beim Ausschließen die
-        // Untergrenze, nicht die Ausnahme.
+        //   1. ein Anschlag aus der Mitte des Stücks — dumpf
+        //   2. derselbe, eine Oktave höher — immer noch nicht recht
+        //   3. eine Glocke, hart freigefiltert — dünn und scharf
+        //   4. der reine Melodieton, kurz geschnitten — abgehackt
+        //   5. dessen gehaltene Mitte, weich geblendet — klang nach Orgel
         //
-        // Deshalb ist hier kein Anschlag mehr drin. Genommen ist nicht der
-        // Einsatz des Tons, sondern seine **ruhige Mitte** — die Stelle, an der
-        // er einfach steht. Dazu 80 ms Aufblenden, damit gar kein Einsatz
-        // entsteht, und oberhalb von 2,6 kHz abgerundet: „gedämpft" wörtlich
-        // genommen, nicht als Lautstärkefrage.
+        // Vier davon hatten zu viel Anschlag, der fünfte gar keinen. Beides ist
+        // falsch, und dazwischen liegt das, was eine Glocke ausmacht: ein
+        // weicher Einsatz und ein Verklingen von selbst.
         //
-        // Tonhöhe ist weiterhin das F von B-Dur, die Quinte. Pegel −28 dB statt
-        // −26, weil ein Klang, der ständig kommt, leiser sein darf als einer,
-        // der etwas meldet.
+        // Die Vorlage liefert das nicht fertig — ihre Melodietöne werden
+        // *gehalten*, nachgemessen fallen sie über 300 ms um keine vier
+        // Dezibel. Deshalb bekommt der Ton die Hüllkurve hier aufgeprägt:
+        // 25 ms hinein, danach ein exponentielles Abklingen. Über die 450 ms
+        // verliert er so vierzehn Dezibel — das hört man als Glocke und nicht
+        // mehr als Ton, der abgeschaltet wird.
+        //
+        // Tonhöhe ist das F von B-Dur, eine Oktave über dem Original. Pegel
+        // −28 dB, weil dieser Klang bei jedem zweiten Zug kommt.
         runCatching {
             effects = effects + (KEY_TICK to clipPool.load(appContext, R.raw.ward, 1))
         }.onFailure { error ->
