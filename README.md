@@ -61,7 +61,8 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | --- | --- | --- |
 | Fee richtig gesetzt | ein Kichern, sechs verschiedene, gewürfelt | Aufnahme |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
-| Merkzeichen setzen **und** wegnehmen, Fee wegnehmen | ein hohes Nachklingen, 350 ms | Aufnahme · 13,0 s |
+| Merkzeichen setzen | ein weicher Anschlag, 180 ms | Aufnahme · 2,6 s |
+| Merkzeichen oder Fee wegnehmen | ein hohes Nachklingen, 390 ms | Aufnahme · 13,0 s |
 | Rätsel gelöst | der Höhepunkt, 2,5 s | Aufnahme · 3,2 s |
 | Nächstes Level beginnt | nichts — die Waldmusik läuft weiter | — |
 | Spielende | absteigende Molltonfolge | berechnet |
@@ -92,15 +93,18 @@ Die sechs Kicherlaute sind **auf einen gemeinsamen Pegel gebracht** (rund
 vierzehn Dezibel; roh eingebaut hätte jeder zweite Zug erschreckt. Eine
 Zuordnung zur Feenart gibt es nicht — es wird gewürfelt.
 
-**Setzen und Wegnehmen klingen gleich.** Zehn Anläufe lang habe ich einen
-eigenen Klang fürs Merkzeichen gesucht; der Vorschlag, einfach denselben zu
-nehmen, kam von Nataly und ist der bessere. Zwei Klänge, die sich unterscheiden
-*müssen*, machen aus jedem Tipp eine kleine Entscheidung — was war das jetzt?
-Einer für beides sagt „angekommen" und verlangt nichts.
+**Elf Fassungen an einem Tag** hat das Merkzeichen gehabt: Anschläge, gehaltene
+Töne, hochgestimmte Töne, herausgefilterte Einzeltöne, drei eigens erzeugte
+Glocken, zwischendurch ein gemeinsamer Klang für beide Richtungen. Genommen ist
+am Ende die Fassung von acht Uhr früh — die zweite von elf.
 
-Es ist auch das Ehrlichere: Ein ✕ zu setzen und wieder wegzunehmen ist dieselbe
-Geste auf demselben Feld. Sie unterschiedlich klingen zu lassen behauptet einen
-Unterschied, den es für die Hand nicht gibt — was passiert ist, sieht man ohnehin.
+Das ist kein Rückschritt. Man hört einem Klang nicht an, ob er gut ist; man hört
+es erst, wenn man die Alternativen kennt. Die Reihe hat sich gelohnt, auch wenn
+sie zum Ausgangspunkt zurückführt.
+
+Ihr Verhältnis zur Musik ist trotzdem ein anderes als an jenem Morgen: Die
+Waldschleife ist inzwischen sechs Dezibel leiser. Die beiden stehen also
+deutlicher da, ohne dass an ihnen etwas geändert wurde.
 
 Feenstaub und Irrlicht haben **keinen eigenen Klang**. Sie sind keine eigenen
 Ereignisse, sondern eine andere Art, denselben Zug zu tun: Der Feenstaub setzt

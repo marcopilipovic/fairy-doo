@@ -193,7 +193,6 @@ class FairyAudio(context: Context) {
         // Ausschnitte.
         runCatching {
             effects = effects + mapOf(
-                KEY_MARK to clipPool.load(appContext, R.raw.mark, 1),
                 KEY_CHEER to clipPool.load(appContext, R.raw.level_complete, 1),
             )
         }.onFailure { error ->
@@ -202,22 +201,36 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // Setzen und Aufheben klingen gleich — dasselbe Nachklingen aus dem
-        // ersten Stück, bei 12,95 Sekunden.
+        // Setzen und Entfernen — zwei Klänge, beide aus dem ersten Stück.
         //
-        // Zehn Anläufe hat das gebraucht, und neun davon suchten einen
-        // *eigenen* Klang fürs Merkzeichen. Der Vorschlag, einfach denselben zu
-        // nehmen, kam von Nataly, und er ist der bessere: Zwei Klänge, die sich
-        // unterscheiden müssen, machen aus jedem Tipp eine kleine Entscheidung
-        // — was war das jetzt? Einer für beides sagt schlicht „angekommen" und
-        // verlangt nichts.
+        // Elf Fassungen hat das Merkzeichen an einem Tag gehabt: Anschläge,
+        // gehaltene Töne, hochgestimmte Töne, herausgefilterte Einzeltöne, drei
+        // eigens erzeugte Glocken, zuletzt ein Klang für beide Richtungen.
+        // Genommen ist am Ende die Fassung von 8 Uhr früh — die zweite von elf.
         //
-        // Es ist auch das Ehrlichere. Das ✕ zu setzen und wieder wegzunehmen
-        // ist dieselbe Geste auf demselben Feld; sie unterschiedlich klingen zu
-        // lassen behauptet einen Unterschied, den es für die Hand nicht gibt.
-        // Was passiert ist, sieht man ohnehin.
+        // Das ist kein Rückschritt, sondern das Ergebnis des Vergleichs. Man
+        // hört einem Klang nicht an, ob er gut ist; man hört es erst, wenn man
+        // die Alternativen kennt. Die Reihe hat sich also gelohnt, auch wenn
+        // sie zum Ausgangspunkt zurückführt.
         //
-        // Der Klang liegt bei −26,4 dB und dauert 350 ms.
+        //   Setzen     ein weicher Anschlag bei 2,6 s, 180 ms
+        //   Entfernen  ein hohes Nachklingen bei 13,0 s, 390 ms
+        //
+        // Beide unverändert aus der Projekthistorie zurückgeholt, nicht neu
+        // geschnitten — dieselben Dateien, die an diesem Morgen im Spiel waren.
+        //
+        // Ihr Verhältnis zur Musik ist trotzdem ein anderes als damals: Die
+        // Waldschleife ist inzwischen sechs Dezibel leiser. Die beiden stehen
+        // also deutlicher da als heute früh, ohne dass an ihnen etwas geändert
+        // wurde.
+        runCatching {
+            effects = effects + mapOf(
+                KEY_WARD to clipPool.load(appContext, R.raw.ward, 1),
+                KEY_UNDO to clipPool.load(appContext, R.raw.undo, 1),
+            )
+        }.onFailure { error ->
+            Log.w(TAG, "Merkzeichen oder Rücknahme nicht ladbar", error)
+        }
 
         // Und die sechs Kicherlaute — der Klang, wenn eine Fee richtig sitzt.
         //
@@ -364,7 +377,8 @@ class FairyAudio(context: Context) {
             // der Klänge: Es ertönt bei jedem Zug und ist damit das, was man am
             // ehesten leiser haben will, ohne Tick und Jubel mit zu dämpfen.
             is SoundEvent.FairyPlaced -> playEffect(giggleKey(Random.nextInt(GIGGLES)), voiceVolume)
-            SoundEvent.Ward, SoundEvent.Undo -> playEffect(KEY_MARK)
+            SoundEvent.Ward -> playEffect(KEY_WARD)
+            SoundEvent.Undo -> playEffect(KEY_UNDO)
 
             // Nur der Jubel. Hier folgte bis zum 29. August ein gesprochener
             // Lobsatz aus der Sprachausgabe des Geräts („Level 4 geschafft!").
@@ -668,8 +682,8 @@ class FairyAudio(context: Context) {
         const val KEY_CHEER = "cheer"
         const val KEY_SHIELD = "shield"
         const val KEY_FREEZE = "freeze"
-        /** Setzen wie Wegnehmen — ein Klang für beide Richtungen derselben Geste. */
-        const val KEY_MARK = "mark"
+        const val KEY_WARD = "ward"
+        const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"
 
         /** Wie lange die Musik unter dem Jubel beiseitetritt — seine Dauer plus ein Atemzug. */
