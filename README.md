@@ -61,7 +61,7 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | --- | --- | --- |
 | Fee richtig gesetzt | ein Kichern, sechs verschiedene, gewürfelt | Aufnahme |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
-| Merkzeichen | eine helle Glocke, 180 ms | Aufnahme · 5,8 s |
+| Merkzeichen | der erste Ton der Melodie — F4, 260 ms | Aufnahme · 1,1 s |
 | Rücknahme | ein hohes Nachklingen, 350 ms | Aufnahme · 13,0 s |
 | Rätsel gelöst | der Höhepunkt, 2,5 s | Aufnahme · 3,2 s |
 | Nächstes Level beginnt | nichts — die Waldmusik läuft weiter | — |

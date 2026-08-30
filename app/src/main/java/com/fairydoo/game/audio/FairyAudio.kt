@@ -202,23 +202,29 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // Eine helle Glocke aus dem Levelstück, bei 5,8 Sekunden.
+        // Der erste Ton der Eröffnungsmelodie, bei 1,14 Sekunden.
         //
-        // Sie zu finden hat zwei Anläufe gebraucht, und der erste war ein
-        // Denkfehler: Ich habe die Vorlage nach *lauten* Stellen abgesucht und
-        // daraus geschlossen, es gebe keine hellen mit Anschlag. In Wahrheit
-        // liegt über dem ganzen Stück eine Fläche, die den Gesamtpegel
-        // bestimmt — die Glocken darüber gehen darin unter, obwohl man sie
-        // deutlich hört.
+        // Drei Anläufe hat es gebraucht, und die ersten beiden gingen an
+        // derselben Sache vorbei. Ich habe nach *Anschlägen* gesucht — nach
+        // etwas, das schlägt wie ein Klick — und dabei immer tiefer in das
+        // Stück hineingeschnitten, wo Glocken und Fläche übereinanderliegen.
+        // Um sie zu trennen, musste ich immer härter filtern, und was übrig
+        // blieb, war dünn und scharf. Ein Ton wird nicht schöner, wenn man ihm
+        // alles wegnimmt, was ihn trägt.
         //
-        // Sichtbar werden sie, wenn man nur den Bereich über 2 kHz betrachtet.
-        // Dort stehen sie klar da: bei 4,7 / 5,3 / 5,8 / 6,6 Sekunden, dazu
-        // einige im Nachklang ab 11,7. Genommen ist die von 5,8 — die hellste
-        // mit dem klarsten Anschlag.
+        // Die Lösung lag am Anfang des Stücks, wo Nataly sie auch gehört hat:
+        // Die ersten zwei Sekunden sind eine reine Melodie, vier einzelne
+        // Töne, fast ohne Fläche darunter — F, D, C, B abwärts. Sie brauchen
+        // gar keine Trennung; sie sind schon getrennt.
         //
-        // 180 ms, unterhalb von 900 Hz beschnitten. Der Schnitt liegt hoch,
-        // weil genau das die Glocke von der Fläche trennt; tiefer käme das
-        // Tragende mit, und der Ton wäre wieder dumpf.
+        // Gemessen (Goertzel über die Halbtöne, siehe `tonhoehe.py` im
+        // Arbeitsordner): Das Stück steht in **B-Dur**, Grundton B mit 233 Hz,
+        // dazu C, D, F und G. Der Ton hier ist das **F4** mit 349 Hz — die
+        // Quinte, der offenste Ton der Tonart. Er kann gegen nichts stoßen,
+        // was in der Musik gerade läuft.
+        //
+        // 260 ms, nur unterhalb von 150 Hz beschnitten. Mehr braucht es nicht:
+        // Da ist keine Fläche, die man wegfiltern müsste.
         //
         // Er ist kein Klick mehr. Der gerechnete Tick hatte 19 dB Abstand
         // zwischen Spitze und Mittel — das ist ein Schlag. Dieser hat 10; er
