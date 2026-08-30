@@ -131,6 +131,24 @@ class FairyAudio(context: Context) {
         // Effekte zuerst: Sie sind billiger als die Musikschleife, und ein
         // stummer Tastendruck fällt eher auf als fehlende Hintergrundmusik.
         val builders: Map<String, () -> FloatArray> = mapOf(
+            // Setzen und Entfernen des ✕ — wieder gerechnet.
+            //
+            // Zwischen dem 30. August 7:37 Uhr und dem Abend desselben Tages
+            // waren beide Aufnahmen: erst Ausschnitte aus dem Levelstück, dann
+            // in elf Fassungen alles, was sich daraus machen ließ. Am Ende hat
+            // der direkte Vergleich mit dem Vortag entschieden, und der fiel
+            // eindeutig aus.
+            //
+            // Der Unterschied ist die Tonbewegung. Diese beiden **fallen** —
+            // 780 auf 590 Hz beim Setzen, 700 auf 370 beim Entfernen. Ein
+            // fallender Ton klingt nach Rückmeldung. Ein gehaltener mit
+            // Nachklang klingt nach Glocke, und eine Glocke, die dutzendfach
+            // je Level läutet, macht mürbe.
+            //
+            // Dazu die Länge: 110 Millisekunden gegen 180. Bei diesem Zug ist
+            // das ein Drittel weniger Klang, jedes Mal.
+            KEY_WARD to FairySounds::tick,
+            KEY_UNDO to FairySounds::undo,
             KEY_SHIELD to FairySounds::shield,
             KEY_FREEZE to FairySounds::timeFreeze,
             KEY_GAME_OVER to FairySounds::gameOver,
@@ -201,37 +219,6 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // Setzen und Entfernen — zwei Klänge, beide aus dem ersten Stück.
-        //
-        // Elf Fassungen hat das Merkzeichen an einem Tag gehabt: Anschläge,
-        // gehaltene Töne, hochgestimmte Töne, herausgefilterte Einzeltöne, drei
-        // eigens erzeugte Glocken, zuletzt ein Klang für beide Richtungen.
-        // Genommen ist am Ende die Fassung von 8 Uhr früh — die zweite von elf.
-        //
-        // Das ist kein Rückschritt, sondern das Ergebnis des Vergleichs. Man
-        // hört einem Klang nicht an, ob er gut ist; man hört es erst, wenn man
-        // die Alternativen kennt. Die Reihe hat sich also gelohnt, auch wenn
-        // sie zum Ausgangspunkt zurückführt.
-        //
-        //   Setzen     ein weicher Anschlag bei 2,6 s, 180 ms
-        //   Entfernen  ein hohes Nachklingen bei 13,0 s, 390 ms
-        //
-        // Beide unverändert aus der Projekthistorie zurückgeholt, nicht neu
-        // geschnitten — dieselben Dateien, die an diesem Morgen im Spiel waren.
-        //
-        // Ihr Verhältnis zur Musik ist trotzdem ein anderes als damals: Die
-        // Waldschleife ist inzwischen sechs Dezibel leiser. Die beiden stehen
-        // also deutlicher da als heute früh, ohne dass an ihnen etwas geändert
-        // wurde.
-        runCatching {
-            effects = effects + mapOf(
-                KEY_WARD to clipPool.load(appContext, R.raw.ward, 1),
-                KEY_UNDO to clipPool.load(appContext, R.raw.undo, 1),
-            )
-        }.onFailure { error ->
-            Log.w(TAG, "Merkzeichen oder Rücknahme nicht ladbar", error)
-        }
-
         // Und die sechs Kicherlaute — der Klang, wenn eine Fee richtig sitzt.
         //
         // Keine Zuordnung zur Art: Es wird gewürfelt. Sechs Aufnahmen auf zehn
@@ -715,7 +702,7 @@ class FairyAudio(context: Context) {
          * Auf 5 gesetzt, weil auch die Effekte seit „Musik lauter aussteuern"
          * veraltet im Zwischenspeicher lagen.
          */
-        const val SOUND_CACHE_VERSION = 11
+        const val SOUND_CACHE_VERSION = 12
 
         /** Wo die Waldschleife beim Start einsetzt — siehe startMusic. */
         const val MUSIC_ENTRY_SECONDS = 5

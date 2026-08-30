@@ -61,8 +61,8 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | --- | --- | --- |
 | Fee richtig gesetzt | ein Kichern, sechs verschiedene, gewürfelt | Aufnahme |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
-| Merkzeichen setzen | ein weicher Anschlag, 180 ms | Aufnahme · 2,6 s |
-| Merkzeichen oder Fee wegnehmen | ein hohes Nachklingen, 390 ms | Aufnahme · 13,0 s |
+| Merkzeichen setzen | fallender Ton, 780 → 590 Hz, 110 ms | berechnet |
+| Merkzeichen oder Fee wegnehmen | fallender Ton, 700 → 370 Hz, 280 ms | berechnet |
 | Rätsel gelöst | der Höhepunkt, 2,5 s | Aufnahme · 3,2 s |
 | Nächstes Level beginnt | nichts — die Waldmusik läuft weiter | — |
 | Spielende | absteigende Molltonfolge | berechnet |
@@ -80,7 +80,7 @@ Klang, erst gerechnet, dann als Ausschnitt. Beide sind wieder weg: Die Waldmusik
 läuft ohnehin durch, und ein Anfang braucht keine Ansage. Nur das Gewinnen
 bekommt eine — und dafür tritt die Musik dann auch beiseite.
 
-**Elf Aufnahmen liegen bei** (`res/raw/`) — die Waldschleife, der
+**Neun Aufnahmen liegen bei** (`res/raw/`) — die Waldschleife, der
 Schreckenslaut, die sechs Kicherlaute und die drei Ausschnitte aus dem
 Levelstück. Alle mit ElevenLabs
 unter bezahltem Tarif erzeugt; die Originale samt Zeitstempel liegen unter
@@ -93,18 +93,24 @@ Die sechs Kicherlaute sind **auf einen gemeinsamen Pegel gebracht** (rund
 vierzehn Dezibel; roh eingebaut hätte jeder zweite Zug erschreckt. Eine
 Zuordnung zur Feenart gibt es nicht — es wird gewürfelt.
 
-**Elf Fassungen an einem Tag** hat das Merkzeichen gehabt: Anschläge, gehaltene
-Töne, hochgestimmte Töne, herausgefilterte Einzeltöne, drei eigens erzeugte
-Glocken, zwischendurch ein gemeinsamer Klang für beide Richtungen. Genommen ist
-am Ende die Fassung von acht Uhr früh — die zweite von elf.
+**Zwölf Fassungen an einem Tag** hat das Merkzeichen gehabt: Anschläge,
+gehaltene Töne, hochgestimmte Töne, herausgefilterte Einzeltöne, drei eigens
+erzeugte Glocken, zwischendurch ein gemeinsamer Klang für beide Richtungen.
+Geblieben ist die, mit der der Tag begonnen hat — die berechnete.
 
-Das ist kein Rückschritt. Man hört einem Klang nicht an, ob er gut ist; man hört
-es erst, wenn man die Alternativen kennt. Die Reihe hat sich gelohnt, auch wenn
-sie zum Ausgangspunkt zurückführt.
+Entschieden hat es der direkte Vergleich, nicht die Erinnerung. Nebeneinander
+gelegt und auf denselben Pegel gebracht, war der Unterschied eindeutig: **Diese
+beiden Töne fallen.** Ein fallender Ton klingt nach Rückmeldung; ein gehaltener
+mit Nachklang klingt nach Glocke, und eine Glocke, die dutzendfach je Level
+läutet, macht mürbe. Dazu ist der berechnete mit 110 Millisekunden um ein
+Drittel kürzer als jede Aufnahme, die aus dem Levelstück zu holen war.
 
-Ihr Verhältnis zur Musik ist trotzdem ein anderes als an jenem Morgen: Die
-Waldschleife ist inzwischen sechs Dezibel leiser. Die beiden stehen also
-deutlicher da, ohne dass an ihnen etwas geändert wurde.
+Der Umweg war trotzdem nötig. Man hört einem Klang nicht an, ob er gut ist —
+man hört es erst, wenn man die Alternativen kennt.
+
+Ihr Verhältnis zur Musik ist heute ein anderes als gestern: Die Waldschleife ist
+inzwischen sechs Dezibel leiser. Die beiden stehen also deutlicher da, ohne dass
+an ihnen etwas geändert wurde.
 
 Feenstaub und Irrlicht haben **keinen eigenen Klang**. Sie sind keine eigenen
 Ereignisse, sondern eine andere Art, denselben Zug zu tun: Der Feenstaub setzt
