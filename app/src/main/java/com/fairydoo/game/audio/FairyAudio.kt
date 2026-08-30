@@ -617,7 +617,7 @@ class FairyAudio(context: Context) {
          * Auf 5 gesetzt, weil auch die Effekte seit „Musik lauter aussteuern"
          * veraltet im Zwischenspeicher lagen.
          */
-        const val SOUND_CACHE_VERSION = 10
+        const val SOUND_CACHE_VERSION = 11
 
         /** Wo die Waldschleife beim Start einsetzt — siehe startMusic. */
         const val MUSIC_ENTRY_SECONDS = 5

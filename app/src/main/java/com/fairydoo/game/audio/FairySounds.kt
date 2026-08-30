@@ -28,7 +28,10 @@ object FairySounds {
         grundton = 523.25f,
         glitzer = 14,
         anschlag = 0.01f,
-        ziel = 0.40f,
+        // 0,85 → 0,40 → 0,25. Zweimal zurückgenommen, beide Male nach dem
+        // Spielen: erst weil er alles andere überragte, dann noch einmal um
+        // vier Dezibel, weil er auch danach noch heraussprang.
+        ziel = 0.25f,
     )
 
     /**
@@ -48,7 +51,9 @@ object FairySounds {
         grundton = 1046.50f,
         glitzer = 5,
         anschlag = 0.05f,
-        ziel = 0.13f,
+        // Mit dem Jubel um dieselben vier Dezibel zurück, damit das Echo im
+        // Verhältnis zu seinem Vorbild bleibt.
+        ziel = 0.082f,
     )
 
     /**
