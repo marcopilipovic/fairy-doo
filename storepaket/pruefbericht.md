@@ -179,10 +179,35 @@ Warum das kein Hindernis ist, aber genannt gehört:
   Spiele-App in Klasse 9 und 41.
 - Gefunden wurde ein Amazon-Eintrag, keine Eintragung in einem Register.
 
-**Was die offene Suche nicht leisten kann:** Register enthalten Marken, die im
-Netz nirgends auftauchen. Weder eine Websuche noch die Auskunft eines
-Sprachmodells ersetzt einen Blick in DPMAregister und TMview — die Klassen 9
-und 41 sind die einschlägigen. Das bleibt der offene Punkt.
+### Die Registersuche ist gemacht (30. August 2026)
+
+**TMview, Wortlaut enthält „fairydoku": keine Zeilen gefunden.**
+
+Das ist die belastbare Auskunft, auf die es ankam. TMview führt nicht nur die
+Unionsmarken, sondern auch die nationalen Register — das DPMA eingeschlossen.
+Was dort nicht steht, steht auch in Deutschland nicht.
+
+Ergänzend gesucht wurde nach „doku" allein, gefiltert auf die Klassen 9 und 41.
+Dabei kommen eingetragene Marken **„DOKU"** zum Vorschein, unter anderem zwei
+der PREMIUM-GRUPPE GmbH für Deutschland und für Österreich/Schweiz. Sie stehen
+Fairydoku aus drei Gründen nicht im Weg:
+
+- Es sind Bild- und Kombinationsmarken. Geschützt ist die Gestaltung mitsamt
+  dem Wort, nicht das Wort für sich.
+- „Doku" ist im Deutschen beschreibend, die Kurzform von Dokumentation.
+  Schwache Kennzeichnungskraft bedeutet engen Schutzumfang.
+- Ein zusammengesetztes Wort, das einen solchen Bestandteil bloß enthält, gilt
+  in aller Regel nicht als verwechselbar — zumal „Fairy" am Wortanfang steht,
+  wo die Ähnlichkeitsprüfung am genauesten hinsieht.
+
+Dass die Endung ein Gattungsbaustein ist, zeigt der Markt: Meowdoku, PuzzDoku,
+Metrodoku und Pokédoku liegen nebeneinander in den Stores.
+
+**Bleibt ein Vorbehalt, der genannt gehört:** Das ist eine Registerauskunft,
+keine Rechtsberatung. Unregistrierte Rechte lassen sich in keinem Register
+finden. Umgekehrt gilt aber auch: Wer ein Spiel veröffentlicht, hat ab diesem
+Tag Werktitelschutz nach § 5 MarkenG — wer den Namen später anmeldet, hat das
+jüngere Recht. Deshalb lohnt es, den Tag der Veröffentlichung zu belegen.
 
 **Falls das Restrisiko stören sollte:** Die Veröffentlichung lässt sich in der
 Play Console zunächst auf den deutschsprachigen Raum begrenzen. Der Fund liegt

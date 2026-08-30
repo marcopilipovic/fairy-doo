@@ -210,10 +210,9 @@ aber noch niemand.
 
 ### 7. Zwei Dinge, die eine Viertelstunde kosten
 
-- **Markenrecherche.** „Fairydoku" liefert bei offener Suche keine Treffer.
-  Eine belastbare Auskunft gibt es kostenlos im
-  [DPMAregister](https://register.dpma.de/DPMAregister/marke/einsteiger) und
-  bei [TMview](https://www.tmdn.org/tmview/) — Klasse 9 und 41.
+- ~~Markenrecherche~~ — **erledigt am 30. August 2026.** TMview auf
+  „fairydoku": keine Zeilen gefunden. TMview führt auch die nationalen
+  Register, das DPMA eingeschlossen. Einzelheiten im `pruefbericht.md`.
 - **Entwicklername prüfen.** Google zeigt bei verifizierten Konten Name und
   Anschrift im Eintrag an. Sie müssen mit dem Impressum übereinstimmen: App
   HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle.

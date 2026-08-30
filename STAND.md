@@ -97,9 +97,9 @@ mittig gesetzt worden, damit die Bilder zeigen, was die App zeigt.
    Testrunde hat inzwischen das meiste davon abgedeckt; von dort kamen die
    Einrückung der Rechtstexte, die stehengebliebene Werbung und der Wunsch,
    die Uhr und die berechnete Musik loszuwerden.
-5. **Markenrecherche.** Eine Viertelstunde bei DPMAregister und TMview auf
-   „Fairydoku" und die zehn Feennamen. Nichts deutet auf ein Problem hin — es
-   ist nur nicht nachgesehen worden.
+5. ~~**Markenrecherche.**~~ **Erledigt am 30. August.** TMview auf „fairydoku":
+   keine Treffer, und TMview führt auch die nationalen Register. Einzelheiten
+   im `pruefbericht.md`.
 
 ---
 
