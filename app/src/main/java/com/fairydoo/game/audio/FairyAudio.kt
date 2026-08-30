@@ -223,8 +223,24 @@ class FairyAudio(context: Context) {
         // Quinte, der offenste Ton der Tonart. Er kann gegen nichts stoßen,
         // was in der Musik gerade läuft.
         //
-        // 260 ms, nur unterhalb von 150 Hz beschnitten. Mehr braucht es nicht:
-        // Da ist keine Fläche, die man wegfiltern müsste.
+        // Die Oktave ist außerdem das einzige Intervall, das die Tonstufe
+        // unverändert lässt — es bleibt dasselbe F der Tonart.
+        //
+        // **Und er darf ausklingen.** Die Fassung davor war 160 ms lang und
+        // klang abgehackt — zu Recht: Nachgemessen hält der Ton in der Vorlage
+        // fast eine halbe Sekunde durch, ohne nennenswert leiser zu werden. Er
+        // verklingt nicht, er wird abgeschnitten. Jetzt sind es 470 ms mit
+        // einem Ausblenden über die letzten 320, also ungefähr so lang, wie er
+        // im Stück selbst steht.
+        //
+        // Damit das Höherstimmen die Länge nicht halbiert, folgt auf
+        // `asetrate` ein `atempo=0.5`: Tonhöhe hoch, Dauer zurück. Bei einem
+        // ruhigen Einzelton hört man dem Verfahren nichts an.
+        //
+        // Ob ein halbsekündiger Klang bei schnellem Setzen stört, war die
+        // Sorge dabei. Er tut es nicht: Alle Töne des Spiels stammen aus
+        // derselben Tonart, überlagerte Anschläge ergeben deshalb einen
+        // Akkord und kein Durcheinander. Genau dafür ist die Tonart da.
         //
         // Er ist kein Klick mehr. Der gerechnete Tick hatte 19 dB Abstand
         // zwischen Spitze und Mittel — das ist ein Schlag. Dieser hat 10; er
