@@ -61,7 +61,7 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | --- | --- | --- |
 | Fee richtig gesetzt | ein Kichern, sechs verschiedene, gewürfelt | Aufnahme |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
-| Merkzeichen | ein herausgefiltertes A mit Glockenhüllkurve, 750 ms | Aufnahme · zweites Stück |
+| Merkzeichen | ein Glockenspiel-Ton in A, 900 ms | Aufnahme · eigens erzeugt |
 | Rücknahme — Fee **und** Merkzeichen | ein hohes Nachklingen, 350 ms | Aufnahme · 13,0 s |
 | Rätsel gelöst | der Höhepunkt, 2,5 s | Aufnahme · 3,2 s |
 | Nächstes Level beginnt | nichts — die Waldmusik läuft weiter | — |
@@ -80,7 +80,7 @@ Klang, erst gerechnet, dann als Ausschnitt. Beide sind wieder weg: Die Waldmusik
 läuft ohnehin durch, und ein Anfang braucht keine Ansage. Nur das Gewinnen
 bekommt eine — und dafür tritt die Musik dann auch beiseite.
 
-**Elf Aufnahmen liegen bei** (`res/raw/`) — die Waldschleife, der
+**Zwölf Aufnahmen liegen bei** (`res/raw/`) — die Waldschleife, der
 Schreckenslaut, die sechs Kicherlaute und die drei Ausschnitte aus dem
 Levelstück. Alle mit ElevenLabs
 unter bezahltem Tarif erzeugt; die Originale samt Zeitstempel liegen unter

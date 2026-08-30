@@ -202,29 +202,28 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // Ein A aus dem zweiten Stück, „Feenwald Level Up".
+        // Ein Glockenspiel-Ton, eigens dafür erzeugt: A, eine Oktave höher.
         //
-        // Sieben Anläufe hat dieser Klang gebraucht. Die ersten sechs stammten
-        // aus dem ersten Stück und scheiterten der Reihe nach an zu viel
-        // Anschlag, zu wenig Anschlag, an harten Filtern und zuletzt daran,
-        // dass ein gehaltener Ton nach Orgel klingt.
+        // Acht Anläufe hat dieser Klang gebraucht, und sieben davon bestanden
+        // darin, ihn aus vorhandener Musik herauszuschneiden. Das musste
+        // scheitern, und der Grund steht in den Messungen: **Keines der beiden
+        // Stücke enthält eine Glocke.** Ihre Töne werden gehalten, sie fallen
+        // über 300 ms um keine vier Dezibel. Was man daraus schneidet, ist
+        // entweder ein Anschlag ohne Ausklang oder ein Ausklang ohne Anschlag —
+        // ein Klick oder eine Orgel. Dazwischen gibt es nichts zu holen.
         //
-        // Das zweite Stück ist anders gebaut: ein durchgehender Bogen, der aus
-        // der Stille anschwillt und wieder verschwindet, ganz ohne Anschläge.
-        // Deshalb ist dieser Ton nicht herausgeschnitten, sondern
-        // **herausgefiltert** — ein schmales Band um 440 Hz löst das A aus dem
-        // Zusammenklang. Was übrig bleibt, ist ein einzelner Ton statt eines
-        // Ausschnitts.
+        // Deshalb ist der Ton jetzt eigens erzeugt worden, mit derselben
+        // Werkzeugkette wie die Musik. Er verklingt von selbst: von −22 dB auf
+        // −40 in 900 Millisekunden. Genau das, was sich nicht aufprägen ließ.
         //
-        // Die Hüllkurve kommt von hier: 30 ms hinein, dann ein langsames
-        // Abklingen über 750 ms. Aus zehn Vorschlägen ausgesucht, und im
-        // direkten Vergleich mit einer kürzeren Fassung bestätigt.
+        // Tonhöhe A, eine Oktave über dem Original (220 → 440 Hz), weil ein
+        // Handylautsprecher unter 500 Hz stark nachlässt. A liegt in B-Dur,
+        // der Tonart des ersten Stücks, und ist zugleich die Quinte des
+        // zweiten — der Ton passt also zu allem, was sonst zu hören ist.
         //
-        // Zur Tonart: Das zweite Stück steht in D, als offene Quinte aus D und
-        // A ohne Terz. Beide Töne liegen zugleich in B-Dur, der Tonart des
-        // ersten Stücks — der Klang passt also zu Jubel und Rücknahme, die von
-        // dort stammen. Das war kein Entwurf, sondern Glück; nachgemessen und
-        // deshalb verlässlich.
+        // Die ungekürzten Vorlagen liegen unter `Audio/`; es gab drei zur
+        // Auswahl, in D, E und A. Die in E ist ausgeschieden: E kommt in B-Dur
+        // nicht vor, dort heißt der Ton Es.
         runCatching {
             effects = effects + (KEY_TICK to clipPool.load(appContext, R.raw.ward, 1))
         }.onFailure { error ->
