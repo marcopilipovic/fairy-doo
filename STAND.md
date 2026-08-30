@@ -91,7 +91,7 @@ mittig gesetzt worden, damit die Bilder zeigen, was die App zeigt.
    Inhalt.
 3. **Datenschutz-Seite ins Netz stellen.** Google ruft die Adresse beim
    Einreichen ab. Fertige Datei: `storepaket/webseite/rechtstexte.html`.
-4. **Einmal auf einem echten Telefon durchspielen.** Besonders anzusehen: die
+4. **Einmal in Ruhe auf einem echten Telefon durchspielen.** Besonders anzusehen: die
    Tageswertung im Spielverlauf und das Querformat — Android 16 achtet auf
    großen Bildschirmen nicht mehr auf die Festlegung auf Hochformat. Die
    Testrunde hat inzwischen das meiste davon abgedeckt; von dort kamen die
@@ -100,6 +100,12 @@ mittig gesetzt worden, damit die Bilder zeigen, was die App zeigt.
 5. ~~**Markenrecherche.**~~ **Erledigt am 30. August.** TMview auf „fairydoku":
    keine Treffer, und TMview führt auch die nationalen Register. Einzelheiten
    im `pruefbericht.md`.
+6. ~~**Signierschlüssel sichern.**~~ **Erledigt am 30. August.** Drei Orte:
+   diese Maschine, ein USB-Stick, ein Ausdruck.
+
+**Es bleiben also drei Dinge, und zwei davon gehören demselben Konto:** die
+echten AdMob-Kennungen samt Einwilligungsnachricht, und die Datenschutz-Seite
+unter ihrer Adresse. Der Rest ist Spielen.
 
 ---
 
@@ -113,11 +119,14 @@ beide absichtlich nicht im Repository (`.gitignore` Zeile 16 und 17):
 | `fairydoku-upload.keystore` | der Schlüssel selbst, 4302 Byte |
 | `keystore.properties` | die zwei Kennwörter und der Alias |
 
-**Beide zusammen** gehören an einen zweiten Ort — ein Stick, ein Kennwortsafe,
-ein verschlüsseltes Verzeichnis. Gehen sie verloren, lässt sich die App im Play
-Store nie wieder aktualisieren; der Eintrag wäre dann verloren, und nicht einmal
-Google kann das rückgängig machen. Das ist der einzige unwiederbringliche Punkt
-im ganzen Projekt.
+**Gesichert am 30. August 2026** an drei Orten: hier, auf einem USB-Stick und
+als Ausdruck. Das Druckblatt schreibt den Schlüssel als 80 Zeilen Text um, jede
+mit eigener Prüfsumme, dazu Fingerabdruck und Rückweg — erzeugt von
+`/home/nataly/schluessel-sicherung/bauen.py`, und die Rückrechnung ist
+nachgeprüft: Byte für Byte identisch.
+
+Vorher lag er **einmal**, und zwar auf dieser Maschine. Die ist eine virtuelle;
+was hier steht, steht nicht auf einem Rechner, den jemand in der Hand hält.
 
 **Auf die anwaltliche Prüfung der Rechtstexte wurde bewusst verzichtet.** Als
 Rechtsgrundlage für die Werbung steht die Einwilligung (Art. 6 Abs. 1 lit. a

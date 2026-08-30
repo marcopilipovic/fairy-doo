@@ -83,8 +83,8 @@ können. Was dort liegt, ist der Stand vom 29. August:
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-0.9.4-35.apk` | zum Ausprobieren auf einem Telefon |
-| `Fairydoku-0.9.4-35.aab` | die Bauform, die der Store haben will |
+| `Fairydoku-1.2.0-49.apk` | zum Ausprobieren auf einem Telefon |
+| `Fairydoku-1.2.0-49.aab` | die Bauform, die der Store haben will |
 
 **Beide tragen noch Googles Testkennungen für die Werbung** (siehe „Was noch
 fehlt", Punkt 1). Sie zeigen, wie die App aussieht und läuft — hochgeladen wird
@@ -101,7 +101,7 @@ Die **APK** ist zum Ausprobieren auf einem Telefon. Das **App Bundle** (`.aab`)
 ist das, was der Play Store haben will — die APK dort hochzuladen geht nicht.
 
 Beides ist bereits signiert, sofern `keystore.properties` im Projektordner
-liegt. Der Stand vom 30. August: versionCode 35, versionName 0.9.4.
+liegt. Der Stand vom 30. August, abends: versionCode 49, versionName 1.2.0.
 
 ---
 
@@ -168,7 +168,7 @@ Dialog, bekommt aber keinen Inhalt dafür.
 `webseite/rechtstexte.html` braucht nur einen öffentlich erreichbaren Ort.
 Vorgesehen ist `https://humb.ug/fairydoku/rechtstexte`.
 
-### 4. Der Signierschlüssel sichern
+### 4. ~~Der Signierschlüssel sichern~~ — erledigt am 30. August 2026
 
 Die Frage, welcher der richtige ist, ist beantwortet: Es ist
 `fairydoku-upload.keystore` im Projektordner, RSA 4096 Bit, gültig bis zum

@@ -1,7 +1,7 @@
 # Fairydoku — Prüfbericht vor der Veröffentlichung
 
-Stand: 30. August 2026, geprüft an der Release-APK (versionName 0.9.4,
-versionCode 35, 4.260.398 Byte) auf einem Pixel-5-Emulator mit Android 15 und,
+Stand: 30. August 2026, geprüft an der Release-APK (versionName 1.2.0,
+versionCode 49, 4.257.698 Byte) auf einem Pixel-5-Emulator mit Android 15 und,
 seit der Zusammenführung, laufend auf den Telefonen der Testrunde. Die erste
 Fassung dieses Berichts stammt vom 19. August; was seither dazukam, steht unten
 in der Tabelle.
