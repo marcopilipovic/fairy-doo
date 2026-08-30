@@ -92,7 +92,13 @@ internal fun BoxScope.TwilightScenery(
     }
 }
 
-/** Vordergrund — wird nach den Knoten aufgerufen, damit er sie leicht rahmt. */
+/**
+ * Vordergrund — die vorderste Tannenreihe und der dunkle Rahmen an den Rändern.
+ *
+ * Wird seit dem 30. August **vor** den Knoten aufgerufen und liegt damit hinter
+ * ihnen. Zuvor lag er darüber; die erste rechte Tanne verdeckte dabei Level 1.
+ * Die Begründung steht am Aufrufort in `LevelSelectScreen`.
+ */
 @Composable
 internal fun BoxScope.TwilightForeground(
     canvasHeight: Dp,

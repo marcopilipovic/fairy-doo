@@ -441,6 +441,25 @@ private fun ForestPath(
                     nodeCenters = nodeCenters,
                 )
 
+                // Der Vordergrund lag bis zum 30. August *über* den Knoten —
+                // „damit er sie leicht rahmt". Das tat er auch, nur eben nicht
+                // nur leicht: Level 1 sitzt oben rechts (x ≈ 298 dp), und genau
+                // dorthin fällt die erste rechte Tanne der vordersten Reihe. Es
+                // war verdeckt.
+                //
+                // Ein Aussparen einzelner Bäume hilft hier nicht: Diese Ebene
+                // hat Parallaxe (depth −0,20), sie verschiebt sich also gegen
+                // die Knoten, sobald man scrollt. Eine Lücke, die oben passt,
+                // sitzt weiter unten falsch. Deshalb liegt der Vordergrund
+                // jetzt hinter den Knoten — er rahmt den Pfad weiterhin, kann
+                // aber keine Zahl mehr verschlucken.
+                TwilightForeground(
+                    canvasHeight = pathHeight,
+                    scrollState = scrollState,
+                    maxScrollPx = maxScrollPx,
+                    laneWidth = laneWidth,
+                )
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -480,12 +499,6 @@ private fun ForestPath(
                     }
                 }
 
-                TwilightForeground(
-                    canvasHeight = pathHeight,
-                    scrollState = scrollState,
-                    maxScrollPx = maxScrollPx,
-                    laneWidth = laneWidth,
-                )
             }
         }
 
