@@ -20,9 +20,6 @@ sealed interface SoundEvent {
     /** Eine Fee wurde wieder weggenommen. */
     data object Undo : SoundEvent
 
-    /** Der Feenstaub wurde eingesetzt. */
-    data object FairyDustUsed : SoundEvent
-
     /** Rätsel gelöst — der Jubel. */
     data object LevelComplete : SoundEvent
 
@@ -62,17 +59,23 @@ object SoundEvents {
 
         val events = mutableListOf<SoundEvent>()
 
-        // Der Feenstaub zuerst: Sein Klang ersetzt den des Zuges, den er
-        // auslöst — er setzt ja selbst eine Fee.
-        val usedDust = next.fairyDust < previous.fairyDust
-        if (usedDust) events += SoundEvent.FairyDustUsed
-
+        // Eine Hilfe klingt wie der Zug, den sie tut.
+        //
+        // Hier stand bis zum 30. August ein eigener Klang für den Feenstaub,
+        // der den Zug ersetzte: Statt der Fee war ein Funkeln zu hören. Das
+        // Irrlicht hatte nie einen — es setzt sein ✕, und man hört den Tick wie
+        // bei jedem Merkzeichen. Genau das ist jetzt auch beim Feenstaub so:
+        // Er setzt eine Fee, also kichert sie.
+        //
+        // Der Grund ist nicht Sparsamkeit. Eine Hilfe ist kein eigenes
+        // Ereignis, sondern eine andere Art, denselben Zug zu tun — und wenn
+        // sie anders klingt, klingt sie nach Belohnung statt nach Zug.
         val levelSolved = previous.status != GameStatus.LevelComplete &&
             next.status == GameStatus.LevelComplete
         val lost = previous.status != GameStatus.GameOver &&
             next.status == GameStatus.GameOver
 
-        if (!usedDust && !levelSolved) {
+        if (!levelSolved) {
             events += markChangeEvents(previous, next)
         }
 

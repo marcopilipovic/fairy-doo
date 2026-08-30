@@ -130,7 +130,6 @@ class FairyAudio(context: Context) {
         val builders: Map<String, () -> FloatArray> = mapOf(
             KEY_TICK to FairySounds::tick,
             KEY_UNDO to FairySounds::undo,
-            KEY_SPARKLE to FairySounds::sparkle,
             KEY_SHIELD to FairySounds::shield,
             KEY_FREEZE to FairySounds::timeFreeze,
             KEY_CHEER to FairySounds::cheer,
@@ -321,7 +320,6 @@ class FairyAudio(context: Context) {
             is SoundEvent.FairyPlaced -> playEffect(giggleKey(Random.nextInt(GIGGLES)), voiceVolume)
             SoundEvent.Ward -> playEffect(KEY_TICK)
             SoundEvent.Undo -> playEffect(KEY_UNDO)
-            SoundEvent.FairyDustUsed -> playEffect(KEY_SPARKLE)
 
             // Nur der Jubel. Hier folgte bis zum 29. August ein gesprochener
             // Lobsatz aus der Sprachausgabe des Geräts („Level 4 geschafft!").
@@ -583,7 +581,6 @@ class FairyAudio(context: Context) {
         const val BYTES_PER_SAMPLE = 2
 
         const val KEY_CHEER = "cheer"
-        const val KEY_SPARKLE = "sparkle"
         const val KEY_SHIELD = "shield"
         const val KEY_FREEZE = "freeze"
         const val KEY_TICK = "tick"

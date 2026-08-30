@@ -62,7 +62,6 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | Fee richtig gesetzt | ein Kichern, sechs verschiedene, gewürfelt | Aufnahme |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
 | Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern | berechnet |
-| Hilfe eingesetzt | aufsteigende Funkenkaskade durch die Pentatonik | berechnet |
 | Rätsel gelöst | Glockenjubel | berechnet |
 | Nächstes Level beginnt | derselbe Jubel, eine Oktave höher und 10 dB leiser | berechnet |
 | Spielende | absteigende Molltonfolge | berechnet |
@@ -79,6 +78,13 @@ Die sechs Kicherlaute sind **auf einen gemeinsamen Pegel gebracht** (rund
 −26 dB RMS). Im Original lagen zwischen dem leisesten und dem lautesten
 vierzehn Dezibel; roh eingebaut hätte jeder zweite Zug erschreckt. Eine
 Zuordnung zur Feenart gibt es nicht — es wird gewürfelt.
+
+Feenstaub und Irrlicht haben **keinen eigenen Klang**. Sie sind keine eigenen
+Ereignisse, sondern eine andere Art, denselben Zug zu tun: Der Feenstaub setzt
+eine Fee, also kichert sie; das Irrlicht setzt ein ✕, also tickt es. Ein eigener
+Klang ließe die Hilfe nach Belohnung klingen statt nach Zug. Bis zum 30. August
+gab es für den Feenstaub eine Funkenkaskade — sie steht noch in `FairySounds`,
+wird aber nicht mehr eingehängt.
 
 **Alles andere wird beim Start berechnet** (`audio/Synth.kt`,
 `audio/FairySounds.kt`, `audio/FairyChimes.kt`). Für Instrumente ist Synthese

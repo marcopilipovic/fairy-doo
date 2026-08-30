@@ -90,16 +90,30 @@ class SoundEventsTest {
     }
 
     @Test
-    fun `der Feenstaub klingt nach sich selbst und nicht nach dem Zug`() {
+    fun `der Feenstaub klingt nach dem Zug, den er tut`() {
+        val before = startedGame()
+        val nachher = engine.onInput(before, GameInput.UseFairyDust)
+
+        val events = SoundEvents.diff(before, nachher)
+
+        // Der Feenstaub setzt eine Fee, also ist die Fee zu hören — kein
+        // eigener Klang. Bis zum 30. August war es umgekehrt: ein Funkeln
+        // statt des Zuges.
+        assertEquals(1, events.size)
+        assertTrue("Erwartet wurde eine gesetzte Fee, war: $events",
+            events.single() is SoundEvent.FairyPlaced)
+    }
+
+    @Test
+    fun `das Irrlicht klingt wie ein Merkzeichen`() {
         val before = startedGame()
 
         val events = SoundEvents.diff(
             before,
-            engine.onInput(before, GameInput.UseFairyDust),
+            engine.onInput(before, GameInput.UseIrrlicht),
         )
 
-        // Der Feenstaub setzt eine Fee — zu hören ist trotzdem nur das Funkeln.
-        assertEquals(listOf(SoundEvent.FairyDustUsed), events)
+        assertEquals(listOf(SoundEvent.Ward), events)
     }
 
     @Test

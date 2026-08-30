@@ -111,6 +111,12 @@ object FairySounds {
     /**
      * Der Feenstaub-Hinweis: eine aufsteigende Funkenkaskade.
      *
+     * **Wird seit dem 30. August nicht mehr abgespielt.** Eine Hilfe soll nach
+     * dem Zug klingen, den sie tut — der Feenstaub setzt eine Fee, also kichert
+     * sie, wie bei jedem anderen Zug auch. Die Kaskade bleibt samt Test hier,
+     * falls sie doch wieder gebraucht wird; sie kostet nichts, solange sie
+     * niemand in `FairyAudio.prepare` einhängt.
+     *
      * Die Stufen stammen seit dem 29. August aus derselben Pentatonik wie alles
      * andere — D E G A C, aufwärts über gut eine Oktave.
      *
