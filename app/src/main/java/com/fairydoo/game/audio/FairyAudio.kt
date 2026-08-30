@@ -202,49 +202,28 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // Der erste Ton der Eröffnungsmelodie, bei 1,14 Sekunden.
+        // Die ruhige Mitte des ersten Melodietons, ab 1,30 Sekunden.
         //
-        // Drei Anläufe hat es gebraucht, und die ersten beiden gingen an
-        // derselben Sache vorbei. Ich habe nach *Anschlägen* gesucht — nach
-        // etwas, das schlägt wie ein Klick — und dabei immer tiefer in das
-        // Stück hineingeschnitten, wo Glocken und Fläche übereinanderliegen.
-        // Um sie zu trennen, musste ich immer härter filtern, und was übrig
-        // blieb, war dünn und scharf. Ein Ton wird nicht schöner, wenn man ihm
-        // alles wegnimmt, was ihn trägt.
+        // Fünf Anläufe hat dieser eine Klang gebraucht, und vier davon sind an
+        // derselben falschen Frage gescheitert: Ich habe nach einem *Anschlag*
+        // gesucht. Erst nach einem hellen, dann nach einem reinen, dann nach
+        // einem, der ausklingen darf. Alle vier klangen falsch, und Nataly hat
+        // jedes Mal recht gehabt.
         //
-        // Die Lösung lag am Anfang des Stücks, wo Nataly sie auch gehört hat:
-        // Die ersten zwei Sekunden sind eine reine Melodie, vier einzelne
-        // Töne, fast ohne Fläche darunter — F, D, C, B abwärts. Sie brauchen
-        // gar keine Trennung; sie sind schon getrennt.
+        // Der Anschlag ist das Problem, nicht seine Beschaffenheit. Ein Ton,
+        // der beim ersten Mal angenehm zupackt, sticht beim fünfundzwanzigsten
+        // Mal — und fünfundzwanzig Mal je Level ist beim Ausschließen die
+        // Untergrenze, nicht die Ausnahme.
         //
-        // Gemessen (Goertzel über die Halbtöne, siehe `tonhoehe.py` im
-        // Arbeitsordner): Das Stück steht in **B-Dur**, Grundton B mit 233 Hz,
-        // dazu C, D, F und G. Der Ton hier ist das **F4** mit 349 Hz — die
-        // Quinte, der offenste Ton der Tonart. Er kann gegen nichts stoßen,
-        // was in der Musik gerade läuft.
+        // Deshalb ist hier kein Anschlag mehr drin. Genommen ist nicht der
+        // Einsatz des Tons, sondern seine **ruhige Mitte** — die Stelle, an der
+        // er einfach steht. Dazu 80 ms Aufblenden, damit gar kein Einsatz
+        // entsteht, und oberhalb von 2,6 kHz abgerundet: „gedämpft" wörtlich
+        // genommen, nicht als Lautstärkefrage.
         //
-        // Die Oktave ist außerdem das einzige Intervall, das die Tonstufe
-        // unverändert lässt — es bleibt dasselbe F der Tonart.
-        //
-        // **Und er darf ausklingen.** Die Fassung davor war 160 ms lang und
-        // klang abgehackt — zu Recht: Nachgemessen hält der Ton in der Vorlage
-        // fast eine halbe Sekunde durch, ohne nennenswert leiser zu werden. Er
-        // verklingt nicht, er wird abgeschnitten. Jetzt sind es 470 ms mit
-        // einem Ausblenden über die letzten 320, also ungefähr so lang, wie er
-        // im Stück selbst steht.
-        //
-        // Damit das Höherstimmen die Länge nicht halbiert, folgt auf
-        // `asetrate` ein `atempo=0.5`: Tonhöhe hoch, Dauer zurück. Bei einem
-        // ruhigen Einzelton hört man dem Verfahren nichts an.
-        //
-        // Ob ein halbsekündiger Klang bei schnellem Setzen stört, war die
-        // Sorge dabei. Er tut es nicht: Alle Töne des Spiels stammen aus
-        // derselben Tonart, überlagerte Anschläge ergeben deshalb einen
-        // Akkord und kein Durcheinander. Genau dafür ist die Tonart da.
-        //
-        // Er ist kein Klick mehr. Der gerechnete Tick hatte 19 dB Abstand
-        // zwischen Spitze und Mittel — das ist ein Schlag. Dieser hat 10; er
-        // schlägt nicht an, er klingt an. Genau darum ging es.
+        // Tonhöhe ist weiterhin das F von B-Dur, die Quinte. Pegel −28 dB statt
+        // −26, weil ein Klang, der ständig kommt, leiser sein darf als einer,
+        // der etwas meldet.
         runCatching {
             effects = effects + (KEY_TICK to clipPool.load(appContext, R.raw.ward, 1))
         }.onFailure { error ->
