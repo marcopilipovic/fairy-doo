@@ -202,28 +202,27 @@ class FairyAudio(context: Context) {
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
         //
-        // Ein Glockenspiel-Ton, eigens dafür erzeugt: A, eine Oktave höher.
+        // Setzen und Aufheben aus derselben Stelle — eine Quinte auseinander.
         //
-        // Acht Anläufe hat dieser Klang gebraucht, und sieben davon bestanden
-        // darin, ihn aus vorhandener Musik herauszuschneiden. Das musste
-        // scheitern, und der Grund steht in den Messungen: **Keines der beiden
-        // Stücke enthält eine Glocke.** Ihre Töne werden gehalten, sie fallen
-        // über 300 ms um keine vier Dezibel. Was man daraus schneidet, ist
-        // entweder ein Anschlag ohne Ausklang oder ein Ausklang ohne Anschlag —
-        // ein Klick oder eine Orgel. Dazwischen gibt es nichts zu holen.
+        // Neun Anläufe hat dieser Klang gebraucht. Der Umschwung kam von einer
+        // Nebenbemerkung: „Das Aufheben finde ich gut, aber das Setzen ist noch
+        // gruselig." Damit war zum ersten Mal etwas *bestätigt* statt verworfen
+        // — und das Bestätigte war der Rücknahmeklang, ein leises Nachklingen
+        // aus dem ersten Stück bei 12,95 Sekunden.
         //
-        // Deshalb ist der Ton jetzt eigens erzeugt worden, mit derselben
-        // Werkzeugkette wie die Musik. Er verklingt von selbst: von −22 dB auf
-        // −40 in 900 Millisekunden. Genau das, was sich nicht aufprägen ließ.
+        // Bis dahin hatte ich jeden neuen Vorschlag aus einer anderen Ecke
+        // geholt: mal ein Anschlag, mal eine gehaltene Mitte, mal eine eigens
+        // erzeugte Glocke. Jeder war für sich begründbar und keiner passte zum
+        // Nachbarn. Ein Klangpaar entsteht aber nicht aus zwei guten Einzelnen,
+        // sondern aus einer Quelle.
         //
-        // Tonhöhe A, eine Oktave über dem Original (220 → 440 Hz), weil ein
-        // Handylautsprecher unter 500 Hz stark nachlässt. A liegt in B-Dur,
-        // der Tonart des ersten Stücks, und ist zugleich die Quinte des
-        // zweiten — der Ton passt also zu allem, was sonst zu hören ist.
+        // Deshalb kommt das Setzen jetzt aus **derselben** Stelle wie das
+        // Aufheben, nur eine Quinte höher gestimmt. Die Quinte ist das
+        // konsonanteste Intervall nach der Oktave; zwei Klänge in diesem
+        // Abstand hört man als Paar und nicht als zwei Dinge.
         //
-        // Die ungekürzten Vorlagen liegen unter `Audio/`; es gab drei zur
-        // Auswahl, in D, E und A. Die in E ist ausgeschieden: E kommt in B-Dur
-        // nicht vor, dort heißt der Ton Es.
+        // Zwei Dezibel über dem Aufheben (−24 gegen −26,4): Setzen kommt
+        // häufiger und darf führen.
         runCatching {
             effects = effects + (KEY_TICK to clipPool.load(appContext, R.raw.ward, 1))
         }.onFailure { error ->
