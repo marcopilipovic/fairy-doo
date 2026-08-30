@@ -63,7 +63,7 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
 | Merkzeichen / Rücknahme | trockener Tick / kurzes Abwärts-Wispern | berechnet |
 | Rätsel gelöst | Glockenjubel | berechnet |
-| Nächstes Level beginnt | ein Anschwellen im Feenwald, 5,4 s | Aufnahme |
+| Nächstes Level beginnt | eine kurze Sequenz aus dem Feenwald, 2,0 s | Aufnahme |
 | Spielende | absteigende Molltonfolge | berechnet |
 | Hintergrund | ruhige Waldschleife, über Brett und Karte dieselbe | Aufnahme |
 
@@ -85,6 +85,13 @@ eine Fee, also kichert sie; das Irrlicht setzt ein ✕, also tickt es. Ein eigen
 Klang ließe die Hilfe nach Belohnung klingen statt nach Zug. Bis zum 30. August
 gab es für den Feenstaub eine Funkenkaskade — sie steht noch in `FairySounds`,
 wird aber nicht mehr eingehängt.
+
+**An zwei Stellen tritt die Musik beiseite**: unter dem Jubel und unter dem
+Levelbeginn. Beide sagen etwas — „geschafft", „ein neuer Wald" —, und darunter
+lief bis zum 30. August unbeirrt die Fläche weiter, die man ohnehin die ganze
+Zeit hört. Weggeblendet statt angehalten, schnell hinein und langsam wieder
+heraus (180 ms gegen 700), damit nichts knackt und die Rückkehr nicht wie ein
+Einschalten wirkt.
 
 **Alles andere wird beim Start berechnet** (`audio/Synth.kt`,
 `audio/FairySounds.kt`, `audio/FairyChimes.kt`). Für Instrumente ist Synthese

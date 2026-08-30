@@ -33,7 +33,10 @@ Sitzt eine Fee richtig, **kichert sie** — eine von sechs Aufnahmen, gewürfelt
 ohne Zuordnung zur Art. Beginnt ein Level, schwillt ein eigens dafür erzeugtes
 Stück an (`level_start.mp3`, 5,4 s aus einer 20-Sekunden-Vorlage). Feenstaub und
 Irrlicht haben **keinen eigenen Klang**: Sie sind eine andere Art, denselben Zug
-zu tun, also klingen sie wie er. Dazwischen lag vom 5. bis zum 29. August ein
+zu tun, also klingen sie wie er.
+
+Unter dem Jubel und unter dem Levelbeginn **tritt die Musik beiseite** — an
+diesen zwei Stellen soll man nur den Klang hören. Dazwischen lag vom 5. bis zum 29. August ein
 berechneter Eigenton je Fee. Beide Kehrtwenden kamen aus dem Spielen, nicht aus
 der Theorie; `FairyChimes` bleibt samt Tests im Projekt, falls es ein drittes
 Mal zurückgeht.

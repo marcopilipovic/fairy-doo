@@ -40,6 +40,9 @@ class FairyAudio(context: Context) {
     /** Läuft, solange die Musikspur aufgebaut wird. */
     private var musicJob: Job? = null
 
+    /** Läuft, solange die Musik für einen Klang beiseitetritt. */
+    private var duckJob: Job? = null
+
     /**
      * Für alle kurzen Klänge: Ticks, Fähigkeiten, Jubel, die zehn Feentöne.
      *
@@ -341,10 +344,15 @@ class FairyAudio(context: Context) {
             // Er kam knapp eine Sekunde nach dem Jubel und dauerte zwei — beim
             // Weiterspielen war er im Weg, und wer schnell mehrere Level
             // schafft, hörte ihn immer wieder.
-            SoundEvent.LevelComplete -> playEffect(KEY_CHEER)
+            SoundEvent.LevelComplete -> {
+                duckMusic(CHEER_MILLIS)
+                playEffect(KEY_CHEER)
+            }
 
-            // Über die Klang-Lautstärke wie der Jubel, dem er entstammt.
-            SoundEvent.LevelStart -> playEffect(KEY_LEVEL_START)
+            SoundEvent.LevelStart -> {
+                duckMusic(LEVEL_START_MILLIS)
+                playEffect(KEY_LEVEL_START)
+            }
 
             SoundEvent.GameOver -> {
                 // Kurz warten, damit der Aufschrei des letzten Fehlers steht.
@@ -549,6 +557,46 @@ class FairyAudio(context: Context) {
     private fun soundCacheDir(): File =
         File(appContext.cacheDir, "$CACHE_PREFIX-v$SOUND_CACHE_VERSION").apply { mkdirs() }
 
+    /**
+     * Lässt die Musik für die Dauer eines Klangs beiseitetreten.
+     *
+     * Bis zum 30. August lief die Waldschleife unter dem Jubel und unter dem
+     * Levelbeginn einfach weiter. Beim Spielen fiel auf, dass dabei keiner von
+     * beiden zu seinem Recht kommt: Der eine sagt „geschafft", der andere „ein
+     * neuer Wald" — und darunter läuft unbeirrt die Fläche, die man die ganze
+     * Zeit schon hört. An diesen zwei Stellen soll man *nur* den Klang hören.
+     *
+     * Weggeblendet statt angehalten, und zwar schnell hinein und langsam wieder
+     * heraus (180 ms gegen 700). Ein hartes Abschneiden knackt hörbar, und die
+     * Fläche darf nachher zurückkommen, ohne dass es wie ein Einschalten wirkt.
+     *
+     * Ist der Klang ohnehin stumm gestellt, geschieht nichts — sonst hätte man
+     * eine Lücke in der Musik und keinen Grund dafür.
+     */
+    private fun duckMusic(millis: Long) {
+        if (soundVolume <= 0f) return
+
+        duckJob?.cancel()
+        duckJob = scope.launch {
+            val track = music ?: return@launch
+            blende(track, von = musicVolume, nach = 0f, dauer = 180L)
+            delay(millis)
+            blende(track, von = 0f, nach = musicVolume, dauer = 700L)
+            // Zum Schluss auf den Wert von jetzt, nicht auf den von vorhin:
+            // Der Spieler kann den Regler zwischendurch bewegt haben.
+            runCatching { track.setVolume(musicVolume) }
+        }
+    }
+
+    private suspend fun blende(track: AudioTrack, von: Float, nach: Float, dauer: Long) {
+        val schritte = (dauer / 20L).toInt().coerceAtLeast(1)
+        for (i in 1..schritte) {
+            val anteil = i / schritte.toFloat()
+            runCatching { track.setVolume(von + (nach - von) * anteil) }
+            delay(20L)
+        }
+    }
+
     private fun stopMusic() {
         runCatching {
             music?.stop()
@@ -602,6 +650,10 @@ class FairyAudio(context: Context) {
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"
         const val KEY_LEVEL_START = "levelStart"
+
+        /** Wie lange die Musik beiseitetritt — die Dauer des Klangs plus ein Atemzug. */
+        const val CHEER_MILLIS = 2_200L
+        const val LEVEL_START_MILLIS = 2_100L
         const val KEY_STARTLED = "startled"
 
         /** So viele Kicherlaute liegen bei. */
