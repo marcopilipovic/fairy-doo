@@ -130,6 +130,8 @@ private const val PATH_FREQUENCY = 1.05
 @Composable
 fun LevelSelectScreen(
     profile: PlayerProfile,
+    /** Das Level, auf dem der Spieler gerade steht — nicht sein weitestes. */
+    currentLevel: Int,
     daily: DailyScoreState,
     globalLives: GlobalLivesState,
     onClose: (() -> Unit)?,
@@ -233,6 +235,7 @@ fun LevelSelectScreen(
 
             ForestPath(
                 highestLevelUnlocked = profile.highestLevelUnlocked,
+                currentLevel = currentLevel,
                 canPlay = globalLives.lives > 0,
                 onSelectLevel = onSelectLevel,
                 modifier = Modifier.weight(1f),
@@ -331,6 +334,7 @@ fun LevelSelectScreen(
 @Composable
 private fun ForestPath(
     highestLevelUnlocked: Int,
+    currentLevel: Int,
     canPlay: Boolean,
     onSelectLevel: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -385,11 +389,11 @@ private fun ForestPath(
             //
             // Beim Schließen verlässt der Bildschirm die Komposition — das
             // nächste Öffnen fängt also wieder beim aktuellen Level an.
-            val scrollState = remember(highestLevelUnlocked) {
+            val scrollState = remember(currentLevel) {
                 ScrollState(
                     with(density) {
                         LevelPathLayout.scrollToCenter(
-                            level = highestLevelUnlocked,
+                            level = currentLevel,
                             viewportHeight = maxHeight.toPx(),
                             stepHeight = PATH_STEP.toPx(),
                             nodeSize = NODE_SIZE.toPx(),
@@ -451,12 +455,21 @@ private fun ForestPath(
 
                         LevelNode(
                             level = level,
-                            // Das höchste freigeschaltete ist das nächste, das
-                            // ansteht — es pulsiert. Ein laufendes Level bekommt
-                            // keine eigene Kennzeichnung: Wer die Karte öffnet,
-                            // sucht, wo es weitergeht, nicht wo er gerade steht.
+                            // Markiert und angesteuert wird das Level, auf dem
+                            // der Spieler *gerade* steht.
+                            //
+                            // Bis zum 30. August war es sein weitestes. Wer
+                            // Level 2 noch einmal spielte und dann die Karte
+                            // öffnete, sah den Pfad zu Level 11 springen und
+                            // dort die pulsierende Marke — als wäre er dorthin
+                            // versetzt worden. Er war es nie; nur die Karte
+                            // zeigte einen anderen Ort als das Spiel.
+                            //
+                            // Der Höchststand bestimmt weiterhin, was offen und
+                            // was erledigt ist. Nur eben nicht mehr, wo man
+                            // gerade ist.
                             completed = level < highestLevelUnlocked,
-                            current = level == highestLevelUnlocked,
+                            current = level == currentLevel,
                             locked = level > highestLevelUnlocked,
                             canPlay = canPlay,
                             onClick = { onSelectLevel(level) },

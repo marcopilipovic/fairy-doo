@@ -216,22 +216,6 @@ class FairyAudio(context: Context) {
             Log.w(TAG, "Merkzeichen nicht ladbar", error)
         }
 
-        // Der Klang beim Beginn des nächsten Levels — eine Aufnahme.
-        //
-        // Bis zum 30. August war es der gerechnete Jubel, eine Oktave höher und
-        // leise: zwar am richtigen Ort, aber die falsche Gebärde. Aufsteigend
-        // und in Dur klingt nach „gut gemacht", und das war eine Ansage zu viel
-        // an einer Stelle, an der man ankommt statt etwas zu schaffen.
-        //
-        // Jetzt liegt hier ein eigens erzeugtes Stück, 5,4 Sekunden aus einer
-        // zwanzig Sekunden langen Vorlage. [FairySounds.levelStart] bleibt samt
-        // Test stehen, falls es zurück soll.
-        runCatching {
-            effects = effects + (KEY_LEVEL_START to clipPool.load(appContext, R.raw.level_start, 1))
-        }.onFailure { error ->
-            Log.w(TAG, "Levelbeginn nicht ladbar", error)
-        }
-
         // Und die sechs Kicherlaute — der Klang, wenn eine Fee richtig sitzt.
         //
         // Keine Zuordnung zur Art: Es wird gewürfelt. Sechs Aufnahmen auf zehn
@@ -388,11 +372,6 @@ class FairyAudio(context: Context) {
             SoundEvent.LevelComplete -> {
                 duckMusic(CHEER_MILLIS)
                 playEffect(KEY_CHEER)
-            }
-
-            SoundEvent.LevelStart -> {
-                duckMusic(LEVEL_START_MILLIS)
-                playEffect(KEY_LEVEL_START)
             }
 
             SoundEvent.GameOver -> {
@@ -690,11 +669,9 @@ class FairyAudio(context: Context) {
         const val KEY_TICK = "tick"
         const val KEY_UNDO = "undo"
         const val KEY_GAME_OVER = "gameOver"
-        const val KEY_LEVEL_START = "levelStart"
 
-        /** Wie lange die Musik beiseitetritt — die Dauer des Klangs plus ein Atemzug. */
+        /** Wie lange die Musik unter dem Jubel beiseitetritt — seine Dauer plus ein Atemzug. */
         const val CHEER_MILLIS = 2_700L
-        const val LEVEL_START_MILLIS = 2_100L
         const val KEY_STARTLED = "startled"
 
         /** So viele Kicherlaute liegen bei. */

@@ -23,9 +23,6 @@ sealed interface SoundEvent {
     /** Rätsel gelöst — der Jubel. */
     data object LevelComplete : SoundEvent
 
-    /** Das nächste Rätsel liegt bereit — derselbe Jubel, heller und ganz leise. */
-    data object LevelStart : SoundEvent
-
     data object GameOver : SoundEvent
 }
 
@@ -52,10 +49,15 @@ object SoundEvents {
         // Neustart nach drei verbrauchten Versuchen behält die Nummer, legt aber
         // ebenso ein neues Brett hin. Verglichen wird die Kennung, nicht der
         // Inhalt — zwei Level können zufällig dieselbe Lösung tragen.
+        //
+        // Zu hören ist dabei nichts. Vom 29. bis zum 30. August lag hier ein
+        // eigener Klang; er ist wieder weg, weil er nichts hinzufügte: Die
+        // Waldmusik läuft ohnehin weiter, und ein Anfang braucht keine Ansage.
+        // Nur das Gewinnen bekommt eine.
         val frischesBrett = previous.puzzle != null &&
             next.puzzle != null &&
             previous.puzzle !== next.puzzle
-        if (frischesBrett) return listOf(SoundEvent.LevelStart)
+        if (frischesBrett) return emptyList()
 
         val events = mutableListOf<SoundEvent>()
 

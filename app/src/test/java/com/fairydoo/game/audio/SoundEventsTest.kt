@@ -183,7 +183,7 @@ class SoundEventsTest {
 
         val events = SoundEvents.diff(geloest, naechstes)
 
-        assertEquals(listOf(SoundEvent.LevelStart), events)
+        assertTrue("Beim Levelwechsel ist nichts zu hören, war: $events", events.isEmpty())
     }
 
     /** Löst das erste Level, indem alle Feen der Lösung gesetzt werden. */

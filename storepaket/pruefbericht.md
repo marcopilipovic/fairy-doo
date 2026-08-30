@@ -115,8 +115,8 @@ Schriften unter freier Lizenz.**
 **Nachtrag vom 28. und 29. August:** Acht Aufnahmen sind zurück in der App — die
 Waldmusik (`ambient_forest.mp3`, 821 KB), der Schreckenslaut
 (`fairy_startled.mp3`, 6 KB), die sechs Kicherlaute der Feen (je 6 KB) und der
-vier Ausschnitte aus einem zwanzig Sekunden langen Stück (`level_start.mp3`
-28 KB, `level_complete.mp3` 35 KB, `ward.mp3` 3 KB, `undo.mp3` 5 KB). Nur das
+drei Ausschnitte aus einem zwanzig Sekunden langen Stück
+(`level_complete.mp3` 35 KB, `ward.mp3` 3 KB, `undo.mp3` 5 KB). Nur das
 Spielende wird noch berechnet.
 
 Acht der neun stammen vom 1. August und damit aus demselben Vorgang; der

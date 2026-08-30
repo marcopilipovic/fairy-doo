@@ -401,6 +401,9 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
         if (showLevelSelect) {
             LevelSelectScreen(
                 profile = profile,
+                // Vor dem allerersten Spiel gibt es kein laufendes Level — dann
+                // ist der Höchststand die richtige Antwort auf „wo geht es los".
+                currentLevel = if (state.puzzle != null) state.level else profile.highestLevelUnlocked,
                 daily = daily,
                 globalLives = globalLives,
                 // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man

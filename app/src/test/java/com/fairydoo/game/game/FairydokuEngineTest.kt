@@ -395,4 +395,27 @@ class FairydokuEngineTest {
         assertEquals(IrrlichtSupply.max, freshAtLevelFive.irrlicht)
         assertEquals(GameState.sizeForLevel(5), freshAtLevelFive.boardSize)
     }
+
+    /**
+     * Nach Level 2 kommt Level 3 — auch wenn längst Level 11 offen steht.
+     *
+     * Nataly hat am 30. August gemeldet, das Spiel springe nach einem noch
+     * einmal gespielten Level 2 zurück auf ihr weitestes Level. Dieser Test
+     * hält fest, dass es das nicht tut: Der Fortschritt hängt am gerade
+     * gespielten Level, nicht am gespeicherten Höchststand. Der Höchststand
+     * lebt in den Einstellungen, die Engine kennt ihn gar nicht — was der Test
+     * mitbeweist, denn er kommt ohne sie aus.
+     */
+    @Test
+    fun `nach einem wiederholten Level geht es bei dessen Nachfolger weiter`() {
+        var state = engine.onInput(engine.newGame(level = 2), GameInput.Begin)
+        for (pos in requireNotNull(state.puzzle).solution) {
+            state = engine.onInput(state, GameInput.HoldCell(pos))
+        }
+        assertEquals(GameStatus.LevelComplete, state.status)
+
+        val weiter = engine.onInput(state, GameInput.NextLevel)
+
+        assertEquals(3, weiter.level)
+    }
 }
