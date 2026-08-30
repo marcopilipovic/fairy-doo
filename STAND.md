@@ -25,7 +25,7 @@ Overlays.
 (`mipmap-anydpi-v26/ic_launcher_foreground.xml` übernimmt den Inhalt aus
 `drawable/fairy_salta.xml`). Reiner Vektor, keine Dichtestufen mehr.
 
-**Klang und Musik.** Rücknahme, Jubel und Spielende werden im Spiel gerechnet; ihre Schleifen schließen sich ohne Naht, weil
+**Klang und Musik.** Nur noch das Spielende wird im Spiel gerechnet; ihre Schleifen schließen sich ohne Naht, weil
 `Synth.mixLooping` den Überhang nach vorn faltet.
 
 Sitzt eine Fee richtig, **kichert sie** — eine von sechs Aufnahmen, gewürfelt,

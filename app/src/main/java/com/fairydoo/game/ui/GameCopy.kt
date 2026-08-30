@@ -198,7 +198,7 @@ object GameCopy {
             Quicksand — Copyright © 2019 The Quicksand Project Authors.
             Beide stehen unter der SIL Open Font License, Version 1.1 (scripts.sil.org/OFL).
 
-            Alle Bilder der App sind eigene Werke. Die meisten Klänge werden im Spiel selbst berechnet. Die Waldmusik, der Schreckenslaut, die sechs Kicherlaute der Feen sowie die Klänge zum Levelbeginn und zum Merkzeichen sind mit einem KI-Werkzeug erzeugt und unter dem dort erworbenen Tarif lizenziert.
+            Alle Bilder der App sind eigene Werke. Die meisten Klänge werden im Spiel selbst berechnet. Die Waldmusik, der Schreckenslaut, die sechs Kicherlaute der Feen sowie die Klänge im Spielverlauf sind mit einem KI-Werkzeug erzeugt und unter dem dort erworbenen Tarif lizenziert.
         """.trimIndent()
 
         // Kein Haftungsparagraf. Hier stand eine Klausel, die die Haftung auf

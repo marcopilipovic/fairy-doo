@@ -131,10 +131,8 @@ class FairyAudio(context: Context) {
         // Effekte zuerst: Sie sind billiger als die Musikschleife, und ein
         // stummer Tastendruck fällt eher auf als fehlende Hintergrundmusik.
         val builders: Map<String, () -> FloatArray> = mapOf(
-            KEY_UNDO to FairySounds::undo,
             KEY_SHIELD to FairySounds::shield,
             KEY_FREEZE to FairySounds::timeFreeze,
-            KEY_CHEER to FairySounds::cheer,
             KEY_GAME_OVER to FairySounds::gameOver,
         )
 
@@ -172,6 +170,34 @@ class FairyAudio(context: Context) {
             effects = effects + (KEY_STARTLED to clipPool.load(appContext, R.raw.fairy_startled, 1))
         }.onFailure { error ->
             Log.w(TAG, "Schreckenslaut nicht ladbar", error)
+        }
+
+        // Vier Klänge aus einer einzigen Vorlage.
+        //
+        // Das Stück „Neues Level im Feenwald" ist zwanzig Sekunden lang und hat
+        // fünf klar hörbare Ereignisse. Sie sind so verteilt, dass die
+        // Dramaturgie des Stücks auf die des Spiels fällt:
+        //
+        //   1,2 s   der Einstieg          → ein Level beginnt
+        //   2,6 s   ein weicher Anschlag  → das Merkzeichen ✕
+        //   3,2 s   der Höhepunkt         → ein Level ist geschafft
+        //  13,0 s   ein hohes Nachklingen → eine Fee wird weggenommen
+        //
+        // Das war der Punkt: Vorher kamen Jubel und Levelbeginn aus zwei Welten
+        // — der eine gerechnet in C-Dur, der andere eine Aufnahme —, und
+        // zwischen ihnen bestand kein Zusammenhang. Jetzt ist es dieselbe Musik
+        // an verschiedenen Stellen. Wer ein Level beginnt, hört den Anfang des
+        // Stücks; wer es schafft, dessen Höhepunkt.
+        //
+        // Die Vorlage bleibt unangetastet unter `Audio/`; genommen sind nur
+        // Ausschnitte.
+        runCatching {
+            effects = effects + mapOf(
+                KEY_UNDO to clipPool.load(appContext, R.raw.undo, 1),
+                KEY_CHEER to clipPool.load(appContext, R.raw.level_complete, 1),
+            )
+        }.onFailure { error ->
+            Log.w(TAG, "Rücknahme oder Jubel nicht ladbar", error)
         }
 
         // Das Merkzeichen — auch eine Aufnahme, aus derselben Vorlage.
@@ -667,7 +693,7 @@ class FairyAudio(context: Context) {
         const val KEY_LEVEL_START = "levelStart"
 
         /** Wie lange die Musik beiseitetritt — die Dauer des Klangs plus ein Atemzug. */
-        const val CHEER_MILLIS = 2_200L
+        const val CHEER_MILLIS = 2_700L
         const val LEVEL_START_MILLIS = 2_100L
         const val KEY_STARTLED = "startled"
 

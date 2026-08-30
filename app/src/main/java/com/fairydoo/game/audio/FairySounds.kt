@@ -23,6 +23,12 @@ object FairySounds {
      *
      * Läuft in Dur und endet auf der Oktave — die Auflösung nach oben ist das,
      * was als „geschafft" gehört wird.
+     *
+     * **Wird seit dem 30. August nicht mehr abgespielt.** An seiner Stelle liegt
+     * der Höhepunkt derselben Aufnahme, aus der auch der Levelbeginn stammt.
+     * Der Grund war nicht die Machart, sondern der Zusammenhang: Ein gerechneter
+     * Jubel in C-Dur und ein aufgenommener Levelbeginn standen unverbunden
+     * nebeneinander. Jetzt ist beides dieselbe Musik an verschiedenen Stellen.
      */
     fun cheer(): FloatArray = fanfare(
         grundton = 523.25f,
@@ -249,9 +255,18 @@ object FairySounds {
     }
 
     /** Das Zurücknehmen einer Fee: ein kurzes Abwärts-Wispern. */
-    // Mit dem Tick zusammen zurückgenommen: Wäre nur der Tick leiser geworden,
-    // wäre ausgerechnet das Wegnehmen der lautere der beiden Züge — und das
-    // Wegnehmen ist der seltenere.
+    /**
+     * Das Wegnehmen einer Fee: ein kurzes Abwärts-Wispern.
+     *
+     * **Wird seit dem 30. August nicht mehr abgespielt** — an seiner Stelle
+     * liegt ein hohes Nachklingen aus derselben Aufnahme wie Merkzeichen,
+     * Levelbeginn und Jubel.
+     *
+     * Zuvor mit dem Tick zusammen zurückgenommen: Wäre nur der Tick leiser
+     * geworden, wäre ausgerechnet das Wegnehmen der lautere der beiden Züge —
+     * und das Wegnehmen ist der seltenere. Das gilt für den Nachfolger
+     * unverändert.
+     */
     fun undo(): FloatArray = Synth.normalize(
         Synth.tone(
             durationSeconds = 0.28f,

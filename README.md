@@ -61,16 +61,27 @@ Rätsel beliebig. Die Zeiten-Blüte hat sich mit dem Countdown ohnehin erledigt.
 | --- | --- | --- |
 | Fee richtig gesetzt | ein Kichern, sechs verschiedene, gewürfelt | Aufnahme |
 | Fee falsch gesetzt | erschrockener Aufschrei | Aufnahme |
-| Merkzeichen | ein weicher Anschlag, 150 ms | Aufnahme |
-| Rücknahme | kurzes Abwärts-Wispern | berechnet |
-| Rätsel gelöst | Glockenjubel | berechnet |
-| Nächstes Level beginnt | eine kurze Sequenz aus dem Feenwald, 2,0 s | Aufnahme |
+| Merkzeichen | ein weicher Anschlag, 150 ms | Aufnahme · 2,6 s |
+| Rücknahme | ein hohes Nachklingen, 350 ms | Aufnahme · 13,0 s |
+| Nächstes Level beginnt | der Einstieg, 2,0 s | Aufnahme · 1,2 s |
+| Rätsel gelöst | der Höhepunkt, 2,5 s | Aufnahme · 3,2 s |
 | Spielende | absteigende Molltonfolge | berechnet |
 | Hintergrund | ruhige Waldschleife, über Brett und Karte dieselbe | Aufnahme |
 
-**Zehn Aufnahmen liegen bei** — die Waldschleife, der Schreckenslaut, die sechs
-Kicherlaute, der Klang zum Levelbeginn und der Anschlag unter dem ✕
-(`res/raw/`). Alle mit ElevenLabs
+Die vier mit einer Zeitangabe stammen aus **einem einzigen zwanzig Sekunden
+langen Stück** („Neues Level im Feenwald", `Audio/`); die Zahl sagt, an welcher
+Sekunde der Ausschnitt beginnt. Das Stück hat fünf klar hörbare Ereignisse, und
+sie liegen so, dass seine Dramaturgie auf die des Spiels fällt: Wer ein Level
+beginnt, hört den Einstieg — wer es schafft, den Höhepunkt.
+
+Das war der Grund für den Wechsel. Vorher kamen Jubel und Levelbeginn aus zwei
+Welten, der eine gerechnet in C-Dur, der andere eine Aufnahme, und zwischen
+ihnen bestand kein Zusammenhang. Beim Spielen fiel genau das auf: „alles ein
+bisschen auseinandergerissen, keine Konstante in der Musik".
+
+**Zwölf Aufnahmen liegen bei** (`res/raw/`) — die Waldschleife, der
+Schreckenslaut, die sechs Kicherlaute und die vier Ausschnitte aus dem
+Levelstück. Alle mit ElevenLabs
 unter bezahltem Tarif erzeugt; die Originale samt Zeitstempel liegen unter
 `Audio/`. Die kurzen laufen über `SoundPool`, die Waldschleife über
 `MusicDecoder` — der packt die MP3 einmal nach rohem PCM aus, weil MP3 am
