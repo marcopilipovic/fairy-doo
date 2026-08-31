@@ -20,6 +20,7 @@ Alles liegt auf `main`.
 | `bildschirmfotos/` | fünf Bilder, in der Reihenfolge der Dateinamen hochladen | mind. 2, höchstens 8 ✓ |
 | `texte.md` | Name, Kurz- und Vollbeschreibung, Kategorie | — |
 | `datensicherheit-und-einstufung.md` | Vorschläge für die beiden Fragebögen | — |
+| `versionshinweise.md` | Was ist neu, Testerhinweise, Rezensenten | max. 500 Zeichen |
 
 Die Bildschirmfotos sind 1080 × 2090, aus der Release-APK auf einem Pixel-5-
 Emulator aufgenommen, ohne Statusleiste und Navigationsleiste. Die ersten
