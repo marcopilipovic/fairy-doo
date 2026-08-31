@@ -108,10 +108,12 @@ FAIR UND OHNE HAKEN
   wenn du Androids Datensicherung nutzt, in deinem eigenen Google-Konto
 • offline spielbar
 
-Fairydoku ist ein Angebot für Personen ab 13 Jahren. Die Inhalte sind
-gewaltfrei und für jedes Alter unbedenklich.
+Fairydoku ist ein Angebot für Personen ab 13 Jahren und richtet sich nicht
+an Kinder. Die Inhalte selbst sind gewaltfrei und für jedes Alter
+unbedenklich — die Altersgrenze liegt an der enthaltenen Werbung, nicht am
+Spiel.
 ```
-(3034)
+(3628)
 
 ---
 
