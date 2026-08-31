@@ -78,17 +78,22 @@ durchlaufen.
 
 **Im Repository liegt bewusst keine APK.** Eine mitgelieferte Datei ist nach
 zwei Änderungen veraltet, und niemand sieht ihr das an. Im weitergereichten
-Paket liegt trotzdem eine unter `app/` — sonst müsste der Kollege erst bauen
-können. Was dort liegt, ist der Stand vom 29. August:
+Paket liegt trotzdem eine unter `app/`:
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-1.3.0-51.apk` | zum Ausprobieren auf einem Telefon |
-| `Fairydoku-1.3.0-51.aab` | die Bauform, die der Store haben will |
+| `Fairydoku-1.5.0-54-TEST.aab` | **das hier hochladen**, in eine Testspur |
+| `Fairydoku-1.5.0-54-TEST.apk` | dieselbe Fassung zum Ausprobieren am Gerät |
 
-**Beide tragen noch Googles Testkennungen für die Werbung** (siehe „Was noch
-fehlt", Punkt 1). Sie zeigen, wie die App aussieht und läuft — hochgeladen wird
-erst eine Fassung mit den echten Kennungen.
+**In diesem Paket liegt bewusst die Testfassung**, nicht die
+Veröffentlichungsfassung. Sie ist in allem gleich — derselbe Paketname
+`ug.humb.fairydoku`, verkleinert, verschleiert, mit demselben Schlüssel
+signiert — bis auf die Werbung: Sie zeigt Googles Testanzeigen statt der
+echten.
+
+**Die Veröffentlichungsfassung kommt später** und wird eigens gebaut. Sie
+trägt dann eine höhere Nummer, weil Google je Paket nur steigende
+`versionCode`s annimmt.
 
 Selbst bauen geht in einer Minute:
 
@@ -118,8 +123,8 @@ hochgeladen, muss die Veröffentlichung mindestens 55 tragen.
 Die **APK** ist zum Ausprobieren auf einem Telefon. Das **App Bundle** (`.aab`)
 ist das, was der Play Store haben will — die APK dort hochzuladen geht nicht.
 
-Beides ist bereits signiert, sofern `keystore.properties` im Projektordner
-liegt. Der Stand vom 30. August, abends: versionCode 51, versionName 1.3.0.
+Alles davon ist signiert, sofern `keystore.properties` im Projektordner liegt.
+Der Stand: **versionCode 54, versionName 1.5.0, Paket `ug.humb.fairydoku`.**
 
 ---
 
@@ -163,16 +168,20 @@ Die vollständige Prüfung aller Inhalte steht in `pruefbericht.md`.
 
 Nichts davon ist Programmierarbeit.
 
-### 1. Die echten AdMob-Kennungen
+### 1. ~~Die echten AdMob-Kennungen~~ — erledigt am 31. August
 
-Im Code stehen noch Googles Test-IDs, an zwei Stellen:
+Sie stehen in `app/build.gradle.kts`, je Bauart verschieden:
 
-- `app/src/main/AndroidManifest.xml` — die App-ID (mit Tilde)
-- `app/src/main/java/com/fairydoo/game/ads/RewardedAdManager.kt` — die
-  Anzeigenblock-ID (mit Schrägstrich)
+```
+release       ca-app-pub-5051364478140655~5511669323
+              ca-app-pub-5051364478140655/4643626005
+releaseTest   Googles Testkennungen
+debug         dieselben Testkennungen
+```
 
-Beide beginnen heute mit `ca-app-pub-3940256099942544`; das ist Googles
-öffentliche Testkennung. **Mit ihr darf die App nicht veröffentlicht werden.**
+Für die Produktionsfassung gilt: Die Geräte des Teams gehören im AdMob-Konto
+unter *Einstellungen → Testgeräte* hinterlegt, sonst zählt jeder eigene Tipp
+gegen das Werbebudget.
 
 ### 2. Die Einwilligungsnachricht im AdMob-Konto
 
