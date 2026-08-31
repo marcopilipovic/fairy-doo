@@ -93,9 +93,27 @@ erst eine Fassung mit den echten Kennungen.
 Selbst bauen geht in einer Minute:
 
 ```
-gradlew.bat assembleRelease     → app/build/outputs/apk/release/  (rund 4 MB)
-gradlew.bat bundleRelease       → app/build/outputs/bundle/release/  (rund 7 MB)
+gradlew.bat bundleReleaseTest   → für die Testspuren, mit Googles Testwerbung
+gradlew.bat bundleRelease       → für die Veröffentlichung, mit den echten Kennungen
+gradlew.bat assembleRelease     → dieselbe Fassung als APK zum Ausprobieren
 ```
+
+**Es gibt zwei Bauarten, die im Store landen können.** Beide tragen denselben
+Paketnamen, sind verkleinert, verschleiert und mit demselben Schlüssel
+signiert — sie unterscheiden sich allein in der Werbung:
+
+| | Werbung | wofür |
+| --- | --- | --- |
+| `releaseTest` | Googles Testanzeigen | interne und geschlossene Tests |
+| `release` | die echten Kennungen | die Veröffentlichung |
+
+Der Sinn: Wer auf eine echte Anzeige tippt, erzeugt für Google „ungültigen
+Traffic" — der häufigste Weg, ein AdMob-Konto zu verlieren. Mit der
+Testfassung darf die Testrunde tippen, so oft sie will.
+
+**Achtung bei der Nummer:** Google nimmt je Paket nur steigende
+`versionCode`s an, und zwar spurübergreifend. Wird die Testfassung als 54
+hochgeladen, muss die Veröffentlichung mindestens 55 tragen.
 
 Die **APK** ist zum Ausprobieren auf einem Telefon. Das **App Bundle** (`.aab`)
 ist das, was der Play Store haben will — die APK dort hochzuladen geht nicht.

@@ -84,6 +84,35 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+
+        // Für die Testspuren im Play Store: gebaut wie die Veröffentlichung,
+        // aber mit Googles Testkennungen.
+        //
+        // Der Vorschlag kam von Mirco, und er löst ein Problem, das die
+        // Debug-Fassung nicht löst: Eine Debug-APK trägt den Zusatz `.debug`
+        // im Paketnamen und ist damit für Google eine andere App — sie lässt
+        // sich gar nicht in denselben Eintrag laden. Diese hier trägt denselben
+        // Paketnamen, ist verkleinert, verschleiert und signiert wie das
+        // Original; nur die Werbung ist die von Google.
+        //
+        // Damit kann die Testrunde über den Store prüfen, ohne dass ein
+        // versehentlicher Tipp gegen das eigene Werbebudget läuft.
+        //
+        // Steht bewusst *hinter* `release`: `initWith` kopiert den Stand von
+        // dem Moment, in dem es aufgerufen wird. Weiter oben hätte die
+        // Testfassung die Signierung nicht mitbekommen und wäre unsigniert
+        // herausgekommen — was erst beim Hochladen aufgefallen wäre.
+        //
+        // Achtung bei der Nummer: Google nimmt je Paket nur steigende
+        // versionCodes an, spurübergreifend. Wird diese Fassung als 54
+        // hochgeladen, muss die Veröffentlichung mindestens 55 tragen.
+        create("releaseTest") {
+            initWith(getByName("release"))
+            matchingFallbacks += "release"
+            versionNameSuffix = "-test"
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "AD_UNIT_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
+        }
     }
 
     compileOptions {
