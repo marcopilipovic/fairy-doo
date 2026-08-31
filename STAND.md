@@ -97,11 +97,12 @@ mittig gesetzt worden, damit die Bilder zeigen, was die App zeigt.
 2. **Einwilligungsnachricht im AdMob-Konto** anlegen und veröffentlichen
    (EU-Einstellungen). Sonst zeigt die App den Dialog, bekommt aber keinen
    Inhalt.
-3. **Datenschutz-Seite aktualisieren.** Sie steht seit dem 31. August unter
-   `fairydoku.sites.humb.ug`, mit vier getrennten Adressen — die für den Store
-   ist `/de/datenschutz`. Veröffentlicht ist dort aber der Stand vom Vortag,
-   ohne die beiden TDDDG-Absätze. Der Text je Seite liegt in
+3. ~~**Datenschutz-Seite ins Netz.**~~ **Erledigt am 31. August.** Sie steht
+   unter `fairydoku.sites.humb.ug` mit vier getrennten Adressen; für den Store
+   zählt `/de/datenschutz`. Alle vier geprüft und wortgleich mit der Quelle.
+   Ändern sich die Texte, liegt jede Seite einzeln in
    `storepaket/webseite/seiten/`.
+
 4. **Einmal in Ruhe auf einem echten Telefon durchspielen.** Besonders anzusehen: die
    Tageswertung im Spielverlauf und das Querformat — Android 16 achtet auf
    großen Bildschirmen nicht mehr auf die Festlegung auf Hochformat. Die

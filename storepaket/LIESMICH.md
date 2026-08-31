@@ -190,10 +190,9 @@ dort etwas erscheint, muss im AdMob-Konto unter den EU-Einstellungen eine
 Nachricht angelegt **und veröffentlicht** sein. Fehlt sie, zeigt die App den
 Dialog, bekommt aber keinen Inhalt dafür.
 
-### 3. ~~Die Datenschutz-Seite ins Netz~~ — steht, aber veraltet
+### 3. ~~Die Datenschutz-Seite ins Netz~~ — erledigt
 
-Die Seite ist seit dem 31. August online, und zwar mit **vier getrennten
-Adressen**:
+Sie steht seit dem 31. August online, mit **vier getrennten Adressen**:
 
 ```
 https://fairydoku.sites.humb.ug/de/impressum
@@ -202,15 +201,15 @@ https://fairydoku.sites.humb.ug/de/datenschutz     ← die für den Store
 https://fairydoku.sites.humb.ug/de/lizenzen
 ```
 
-**Nachzutragen ist der Stand.** Die veröffentlichte Datenschutzseite trägt die
-Fassung vom 30. August; seither sind zwei Absätze zum TDDDG dazugekommen
-(§ 25 Abs. 1 als Rechtsgrundlage für die Werbung, § 25 Abs. 2 Nr. 2 als
-Begründung dafür, dass für den Spielstand nicht gefragt wird).
+Alle vier geprüft und wortgleich mit der Quelle, einschließlich der beiden
+TDDDG-Absätze. Für den Store-Eintrag gehört `/de/datenschutz` in das Feld
+Datenschutzerklärung — nicht die Startseite, nicht die Übersicht. Google ruft
+genau diese Adresse ab.
 
-Für die getrennten Seiten liegt der Text jetzt einzeln bereit, unter
-`webseite/seiten/` — eine Datei je Adresse, benannt nach dem Pfad. Die
-entstehen wie alles andere aus dem App-Quelltext und dürfen nicht von Hand
-geändert werden.
+**Wenn die Texte sich ändern**, liegt jede Seite einzeln unter
+`webseite/seiten/`, benannt nach ihrer Adresse. Sie entstehen aus dem
+App-Quelltext und dürfen nicht von Hand geändert werden — sonst laufen App
+und Webseite auseinander.
 
 ### 4. ~~Der Signierschlüssel sichern~~ — erledigt am 30. August 2026
 
