@@ -1,0 +1,722 @@
+<title>Fairydoku im Play Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Quicksand:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* Dunkel ist der Ausgangszustand — die App ist ein Nachtwald. Die helle
+   Fassung ist die vollständige Umkehrung, nicht eine Aufhellung. */
+:root {
+  --grund:      #0d1526;
+  --flur:       #16233c;
+  --flur-hoch:  #1d2c48;
+  --kante:      #2a3a5c;
+  --gold:       #e7c86d;
+  --gold-leise: #a98f42;
+  --moos:       #7aa85e;
+  --glut:       #d97b52;
+  --text:       #ccd6e8;
+  --text-stark: #eef3fb;
+  --leise:      #8794ac;
+  --schatten:   0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --grund:      #e8ecf4;
+    --flur:       #ffffff;
+    --flur-hoch:  #f4f6fb;
+    --kante:      #d2d9e8;
+    --gold:       #8a6714;
+    --gold-leise: #a98f42;
+    --moos:       #4c7434;
+    --glut:       #b1552c;
+    --text:       #2c364a;
+    --text-stark: #111a2b;
+    --leise:      #66718a;
+    --schatten:   0 1px 2px rgba(20,30,55,.06), 0 8px 24px rgba(20,30,55,.07);
+  }
+}
+:root[data-theme="light"] {
+  --grund:      #e8ecf4;
+  --flur:       #ffffff;
+  --flur-hoch:  #f4f6fb;
+  --kante:      #d2d9e8;
+  --gold:       #8a6714;
+  --gold-leise: #a98f42;
+  --moos:       #4c7434;
+  --glut:       #b1552c;
+  --text:       #2c364a;
+  --text-stark: #111a2b;
+  --leise:      #66718a;
+  --schatten:   0 1px 2px rgba(20,30,55,.06), 0 8px 24px rgba(20,30,55,.07);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--grund);
+  color: var(--text);
+  font-family: Quicksand, "Segoe UI", system-ui, sans-serif;
+  font-size: 16.5px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.blatt {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 22px 96px;
+}
+
+/* ---------- Kopf ---------- */
+
+.kopf {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding: 52px 0 34px;
+  flex-wrap: wrap;
+}
+.kopf img {
+  width: 92px; height: 92px;
+  border-radius: 21px;
+  box-shadow: var(--schatten);
+  flex-shrink: 0;
+}
+.kopf h1 {
+  font-family: "Cinzel Decorative", Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(30px, 6vw, 44px);
+  line-height: 1.1;
+  letter-spacing: .01em;
+  color: var(--gold);
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.kopf p { margin: 0; color: var(--leise); max-width: 46ch; }
+.kopf .stand {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12.5px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--gold-leise);
+  margin-top: 10px;
+  display: block;
+}
+
+.aufmacher {
+  border: 1px solid var(--kante);
+  border-radius: 14px;
+  padding: 20px 22px;
+  background: var(--flur);
+  box-shadow: var(--schatten);
+  margin-bottom: 8px;
+}
+.aufmacher strong { color: var(--text-stark); }
+
+/* ---------- Abschnitte am Feenpfad ---------- */
+
+.abschnitt {
+  position: relative;
+  padding-left: 58px;
+  padding-top: 46px;
+}
+/* Der gepunktete Pfad zwischen den Knoten — dasselbe Motiv wie die Levelkarte
+   im Spiel. Er verbindet die Abschnitte, weil sie wirklich der Reihe nach
+   abgearbeitet werden. */
+.abschnitt::before {
+  content: "";
+  position: absolute;
+  left: 17px; top: 46px; bottom: -46px;
+  width: 2px;
+  background-image: linear-gradient(var(--gold-leise) 40%, transparent 0);
+  background-size: 2px 9px;
+  opacity: .45;
+}
+.abschnitt:last-of-type::before { display: none; }
+.knoten {
+  position: absolute;
+  left: 0; top: 42px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--flur-hoch);
+  border: 2px solid var(--gold-leise);
+  color: var(--gold);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: 0 0 0 5px var(--grund), 0 0 18px -4px var(--gold-leise);
+}
+.abschnitt h2 {
+  font-family: "Cinzel Decorative", Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(21px, 3.4vw, 27px);
+  color: var(--text-stark);
+  margin: 0 0 4px;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.abschnitt > p.vorsatz {
+  margin: 0 0 26px;
+  color: var(--leise);
+  max-width: 60ch;
+}
+
+/* ---------- Textfelder zum Kopieren ---------- */
+
+.feld {
+  background: var(--flur);
+  border: 1px solid var(--kante);
+  border-radius: 14px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: var(--schatten);
+}
+.feld-kopf {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 13px 17px 11px;
+  border-bottom: 1px solid var(--kante);
+  background: var(--flur-hoch);
+}
+.feld-kopf h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-stark);
+  letter-spacing: .01em;
+}
+.zaehler {
+  margin-left: auto;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12.5px;
+  color: var(--leise);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.zaehler b { color: var(--text-stark); font-weight: 500; }
+.balken {
+  height: 3px;
+  background: var(--kante);
+  position: relative;
+}
+.balken i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--moos);
+  display: block;
+}
+.feld pre {
+  margin: 0;
+  padding: 17px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13.5px;
+  line-height: 1.72;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: var(--text);
+  max-height: 340px;
+  overflow-y: auto;
+}
+.feld pre.kurz { max-height: none; }
+.feld-fuss {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 17px;
+  border-top: 1px solid var(--kante);
+  background: var(--flur-hoch);
+  flex-wrap: wrap;
+}
+button.kopieren {
+  font-family: Quicksand, sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--grund);
+  background: var(--gold);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 15px;
+  cursor: pointer;
+  transition: filter .15s, transform .08s;
+}
+button.kopieren:hover { filter: brightness(1.12); }
+button.kopieren:active { transform: translateY(1px); }
+button.kopieren:focus-visible { outline: 2px solid var(--text-stark); outline-offset: 2px; }
+.rueckmeldung {
+  font-size: 13px;
+  color: var(--moos);
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.rueckmeldung.an { opacity: 1; }
+.hinweis { font-size: 13px; color: var(--leise); }
+
+/* ---------- Bilder ---------- */
+
+.rail {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 4px 4px 18px;
+  scroll-snap-type: x proximity;
+}
+.rail figure {
+  margin: 0;
+  flex: 0 0 auto;
+  width: 210px;
+  scroll-snap-align: start;
+}
+.rail img {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid var(--kante);
+  box-shadow: var(--schatten);
+}
+.rail figcaption {
+  margin-top: 9px;
+  font-size: 13px;
+  color: var(--leise);
+  line-height: 1.45;
+}
+.rail figcaption b {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+}
+.breitbild {
+  margin: 0 0 22px;
+}
+.breitbild img {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid var(--kante);
+  box-shadow: var(--schatten);
+}
+.breitbild figcaption {
+  margin-top: 9px;
+  font-size: 13.5px;
+  color: var(--leise);
+}
+
+/* ---------- Tabellen ---------- */
+
+.tabellenhuelle { overflow-x: auto; margin-bottom: 22px; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+  min-width: 480px;
+}
+th, td {
+  text-align: left;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--kante);
+  vertical-align: top;
+}
+th {
+  font-weight: 700;
+  color: var(--text-stark);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-bottom-color: var(--gold-leise);
+}
+td code, .mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--gold);
+  background: var(--flur);
+  padding: 1px 6px;
+  border-radius: 5px;
+  word-break: break-word;
+}
+tr:last-child td { border-bottom: none; }
+
+/* ---------- Offene Punkte ---------- */
+
+.punkt {
+  display: flex;
+  gap: 15px;
+  padding: 16px 18px;
+  background: var(--flur);
+  border: 1px solid var(--kante);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: var(--schatten);
+}
+.punkt .marke {
+  flex: 0 0 auto;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  margin-top: 8px;
+  background: var(--glut);
+}
+.punkt.getan .marke { background: var(--moos); }
+.punkt h3 {
+  margin: 0 0 3px;
+  font-size: 15.5px;
+  color: var(--text-stark);
+  font-weight: 700;
+}
+.punkt p { margin: 0; font-size: 14.5px; }
+.punkt .wer {
+  display: inline-block;
+  margin-top: 7px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11.5px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--leise);
+  border: 1px solid var(--kante);
+  border-radius: 20px;
+  padding: 2px 10px;
+}
+
+/* ---------- Fuß ---------- */
+
+.fuss {
+  margin-top: 64px;
+  padding-top: 26px;
+  border-top: 1px solid var(--kante);
+  font-size: 14px;
+  color: var(--leise);
+}
+.fuss strong { color: var(--text); }
+
+@media (max-width: 560px) {
+  .abschnitt { padding-left: 0; }
+  .abschnitt::before { display: none; }
+  .knoten { position: static; margin-bottom: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+
+<div class="blatt">
+
+  <header class="kopf">
+    <img src="{{SYMBOL}}" alt="App-Symbol: die Fee Salta in Gold">
+    <div>
+      <h1>Fairydoku im Play Store</h1>
+      <p>Alles, was in den Eintrag gehört — zum Herüberkopieren, mit Googles
+         Grenzen daneben.</p>
+      <span class="stand">Stand 30. August 2026 · Fassung 1.2.0</span>
+    </div>
+  </header>
+
+  <div class="aufmacher">
+    <strong>Was hier steht, ist fertig.</strong> Texte, Bilder und die Antworten
+    für die Fragebögen stimmen mit der App überein — geprüft an der Fassung, die
+    gerade gebaut wird. Offen sind nur noch fünf Dinge, und die stehen unten
+    unter Punkt 5. Eines davon muss vor dem Einreichen erledigt sein.
+  </div>
+
+  <!-- 1 --------------------------------------------------------------- -->
+  <section class="abschnitt">
+    <span class="knoten">1</span>
+    <h2>Die Texte</h2>
+    <p class="vorsatz">Drei Felder verlangt Google, und für jedes gibt es eine
+      harte Grenze. Der Balken unter jeder Überschrift zeigt, wie viel davon
+      benutzt ist.</p>
+
+    <div class="feld">
+      <div class="feld-kopf">
+        <h3>App-Name</h3>
+        <span class="zaehler"><b>9</b> von 30 Zeichen</span>
+      </div>
+      <div class="balken"><i style="width:30%"></i></div>
+      <pre class="kurz" id="t-name">Fairydoku</pre>
+      <div class="feld-fuss">
+        <button class="kopieren" data-ziel="t-name">Kopieren</button>
+        <span class="rueckmeldung"></span>
+      </div>
+    </div>
+
+    <div class="feld">
+      <div class="feld-kopf">
+        <h3>Kurzbeschreibung</h3>
+        <span class="zaehler"><b>72</b> von 80 Zeichen</span>
+      </div>
+      <div class="balken"><i style="width:90%"></i></div>
+      <pre class="kurz" id="t-kurz">{{KURZ}}</pre>
+      <div class="feld-fuss">
+        <button class="kopieren" data-ziel="t-kurz">Kopieren</button>
+        <span class="rueckmeldung"></span>
+        <span class="hinweis">Steht in der Suchliste direkt unter dem Namen.</span>
+      </div>
+    </div>
+
+    <div class="feld">
+      <div class="feld-kopf">
+        <h3>Kurzbeschreibung — die andere Möglichkeit</h3>
+        <span class="zaehler"><b>74</b> von 80 Zeichen</span>
+      </div>
+      <div class="balken"><i style="width:92.5%"></i></div>
+      <pre class="kurz" id="t-kurz2">{{KURZ_ALT}}</pre>
+      <div class="feld-fuss">
+        <button class="kopieren" data-ziel="t-kurz2">Kopieren</button>
+        <span class="rueckmeldung"></span>
+        <span class="hinweis">Falls „Logikrätsel“ zu trocken klingt.</span>
+      </div>
+    </div>
+
+    <div class="feld">
+      <div class="feld-kopf">
+        <h3>Vollständige Beschreibung</h3>
+        <span class="zaehler"><b>3 034</b> von 4 000 Zeichen</span>
+      </div>
+      <div class="balken"><i style="width:75.9%"></i></div>
+      <pre id="t-lang">{{LANG}}</pre>
+      <div class="feld-fuss">
+        <button class="kopieren" data-ziel="t-lang">Kopieren</button>
+        <span class="rueckmeldung"></span>
+        <span class="hinweis">Die Zwischenüberschriften in Großbuchstaben sind Absicht — Google kennt keine Formatierung in diesem Feld.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 --------------------------------------------------------------- -->
+  <section class="abschnitt">
+    <span class="knoten">2</span>
+    <h2>Die Bilder</h2>
+    <p class="vorsatz">Alle im Paket unter <span class="mono">play-store/</span>,
+      alle in der Größe, die Google verlangt. Hier stehen sie nur zum Ansehen —
+      hochgeladen werden die Dateien aus dem Ordner.</p>
+
+    <figure class="breitbild">
+      <img src="{{FEATURE}}" alt="Kopfbild des Store-Eintrags: der Feenwald mit dem Schriftzug Fairydoku">
+      <figcaption><b>Kopfbild</b> · 1024 × 500 · <span class="mono">feature-grafik-1024x500.png</span></figcaption>
+    </figure>
+
+    <p class="vorsatz" style="margin-bottom:10px">Fünf Bildschirmfotos, 1080 × 2090.
+      <strong>Die Reihenfolge zählt:</strong> Die ersten beiden erscheinen in der
+      Suchliste, oft ohne dass jemand den Eintrag überhaupt öffnet.</p>
+
+    <div class="rail">
+      <figure><img src="{{FOTO1}}" alt="Das Spielbrett mit gesetzten Feen und Merkzeichen"><figcaption><b>1 · Spielbrett</b>Level 6, 6×6</figcaption></figure>
+      <figure><img src="{{FOTO2}}" alt="Der Feenpfad: die Levelkarte durch den nächtlichen Wald"><figcaption><b>2 · Feenpfad</b>Die Levelkarte</figcaption></figure>
+      <figure><img src="{{FOTO3}}" alt="Die Meldung Level up mit Punktestand"><figcaption><b>3 · Level geschafft</b>Punkte und Ausblick</figcaption></figure>
+      <figure><img src="{{FOTO4}}" alt="Ein volles 8×8-Gitter mit acht Feen"><figcaption><b>4 · Großes Gitter</b>8×8, die Endgröße</figcaption></figure>
+      <figure><img src="{{FOTO5}}" alt="Die erste Seite der Anleitung"><figcaption><b>5 · Anleitung</b>Fünf Bilder, dann kann man es</figcaption></figure>
+    </div>
+
+    <div class="aufmacher" style="margin-top:6px">
+      <strong>Zwei Stellen sind nachbearbeitet</strong>, beide aus demselben
+      Grund: Die Aufnahmen zeigten etwas, das die App nicht mehr zeigt. Auf
+      Bild 1 stand der alte Name der Waldfee; auf den Bildern 1, 3 und 4 lief
+      noch die Spieluhr, die es seit dem 28. August nicht mehr gibt. Geändert
+      wurde jeweils nur diese eine Zeile. Die Bilder zeigen jetzt, was die App
+      zeigt.
+    </div>
+  </section>
+
+  <!-- 3 --------------------------------------------------------------- -->
+  <section class="abschnitt">
+    <span class="knoten">3</span>
+    <h2>Die übrigen Felder</h2>
+    <p class="vorsatz">Der Rest des Formulars, in einem Rutsch.</p>
+
+    <div class="tabellenhuelle">
+      <table>
+        <thead><tr><th>Feld</th><th>Wert</th></tr></thead>
+        <tbody>
+          <tr><td>Kategorie</td><td>Spiele → Denkspiele (Puzzle)</td></tr>
+          <tr><td>Tags</td><td>Logikrätsel, Denkspiel, entspannend</td></tr>
+          <tr><td>E-Mail</td><td><code>info@humb.ug</code></td></tr>
+          <tr><td>Website</td><td><code>https://humb.ug</code></td></tr>
+          <tr><td>Datenschutzerklärung</td><td><code>https://humb.ug/fairydoku/rechtstexte</code><br><span class="hinweis">Muss erreichbar sein, <em>bevor</em> eingereicht wird — Google ruft die Adresse ab.</span></td></tr>
+          <tr><td>Enthält Werbung</td><td><strong>Ja.</strong> Auch wenn Werbung nur läuft, wenn der Spieler selbst ein Video startet.</td></tr>
+          <tr><td>Käufe im Spiel</td><td>Nein</td></tr>
+          <tr><td>Zielgruppe</td><td>Ab 13 Jahren, ausdrücklich <em>nicht</em> an Kinder gerichtet</td></tr>
+          <tr><td>Inhaltsfreigabe</td><td>„G“ — Glücksspiel, Gewalt und sexuelle Werbeinhalte sind auf Anzeigenebene ausgeschlossen</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="vorsatz">Für die beiden Fragebögen — Datensicherheit und
+      Altersfreigabe — liegen ausformulierte Antworten im Paket unter
+      <span class="mono">play-store/datensicherheit-und-einstufung.md</span>.
+      Kurzfassung: Es wird nichts erhoben, was nicht das Werbe-SDK verlangt, und
+      der Spielstand verlässt das Gerät nur über Androids eigene Datensicherung
+      in das Google-Konto des Spielers.</p>
+  </section>
+
+  <!-- 4 --------------------------------------------------------------- -->
+  <section class="abschnitt">
+    <span class="knoten">4</span>
+    <h2>Die Datei zum Hochladen</h2>
+    <p class="vorsatz">Im Paket liegen zwei, und nur eine davon gehört in den
+      Store.</p>
+
+    <div class="tabellenhuelle">
+      <table>
+        <thead><tr><th>Datei</th><th>Wofür</th><th>Größe</th></tr></thead>
+        <tbody>
+          <tr><td><code>Fairydoku-1.2.0-49.aab</code></td><td><strong>Das</strong> wird hochgeladen — App Bundle</td><td class="mono">7,5 MB</td></tr>
+          <tr><td><code>Fairydoku-1.2.0-49.apk</code></td><td>Nur zum Ausprobieren auf einem Telefon</td><td class="mono">4,2 MB</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="aufmacher">
+      <strong>Beide tragen noch Googles Testkennungen für die Werbung.</strong>
+      Sie zeigen, wie die App aussieht und läuft. Hochgeladen wird erst eine
+      Fassung mit den echten AdMob-Kennungen — siehe den ersten Punkt unten.
+    </div>
+
+    <div class="tabellenhuelle">
+      <table>
+        <thead><tr><th>Geprüft am fertigen Paket</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Ziel-API</td><td>36 — Googles Frist für neue Apps ist der 31. August 2026</td></tr>
+          <tr><td>Signatur</td><td>gültig, ein Unterzeichner, RSA 4096 Bit</td></tr>
+          <tr><td>Schlüssel gültig bis</td><td>22. Dezember 2053 (Google verlangt mindestens 2033)</td></tr>
+          <tr><td>Debugfähig</td><td>nein — verkleinert, verschleiert, signiert</td></tr>
+          <tr><td>Angeforderte Rechte</td><td>Internet und Netzstatus. Keine Kamera, kein Mikrofon, kein Standort, keine Kontakte, keine Dateien.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 5 --------------------------------------------------------------- -->
+  <section class="abschnitt">
+    <span class="knoten">5</span>
+    <h2>Was noch fehlt</h2>
+    <p class="vorsatz">Drei Dinge, keines davon Programmierarbeit. Zwei davon
+      hängen an demselben AdMob-Konto.</p>
+
+    <div class="punkt">
+      <span class="marke"></span>
+      <div>
+        <h3>Echte AdMob-Kennungen</h3>
+        <p>Im Code stehen Googles öffentliche Testkennungen, an zwei Stellen: die
+          App-ID im <span class="mono">AndroidManifest.xml</span> und die
+          Anzeigenblock-ID im <span class="mono">RewardedAdManager.kt</span>.
+          Beide beginnen mit <span class="mono">ca-app-pub-3940256099942544</span>.
+          <strong>Damit darf nicht veröffentlicht werden.</strong></p>
+        <span class="wer">vor dem Einreichen</span>
+      </div>
+    </div>
+
+    <div class="punkt">
+      <span class="marke"></span>
+      <div>
+        <h3>Einwilligungsnachricht im AdMob-Konto</h3>
+        <p>Unter den EU-Einstellungen anlegen <em>und veröffentlichen</em>. Die App
+          fragt über Googles eigenes Werkzeug ab; fehlt die Nachricht, erscheint
+          der Dialog ohne Inhalt.</p>
+        <span class="wer">AdMob-Konto</span>
+      </div>
+    </div>
+
+    <div class="punkt">
+      <span class="marke"></span>
+      <div>
+        <h3>Datenschutz-Seite ins Netz</h3>
+        <p>Die fertige Seite liegt im Paket unter
+          <span class="mono">webseite/rechtstexte.html</span> — hell und dunkel,
+          ohne fremde Abhängigkeiten. Sie braucht nur einen öffentlich
+          erreichbaren Ort.</p>
+        <span class="wer">Webseite</span>
+      </div>
+    </div>
+
+    <div class="punkt getan">
+      <span class="marke"></span>
+      <div>
+        <h3>Erledigt: der Signierschlüssel liegt dreifach</h3>
+        <p>Auf dem Baurechner, auf einem USB-Stick und als Ausdruck. Das
+          Druckblatt schreibt den Schlüssel als 80 Zeilen Text um, jede mit
+          eigener Prüfsumme; die Rückrechnung ist nachgeprüft und ergibt Byte
+          für Byte dieselbe Datei.</p>
+        <span class="wer">30. August</span>
+      </div>
+    </div>
+
+    <div class="punkt getan">
+      <span class="marke"></span>
+      <div>
+        <h3>Erledigt: die Markenrecherche</h3>
+        <p>TMview auf „fairydoku“: keine Zeilen gefunden. TMview führt neben den
+          Unionsmarken auch die nationalen Register, das DPMA eingeschlossen.
+          Was noch zu prüfen bleibt: Der Entwicklername im Store muss mit dem
+          Impressum übereinstimmen — App HUMB UG (haftungsbeschränkt),
+          Parkstraße 9, 31188 Holle.</p>
+        <span class="wer">30. August</span>
+      </div>
+    </div>
+
+    <div class="punkt getan">
+      <span class="marke"></span>
+      <div>
+        <h3>Erledigt: die Rechte an allem, was mitgeliefert wird</h3>
+        <p>Die zehn Feen und alle Bilder sind eigene Arbeit. Die elf Aufnahmen —
+          Waldmusik, Schreckenslaut, sechs Kicherlaute und drei Ausschnitte aus
+          einem eigens erzeugten Stück — sind unter einem Tarif entstanden, der
+          die gewerbliche Nutzung ausdrücklich einschließt. Die beiden Schriften
+          stehen unter der SIL Open Font License; ihr Text liegt der App bei, wie
+          die Lizenz es verlangt.</p>
+        <span class="wer">geprüft am 30. August</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="fuss">
+    <p><strong>Die Texte nicht von Hand nachpflegen.</strong> Sie stehen einmal
+      im Quelltext der App und werden von dort in die App, auf die Webseite und
+      in diese Vorlage ausgegeben. Zwei Fassungen, die von Hand gepflegt werden,
+      laufen auseinander — meist unbemerkt, weil niemand beide nebeneinander
+      liest. Wer etwas ändern will, ändert es im Code; ein Test schreibt den Rest
+      neu.</p>
+    <p>Das vollständige Paket — Bilder in Originalgröße, beide Bauformen der App,
+      die Rechtstexte als Webseite und als PDF, dazu der Prüfbericht — liegt in
+      <span class="mono">Fairydoku-Storepaket-2026-08-30.zip</span>. Die
+      ausführliche Fassung dieser Seite steht dort in
+      <span class="mono">LIESMICH.md</span>.</p>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll("button.kopieren").forEach(function (knopf) {
+  knopf.addEventListener("click", function () {
+    var quelle = document.getElementById(knopf.dataset.ziel);
+    var text = quelle.textContent;
+    var melder = knopf.parentElement.querySelector(".rueckmeldung");
+
+    function melde(wort) {
+      melder.textContent = wort;
+      melder.classList.add("an");
+      setTimeout(function () { melder.classList.remove("an"); }, 2200);
+    }
+
+    // Die Zwischenablage ist in eingebetteten Seiten nicht überall erlaubt.
+    // Schlägt sie fehl, wird der Text wenigstens markiert — dann reicht Strg+C.
+    function markiere() {
+      var bereich = document.createRange();
+      bereich.selectNodeContents(quelle);
+      var auswahl = window.getSelection();
+      auswahl.removeAllRanges();
+      auswahl.addRange(bereich);
+      melde("markiert — jetzt Strg+C");
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        melde("kopiert");
+      }, markiere);
+    } else {
+      markiere();
+    }
+  });
+});
+</script>

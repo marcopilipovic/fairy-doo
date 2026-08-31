@@ -18,3 +18,10 @@ keystore.properties
 
 # Das Store-Paket entsteht aus dem Projekt; die APK darin gehört nicht ins Repo.
 storepaket/*.apk
+
+# Von den Werkzeugen erzeugt, nicht von Hand gepflegt
+werkzeuge/rechtstexte.txt
+werkzeuge/spielbeschreibung.txt
+werkzeuge/*.html
+!werkzeuge/vorlage.html
+werkzeuge/__pycache__/
