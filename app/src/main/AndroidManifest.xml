@@ -17,12 +17,13 @@
         android:theme="@style/Theme.FairyDoo">
 
         <!-- TEMP: Googles offizielle Test-App-ID (siehe
-             https://developers.google.com/admob/android/test-ads) — noch kein
-             eigenes AdMob-Konto vorhanden. Vor der Veröffentlichung durch die
-             echte App-ID ersetzen, sonst zeigt die App nur Test-Werbung. -->
+             https://developers.google.com/admob/android/test-ads) — die
+             Debug-Fassung behält sie, die Release-Fassung bekommt die echte.
+             Welche es ist, entscheidet `build.gradle.kts` je Bauart; hier steht
+             deshalb nur der Platzhalter. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="${admobAppId}" />
 
         <activity
             android:name=".MainActivity"

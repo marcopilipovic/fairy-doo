@@ -36,8 +36,8 @@ android {
         // Seither zählt sie über beiden bisherigen Ständen weiter und wird bei
         // jeder Fassung erhöht, die auf ein Telefon geht. Für den Store ist die
         // Zahl der ersten Einreichung beliebig; nur steigen muss sie danach.
-        versionCode = 52
-        versionName = "1.3.1"
+        versionCode = 53
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -53,13 +53,27 @@ android {
         }
     }
 
+    // Echte Werbekennungen nur in der Release-Fassung.
+    //
+    // Der Grund ist kein technischer, sondern ein wirtschaftlicher: Wer auf
+    // seine eigenen echten Anzeigen tippt, erzeugt für Google „ungültigen
+    // Traffic". Das ist der häufigste Weg, ein AdMob-Konto zu verlieren, und es
+    // trifft ausgerechnet die, die ihre App gewissenhaft durchtesten.
+    //
+    // Deshalb behält die Debug-Fassung Googles Testkennungen. Auf ihnen darf
+    // man tippen, so oft man will. Wer die Release-Fassung testet, sollte sein
+    // Gerät zusätzlich im AdMob-Konto als Testgerät eintragen.
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             isMinifyEnabled = false
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "AD_UNIT_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
         }
         release {
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-5051364478140655~5511669323"
+            buildConfigField("String", "AD_UNIT_ID", "\"ca-app-pub-5051364478140655/4643626005\"")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

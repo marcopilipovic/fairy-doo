@@ -21,6 +21,7 @@ import com.google.android.ump.UserMessagingPlatform
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.fairydoo.game.BuildConfig
 
 /** Was der Werbe-Knopf gerade anbieten kann. */
 enum class AdOffer {
@@ -351,7 +352,16 @@ class RewardedAdManager(private val appContext: Context) {
 
     private companion object {
         const val TAG = "RewardedAds"
-        const val AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+
+        /**
+         * Die Anzeigenblock-Kennung, je Bauart eine andere.
+         *
+         * Sie steht in `build.gradle.kts`, nicht hier: Die Debug-Fassung
+         * benutzt Googles Testkennung, die Release-Fassung die echte. Wer auf
+         * eigene echte Anzeigen tippt, erzeugt „ungültigen Traffic" — der
+         * häufigste Weg, ein AdMob-Konto zu verlieren.
+         */
+        val AD_UNIT_ID: String = BuildConfig.AD_UNIT_ID
 
         /**
          * Wie lange auf Einwilligung und Ladevorgang gewartet wird, bevor das

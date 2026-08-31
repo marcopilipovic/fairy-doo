@@ -83,9 +83,11 @@ mittig gesetzt worden, damit die Bilder zeigen, was die App zeigt.
 
 ## Offen — nichts davon ist Programmierarbeit
 
-1. **Echte AdMob-Kennungen.** Es stehen noch Googles Test-IDs im Code:
-   `AndroidManifest.xml` (App-ID) und `RewardedAdManager.AD_UNIT_ID`. Ein
-   Kollege beschafft sie. Damit darf nicht veröffentlicht werden.
+1. ~~**Echte AdMob-Kennungen.**~~ **Erledigt am 31. August.** Sie stehen in
+   `app/build.gradle.kts`, und zwar je Bauart verschieden: Die Release-Fassung
+   trägt die echten, die Debug-Fassung behält Googles Testkennungen. Wer auf
+   eigene echte Anzeigen tippt, erzeugt „ungültigen Traffic" — der häufigste
+   Weg, ein AdMob-Konto zu verlieren.
 2. **Einwilligungsnachricht im AdMob-Konto** anlegen und veröffentlichen
    (EU-Einstellungen). Sonst zeigt die App den Dialog, bekommt aber keinen
    Inhalt.
