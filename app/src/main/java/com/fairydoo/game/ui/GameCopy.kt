@@ -159,6 +159,20 @@ object GameCopy {
      *
      * Abschnitt 3 und 10 beschreiben die Einwilligungsabfrage über Googles User
      * Messaging Platform und den Menüpunkt „Datenschutz-Einstellungen ändern".
+     *
+     * ## Zwei Rechtsgrundlagen, nicht eine
+     *
+     * Abschnitt 3 nennt seit dem 31. August beide: § 25 Abs. 1 TDDDG für das
+     * Speichern auf dem Gerät und den Zugriff darauf, Art. 6 Abs. 1 lit. a
+     * DSGVO für die Verarbeitung danach. Das sind zwei verschiedene Vorgänge,
+     * und das TDDDG ist dabei technikneutral — es geht nicht um Cookies,
+     * sondern um jeden Zugriff auf die Endeinrichtung, also auch auf die
+     * Werbekennung.
+     *
+     * Abschnitt 4 nennt die Kehrseite: Der Spielstand fällt unter die Ausnahme
+     * des § 25 Abs. 2 Nr. 2 — unbedingt erforderlich für den vom Nutzer
+     * gewünschten Dienst. Deshalb wird dafür nicht gefragt. Wer diese Stelle
+     * ändert, sollte beides zusammen ändern; sie erklären einander.
      * Beides existiert — in [com.fairydoo.game.ads.RewardedAdManager] und im
      * [com.fairydoo.game.ui.components.SettingsOverlay]. Wer eines davon
      * ausbaut, muss hier mit ändern; ein Text, der eine Abfrage verspricht, die
@@ -283,10 +297,12 @@ object GameCopy {
 
             Jede Anzeigenanfrage ist ausdrücklich als nicht personalisiert gekennzeichnet, und die maximale Inhaltsfreigabe ist auf „G" gesetzt. Eine auf Interessen basierende Werbung findet nicht statt, es werden keine Nutzerprofile gebildet, und Werbung mit Glücksspiel-, Gewalt- oder sexuellen Inhalten ist ausgeschlossen.
 
-            Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit mit Wirkung für die Zukunft ändern oder zurücknehmen — siehe Abschnitt 10. Weitere Informationen findest du in der Datenschutzerklärung von Google.
+            Rechtsgrundlage ist deine Einwilligung — für das Speichern von Informationen auf deinem Gerät und den Zugriff darauf nach § 25 Abs. 1 TDDDG, für die anschließende Verarbeitung deiner Daten nach Art. 6 Abs. 1 lit. a DSGVO. Du kannst sie jederzeit mit Wirkung für die Zukunft ändern oder zurücknehmen — siehe Abschnitt 10. Weitere Informationen findest du in der Datenschutzerklärung von Google.
 
             4. Spielstand, Tageswertung und Bestleistungen
             Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden lokal auf deinem Gerät gespeichert. Eine Übermittlung an uns findet nicht statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+
+            Für dieses Speichern fragen wir dich nicht um Erlaubnis, und das hat einen Grund: Es ist unbedingt erforderlich, damit die App das tut, wofür du sie geöffnet hast — ohne gespeicherten Spielstand begänne jedes Level wieder bei null. § 25 Abs. 2 Nr. 2 TDDDG nimmt genau diesen Fall von der Einwilligung aus. Alles, was darüber hinausgeht, fragen wir (siehe Abschnitt 3).
 
             Die Tageswertung speichert dazu, wie viele Punkte am laufenden Tag gesammelt wurden, das beste Tagesergebnis und den Zeitpunkt des letzten Tageswechsels. Ein Anzeigename und eine Avatar-Fee lassen sich in den Einstellungen hinterlegen; beides wird ebenfalls nur lokal gespeichert. Der Anzeigename erscheint in deiner eigenen Tageswertung auf diesem Gerät; an uns oder an andere Spieler:innen wird er nicht übermittelt.
 

@@ -142,11 +142,13 @@ Bei der Auslieferung können durch Google Geräte- und Nutzungsinformationen sow
 
 Jede Anzeigenanfrage ist ausdrücklich als nicht personalisiert gekennzeichnet, und die maximale Inhaltsfreigabe ist auf „G" gesetzt. Eine auf Interessen basierende Werbung findet nicht statt, es werden keine Nutzerprofile gebildet, und Werbung mit Glücksspiel-, Gewalt- oder sexuellen Inhalten ist ausgeschlossen.
 
-Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit mit Wirkung für die Zukunft ändern oder zurücknehmen — siehe Abschnitt 10. Weitere Informationen findest du in der Datenschutzerklärung von Google.
+Rechtsgrundlage ist deine Einwilligung — für das Speichern von Informationen auf deinem Gerät und den Zugriff darauf nach § 25 Abs. 1 TDDDG, für die anschließende Verarbeitung deiner Daten nach Art. 6 Abs. 1 lit. a DSGVO. Du kannst sie jederzeit mit Wirkung für die Zukunft ändern oder zurücknehmen — siehe Abschnitt 10. Weitere Informationen findest du in der Datenschutzerklärung von Google.
 
 ### 4. Spielstand, Tageswertung und Bestleistungen
 
 Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden lokal auf deinem Gerät gespeichert. Eine Übermittlung an uns findet nicht statt, und es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
+
+Für dieses Speichern fragen wir dich nicht um Erlaubnis, und das hat einen Grund: Es ist unbedingt erforderlich, damit die App das tut, wofür du sie geöffnet hast — ohne gespeicherten Spielstand begänne jedes Level wieder bei null. § 25 Abs. 2 Nr. 2 TDDDG nimmt genau diesen Fall von der Einwilligung aus. Alles, was darüber hinausgeht, fragen wir (siehe Abschnitt 3).
 
 Die Tageswertung speichert dazu, wie viele Punkte am laufenden Tag gesammelt wurden, das beste Tagesergebnis und den Zeitpunkt des letzten Tageswechsels. Ein Anzeigename und eine Avatar-Fee lassen sich in den Einstellungen hinterlegen; beides wird ebenfalls nur lokal gespeichert. Der Anzeigename erscheint in deiner eigenen Tageswertung auf diesem Gerät; an uns oder an andere Spieler:innen wird er nicht übermittelt.
 
