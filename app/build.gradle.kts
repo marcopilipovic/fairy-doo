@@ -72,6 +72,28 @@ android {
             buildConfigField("String", "AD_UNIT_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
         }
         release {
+            // Symbole für die Absturzanalyse mit ins Bundle legen.
+            //
+            // Die Play Console mahnt das an, sobald ein Bundle nativen Code
+            // enthält — und das tut es, obwohl hier keine Zeile C geschrieben
+            // wurde: `libandroidx.graphics.path.so` kommt von Compose,
+            // `libdatastore_shared_counter.so` vom Datenspeicher. Zusammen
+            // 60 KB auf vier Prozessorarten.
+            //
+            // Nachgemessen bringt die Einstellung hier nichts: Beide
+            // Bibliotheken kommen fertig gebaut und abgeschnitten aus ihren
+            // AAR-Paketen — kein einziger interner Name, kein Debug-Abschnitt.
+            // Es ist nichts da, was Gradle herausziehen könnte, und die
+            // Mahnung bleibt deshalb bestehen. Sie ist eine Empfehlung und
+            // kein Hindernis; Abstürze im eigenen Kotlin-Code werden ohnehin
+            // über die ProGuard-Zuordnung lesbar, die im Bundle liegt.
+            //
+            // Die Zeile bleibt trotzdem stehen: Sobald eine künftige
+            // Abhängigkeit ihre Symbole mitliefert, greift sie von selbst.
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
+
             manifestPlaceholders["admobAppId"] = "ca-app-pub-5051364478140655~5511669323"
             buildConfigField("String", "AD_UNIT_ID", "\"ca-app-pub-5051364478140655/4643626005\"")
             isMinifyEnabled = true
