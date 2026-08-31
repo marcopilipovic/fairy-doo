@@ -78,6 +78,27 @@ class RechtstexteExportTest {
         File(outputDir, "rechtstexte.md").writeText(buildMarkdown())
         File(outputDir, "rechtstexte.html").writeText(buildHtml())
 
+        // Und jede Seite noch einmal einzeln als Markdown.
+        //
+        // Die Webseite unter fairydoku.sites.humb.ug führt die vier Teile auf
+        // getrennten Adressen — /de/impressum, /de/nutzungsbedingungen,
+        // /de/datenschutz, /de/lizenzen. Wer sie aus der Gesamtdatei
+        // heraustrennt, macht das von Hand, und von Hand Getrenntes läuft
+        // auseinander: Am 31. August stand auf der Datenschutzseite noch die
+        // Fassung vom Vortag, ohne die beiden TDDDG-Absätze.
+        //
+        // Die Dateinamen sind deshalb die der Adressen, nicht die der
+        // Aufzählung. Wer eine Seite aktualisiert, sucht nach ihrem Pfad.
+        val webseitenNamen = mapOf(
+            LegalPage.Impressum to "impressum",
+            LegalPage.Agb to "nutzungsbedingungen",
+            LegalPage.Datenschutz to "datenschutz",
+            LegalPage.Lizenzen to "lizenzen",
+        )
+        for ((page, name) in webseitenNamen) {
+            File(outputDir, "seite-$name.md").writeText(buildSeite(page))
+        }
+
         println("Rechtstexte geschrieben nach: ${outputDir.absolutePath}")
     }
 
@@ -136,6 +157,24 @@ class RechtstexteExportTest {
                     is LegalText.Block.Bullets ->
                         block.items.forEach { appendLine("- $it") }
                 }
+            }
+        }
+    }
+
+    /** Eine einzelne Rechtsseite als Markdown — für die getrennten Webseiten. */
+    private fun buildSeite(page: LegalPage): String = buildString {
+        appendLine("# ${GameCopy.legalTitle(page)}")
+        appendLine()
+        appendLine("Wortgleich mit dem, was in der App steht. Quelle ist der")
+        appendLine("App-Quelltext (`GameCopy.legalBody`); dieser Text entsteht daraus")
+        appendLine("automatisch und darf nicht von Hand geändert werden.")
+
+        for (block in LegalText.parse(GameCopy.legalBody(page))) {
+            appendLine()
+            when (block) {
+                is LegalText.Block.Heading -> appendLine("## ${block.text}")
+                is LegalText.Block.Paragraph -> appendLine(block.lines.joinToString("  \n"))
+                is LegalText.Block.Bullets -> block.items.forEach { appendLine("- $it") }
             }
         }
     }

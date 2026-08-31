@@ -121,7 +121,7 @@ gewaltfrei und für jedes Alter unbedenklich.
 | --- | --- |
 | Kategorie | Spiele → Denkspiele (Puzzle) |
 | Tags | Logikrätsel, Denkspiel, entspannend |
-| Datenschutzerklärung (URL) | die Seite aus `../webseite/` — z. B. `https://humb.ug/fairydoku/rechtstexte` |
+| Datenschutzerklärung (URL) | `https://fairydoku.sites.humb.ug/de/datenschutz` |
 | E-Mail-Adresse | info@humb.ug |
 | Website | https://humb.ug |
 | Enthält Werbung | **Ja** — ankreuzen, auch wenn Werbung nur auf Wunsch läuft |
