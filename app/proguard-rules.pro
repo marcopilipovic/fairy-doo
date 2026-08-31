@@ -2,9 +2,9 @@
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.**
 
--keepclassmembers class com.fairydoo.game.** {
+-keepclassmembers class ug.humb.fairydoku.** {
     *** Companion;
 }
--keepclasseswithmembers class com.fairydoo.game.** {
+-keepclasseswithmembers class ug.humb.fairydoku.** {
     kotlinx.serialization.KSerializer serializer(...);
 }

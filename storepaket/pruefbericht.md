@@ -1,7 +1,7 @@
 # Fairydoku — Prüfbericht vor der Veröffentlichung
 
-Stand: 30. August 2026, geprüft an der Release-APK (versionName 1.3.0,
-versionCode 51, 4252486 Byte) auf einem Pixel-5-Emulator mit Android 15 und,
+Stand: 31. August 2026, geprüft an der Release-APK (versionName 1.5.0,
+versionCode 54, 4252498 Byte, Paket `ug.humb.fairydoku`) auf einem Pixel-5-Emulator mit Android 15 und,
 seit der Zusammenführung, laufend auf den Telefonen der Testrunde. Die erste
 Fassung dieses Berichts stammt vom 19. August; was seither dazukam, steht unten
 in der Tabelle.
@@ -27,7 +27,7 @@ Die App selbst fordert zwei an:
 Das Werbe-SDK bringt weitere mit, die im fertigen Paket landen: `AD_ID`,
 `ACCESS_ADSERVICES_AD_ID`, `ACCESS_ADSERVICES_ATTRIBUTION`,
 `ACCESS_ADSERVICES_TOPICS`, `WAKE_LOCK`, `FOREGROUND_SERVICE`. Dazu kommt
-`com.fairydoo.game.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` — die meldet die
+`ug.humb.fairydoku.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` — die meldet die
 App sich selbst; AndroidX benutzt sie, um interne Empfänger gegen fremde Apps
 abzuriegeln. Sie ist eine Schutzmaßnahme, kein Zugriff.
 

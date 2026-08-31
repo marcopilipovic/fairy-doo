@@ -6,6 +6,12 @@ rekonstruieren muss, was längst getan ist.
 
 **Fairydoku geht als erstes der Spiele in den Play Store.**
 
+**Der Paketname ist `ug.humb.fairydoku`** — Umkehr der Firmendomain, wie bei
+den übrigen Apps des Hauses. Er ist am 31. August von `com.fairydoo.game`
+umgestellt worden, dem letzten Tag, an dem das ging: Nach dem ersten Upload
+liegt er für immer fest. Der alte behauptete die Domain fairydoo.com und trug
+noch die frühere Schreibweise ohne k-u.
+
 **Es gibt nur noch `main`, und alles liegt auf GitHub.** Bis zum 28. August
 liefen zwei Fassungen nebeneinander, die sich am 6. August getrennt hatten;
 `feature/neue-feen-symbol-und-musik` ist eingearbeitet und gelöscht. Wer hier

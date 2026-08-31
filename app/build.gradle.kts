@@ -19,11 +19,11 @@ plugins {
 }
 
 android {
-    namespace = "com.fairydoo.game"
+    namespace = "ug.humb.fairydoku"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.fairydoo.game"
+        applicationId = "ug.humb.fairydoku"
         minSdk = 26
         targetSdk = 36
         // Die Nummer darf nie kleiner werden — Android lehnt jede Installation
@@ -36,8 +36,8 @@ android {
         // Seither zählt sie über beiden bisherigen Ständen weiter und wird bei
         // jeder Fassung erhöht, die auf ein Telefon geht. Für den Store ist die
         // Zahl der ersten Einreichung beliebig; nur steigen muss sie danach.
-        versionCode = 53
-        versionName = "1.4.0"
+        versionCode = 54
+        versionName = "1.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
