@@ -108,7 +108,7 @@ Was passiert ist, was ihr erwartet habt, und auf welchem Gerät.
 
 ---
 
-## 2c. Testerhinweise zur dritten Runde (Fassung 1.5.2, Nummer 56)
+## 2c. Testerhinweise zur dritten Runde (Fassung 1.5.3, Nummer 57)
 
 ```
 Vier Punkte aus eurer Rückmeldung sind eingebaut.
@@ -134,10 +134,13 @@ Von dem neuen Feld laufen zwei goldene Ringe nach außen.
 Ein Satz stimmt jetzt
 „Sicher hast du schon:" statt „Sicher ist dir schon:".
 
+Die Punkte sind jetzt eine Zahl
+Im Rätsel steht dieselbe Zahl wie auf der Karte: die Punkte des heutigen
+Tages. Vorher stand dort der laufende Lauf, und weil beide Zahlen „Punkte"
+hießen, sah es nach einem Fehler aus. Der Lauf wird weiter mitgezählt, er
+füttert den Bestwert, ist aber nicht mehr zu sehen.
+
 Was weiter offen ist
-• Die Punktezahlen. Im Rätsel steht der laufende Lauf, auf der Karte der
-  ganze Tag. Zwei verschiedene Zahlen, beide heißen Punkte. Das ist bekannt
-  und wird noch angefasst.
 • Tablets sind benutzbar, aber nicht angepasst.
 • Level 5 ist schwerer als die Level danach. Bekannt.
 

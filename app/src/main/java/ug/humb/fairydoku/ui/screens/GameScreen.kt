@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -464,6 +465,7 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                 state = state,
                 isPreparing = isPreparing,
                 bestScore = profile.highScore,
+                tagesPunkte = daily.points,
                 profile = profile,
                 showSoundSettings = showSoundSettings,
                 onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
@@ -554,6 +556,8 @@ private fun GameContent(
     state: GameState,
     isPreparing: Boolean,
     bestScore: Int,
+    /** Die Punkte des heutigen Tages — dieselbe Zahl wie auf der Levelkarte. */
+    tagesPunkte: Int,
     profile: PlayerProfile,
     showSoundSettings: Boolean,
     onTapCell: (Pos) -> Unit,
@@ -608,11 +612,29 @@ private fun GameContent(
             // Solange der Dialog offen ist, bleibt der alte Stand stehen;
             // danach zählt die Zahl sichtbar hoch. Das Versprechen des Dialogs
             // wird eingelöst, statt vorweggenommen.
-            val punkteZiel =
-                if (state.status == GameStatus.LevelComplete) state.score - state.gained
-                else state.score
+            // Im Rätsel steht dieselbe Zahl wie auf der Karte: die Punkte des
+            // heutigen Tages.
+            //
+            // Vorher stand hier der Punktestand des laufenden Laufs. Damit gab
+            // es zwei Zahlen, beide hießen „Punkte", beide waren sichtbar, und
+            // nirgends stand, welche was zählt. Ein Tester am 1. September
+            // 2026, bei 8575 auf der Karte und 4225 im Rätsel: „Verstehe ich
+            // nicht. Liegt das daran, dass ich vor dem Update meine
+            // Speicherdaten nicht zurückgesetzt hatte?" Es lag nicht daran —
+            // aber dass er dort einen Datenfehler vermutete, sagt genug über
+            // die Anzeige.
+            //
+            // Der Lauf-Punktestand bleibt im Zustand und füttert weiterhin den
+            // Bestwert. Er ist nur nicht mehr zu sehen.
+            val gewonnen = state.status == GameStatus.LevelComplete
+            val gehalten = remember { mutableIntStateOf(tagesPunkte) }
+            LaunchedEffect(tagesPunkte, gewonnen) {
+                // Solange der Gewinn-Dialog offen ist, bleibt der Stand von
+                // vorher stehen — gutgeschrieben wird sichtbar erst danach.
+                if (!gewonnen) gehalten.intValue = tagesPunkte
+            }
             val punkte by animateIntAsState(
-                targetValue = punkteZiel,
+                targetValue = if (gewonnen) gehalten.intValue else tagesPunkte,
                 animationSpec = tween(durationMillis = 900),
                 label = "punkte",
             )
@@ -970,7 +992,13 @@ private fun TitleRow() {
 private fun ScoreRow(score: Int, level: Int) {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Badge(
-            text = "🌅 $score",
+            // Beschriftet statt bloss beziffert. Die Zahl daneben heisst
+            // „Level 4", diese hiess nur „8575" — und weil auf der Karte eine
+            // zweite Zahl steht, die auch Punkte zaehlt, sah das nach einem
+            // Fehler aus. Mirco Lehnhoff am 1. September 2026: „Ich wuerde dem
+            // Punktefeld einfach ein Label mitgeben. Platz ist in der Zeile
+            // doch." Stimmt beides.
+            text = "Heute $score",
             borderColor = PanelBorder,
             textColor = PanelText,
             fontSize = 16.sp,
