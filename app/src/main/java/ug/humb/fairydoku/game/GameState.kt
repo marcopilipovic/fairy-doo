@@ -84,6 +84,21 @@ data class GameState(
     val puzzle: Puzzle? = null,
     val marks: Map<Pos, CellMark> = emptyMap(),
     val conflicts: Set<Pos> = emptySet(),
+
+    /**
+     * Felder, die aus einer Hilfe stammen und damit beweisbar richtig sind —
+     * die Feen des Feenstaubs, die Kreuze des Irrlichts.
+     *
+     * Sie werden gebraucht, weil eine solche Fee sonst rot markiert wird,
+     * sobald eine falsch gesetzte Fee des Spielers mit ihr in dieselbe Reihe
+     * gerät. Rot heißt im Spiel „hier stimmt etwas nicht" — und das ist bei
+     * genau diesem Feld die Unwahrheit. Mirco Lehnhoff am 1. September 2026:
+     * „dann sind alle Feen rot hinterlegt."
+     *
+     * Wer die Hilfe bezahlt hat, soll ihr auch trauen koennen. Das Rot gehoert
+     * auf die Feen, die weg muessen.
+     */
+    val certain: Set<Pos> = emptySet(),
     /** Zuletzt per Feenstaub aufgedecktes Feld; pulsiert kurz golden. */
     val hintCell: Pos? = null,
     val hintPulseMillis: Long = 0L,

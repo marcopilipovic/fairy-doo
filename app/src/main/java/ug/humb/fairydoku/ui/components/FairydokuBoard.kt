@@ -1,5 +1,6 @@
 package ug.humb.fairydoku.ui.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -243,7 +244,16 @@ private fun BoardCell(
     val region = puzzle.regionAt(pos)
     val regionColor = RegionColors[region % RegionColors.size]
     val mark = state.markAt(pos)
-    val isConflicting = pos in state.conflicts
+    // Ein Feld aus einer Hilfe ist beweisbar richtig und wird deshalb nie rot
+    // gezeigt — auch dann nicht, wenn eine falsch gesetzte Fee des Spielers mit
+    // ihm in dieselbe Reihe geraten ist. Das Rot gehört auf die Feen, die weg
+    // müssen; auf der bezahlten Hilfe ist es schlicht falsch.
+    //
+    // Am Regelwerk ändert das nichts: [GameState.conflicts] bleibt vollständig,
+    // die Auswertung sieht den Konflikt weiterhin. Nur die Anzeige lügt nicht
+    // mehr.
+    val istSicher = pos in state.certain
+    val isConflicting = pos in state.conflicts && !istSicher
 
     // Schachbrettvariation der Steinplatten, damit das Brett nicht flach wirkt.
     val evenCell = (pos.row + pos.col) % 2 == 0
@@ -338,6 +348,9 @@ private fun BoardCell(
 
             CellMark.Empty -> Unit
         }
+
+        // Ein frisch aufgedecktes Feld schlägt Wellen — siehe HinweisRing.
+        if (state.hintCell == pos) HinweisRing(cellSize = cellSize)
     }
 }
 
@@ -779,4 +792,38 @@ private fun WardMark(cellSize: Dp, pos: Pos) {
                 cross(GoldLight, stroke)
             },
     )
+}
+
+/**
+ * Zwei Ringe, die von einem frisch aufgedeckten Feld nach außen laufen.
+ *
+ * Die Fee ploppt zwar schon auf — 350 Millisekunden von klein auf groß —, aber
+ * das reicht nicht, wenn im selben Augenblick das halbe Brett aufleuchtet.
+ * Mirco Lehnhoff am 1. September 2026: „Das Spielerauge kann das nicht adhoc
+ * erfassen, wenn die korrekte Fee plötzlich irgendwo auftaucht."
+ *
+ * Der Ring löst das anders als ein weiteres Aufleuchten: Er bewegt sich nach
+ * außen und ist deshalb auch aus dem Augenwinkel zu sehen — genau das, was ein
+ * Standbild nicht leistet. Zwei Wellen genügen; danach bleibt das goldene
+ * Nachleuchten der Fee, bis die zwei Sekunden um sind.
+ */
+@Composable
+private fun HinweisRing(cellSize: Dp) {
+    val welle = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        welle.animateTo(
+            targetValue = 2f,
+            animationSpec = tween(durationMillis = 1300, easing = LinearEasing),
+        )
+    }
+
+    Canvas(modifier = Modifier.size(cellSize)) {
+        if (welle.value >= 2f) return@Canvas
+        val fortschritt = welle.value % 1f
+        drawCircle(
+            color = Gold.copy(alpha = (1f - fortschritt) * 0.8f),
+            radius = size.minDimension * (0.26f + 0.44f * fortschritt),
+            style = Stroke(width = size.minDimension * 0.055f),
+        )
+    }
 }

@@ -220,6 +220,7 @@ class FairydokuEngine : GameEngine {
             state.copy(
                 marks = marks,
                 conflicts = FairydokuRules.conflicts(puzzle, fairies),
+                certain = state.certain + target,
                 hintCell = target,
                 hintPulseMillis = GameState.HINT_PULSE_MILLIS,
                 statusMessage = StatusMessage.FairyDustUsed,
@@ -255,6 +256,7 @@ class FairydokuEngine : GameEngine {
 
         return state.copy(
             marks = marks,
+            certain = state.certain + target,
             hintCell = target,
             hintPulseMillis = GameState.HINT_PULSE_MILLIS,
             statusMessage = StatusMessage.IrrlichtUsed,
