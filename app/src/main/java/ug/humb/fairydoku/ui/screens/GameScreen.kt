@@ -282,6 +282,9 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     val showLevelSelect by viewModel.showLevelSelect.collectAsStateWithLifecycle()
     val tutorialOpen by viewModel.tutorialOpen.collectAsStateWithLifecycle()
     val tutorialStep by viewModel.tutorialStep.collectAsStateWithLifecycle()
+    val tutorialTotal by viewModel.tutorialTotal.collectAsStateWithLifecycle()
+    val tutorialPosition by viewModel.tutorialPosition.collectAsStateWithLifecycle()
+    val tutorialIstErstlauf by viewModel.tutorialIstErstlauf.collectAsStateWithLifecycle()
 
     // Der Activity-Bezug wird erst hier gebraucht, direkt beim Zeigen der
     // Anzeige — der ViewModel bleibt dadurch Activity-unabhängig.
@@ -504,7 +507,14 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
         if (tutorialOpen) {
             TutorialOverlay(
                 step = tutorialStep,
-                totalSteps = GameViewModel.TUTORIAL_STEP_COUNT,
+                // „Den Wald betreten" gehört an das Ende der Begrüßung und
+                // nirgendwo sonst — ein Hinweis mitten im Spiel endet damit,
+                // dass man weiterspielt.
+                weiterLabel = when {
+                    tutorialPosition < tutorialTotal - 1 -> "Weiter"
+                    tutorialIstErstlauf -> "Den Wald betreten"
+                    else -> "Weiter spielen"
+                },
                 onNext = viewModel::tutorialNext,
                 onSkip = viewModel::skipTutorial,
             )

@@ -47,14 +47,19 @@ import ug.humb.fairydoku.ui.theme.StatusPurple
 import ug.humb.fairydoku.ui.theme.TextPrimary
 
 /**
- * Die Anleitung: fünf Schritte, die Regeln und Fähigkeiten an kleinen
- * Beispielen statt an Fließtext erklären. Erscheint von selbst beim
- * allerersten Start und ist über den ❔-Knopf jederzeit wieder erreichbar.
+ * Die Anleitung: fünf Bildschirme, die Regeln und Fähigkeiten an kleinen
+ * Beispielen statt an Fließtext erklären.
+ *
+ * Sie laufen nicht mehr alle am Stück. Beim ersten Start erscheinen nur die
+ * beiden, die man vor dem ersten Zug braucht; die übrigen tauchen einzeln auf,
+ * wenn sie das erste Mal etwas bedeuten. Welche wann, entscheidet der
+ * ViewModel — siehe dort `warteschlange`. Über den ❔-Knopf gibt es weiterhin
+ * alles hintereinander.
  */
 @Composable
 fun TutorialOverlay(
     step: Int,
-    totalSteps: Int,
+    weiterLabel: String,
     onNext: () -> Unit,
     onSkip: () -> Unit,
 ) {
@@ -93,10 +98,7 @@ fun TutorialOverlay(
 
         Spacer(Modifier.height(16.dp))
 
-        GoldButton(
-            label = if (step < totalSteps - 1) "Weiter" else "Den Wald betreten",
-            onClick = onNext,
-        )
+        GoldButton(label = weiterLabel, onClick = onNext)
     }
 }
 

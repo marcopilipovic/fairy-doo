@@ -206,6 +206,45 @@ class GameViewModel(
     private val _tutorialStep = MutableStateFlow(0)
     val tutorialStep: StateFlow<Int> = _tutorialStep.asStateFlow()
 
+    /** Wie viele Bildschirme die gerade laufende Anleitung hat. */
+    private val _tutorialTotal = MutableStateFlow(1)
+    val tutorialTotal: StateFlow<Int> = _tutorialTotal.asStateFlow()
+
+    /** Der wievielte davon gerade zu sehen ist — für „Weiter" gegen „Fertig". */
+    private val _tutorialPosition = MutableStateFlow(0)
+    val tutorialPosition: StateFlow<Int> = _tutorialPosition.asStateFlow()
+
+    /**
+     * Ob das die Begrüßung vor dem allerersten Zug ist.
+     *
+     * Nur dort passt „Den Wald betreten" auf den Knopf. Ein Hinweis, der
+     * mitten im Spiel auftaucht, endet mit „Weiter spielen" — man betritt den
+     * Wald ja nicht zum zweiten Mal.
+     */
+    private val _tutorialIstErstlauf = MutableStateFlow(false)
+    val tutorialIstErstlauf: StateFlow<Boolean> = _tutorialIstErstlauf.asStateFlow()
+
+    /**
+     * Die Anleitung ist eine Warteschlange, keine feste Folge.
+     *
+     * Beim ersten Start standen fünf Bildschirme zwischen dem Spieler und dem
+     * Spiel. Mirco Lehnhoff am 1. September 2026: „Kinder lesen nicht! Die
+     * Gefahr ist groß, dass das Spiel wieder geschlossen wird, noch bevor es
+     * losgeht." Er hat recht — ein Spiel, das vor dem ersten Zug weggewischt
+     * wird, hat verloren, und keine der fünf Seiten war die Ursache; ihre
+     * Anzahl war es.
+     *
+     * Vor dem ersten Zug bleibt deshalb nur, was man wirklich vorher wissen
+     * muss: das Ziel und wie man setzt. Alles Übrige taucht in dem Augenblick
+     * auf, in dem es zum ersten Mal etwas bedeutet — die Leben, wenn eines
+     * verloren geht, die Helferlein, wenn das zweite Level beginnt.
+     *
+     * Über den ❔-Knopf gibt es weiterhin alles am Stück.
+     */
+    private var warteschlange: List<Int> = ALLE_SCHRITTE
+    private var position: Int = 0
+    private var nachDemSchliessen: (suspend () -> Unit)? = null
+
     init {
         viewModelScope.launch {
             // Ein einmaliger, echter Blick auf den gespeicherten Stand — nicht
@@ -213,7 +252,7 @@ class GameViewModel(
             // So blitzt die Anleitung bei wiederkehrenden Spieler:innen nicht
             // kurz auf, nur um sofort wieder zuzuklappen.
             if (!preferences.profile.first().hasSeenTutorial) {
-                _tutorialOpen.value = true
+                zeige(ERSTLAUF_SCHRITTE, erstlauf = true) { preferences.markTutorialSeen() }
             }
         }
 
@@ -240,17 +279,32 @@ class GameViewModel(
      * Pausiert ein laufendes Spiel dabei, wie die Levelkarte es auch tut: Wer
      * die Regeln nachliest, soll dafür keine Zeit verlieren.
      */
-    fun openTutorial() {
+    fun openTutorial() = zeige(ALLE_SCHRITTE) { preferences.markTutorialSeen() }
+
+    /** Zeigt eine Auswahl von Anleitungsschritten und merkt sich das Ergebnis. */
+    private fun zeige(
+        schritte: List<Int>,
+        erstlauf: Boolean = false,
+        danach: (suspend () -> Unit)?,
+    ) {
+        if (schritte.isEmpty()) return
         pause()
-        _tutorialStep.value = 0
+        warteschlange = schritte
+        position = 0
+        nachDemSchliessen = danach
+        _tutorialStep.value = schritte.first()
+        _tutorialTotal.value = schritte.size
+        _tutorialPosition.value = 0
+        _tutorialIstErstlauf.value = erstlauf
         _tutorialOpen.value = true
     }
 
     /** „Weiter" — beim letzten Schritt schließt es die Anleitung stattdessen. */
     fun tutorialNext() {
-        val step = _tutorialStep.value
-        if (step < TUTORIAL_STEP_COUNT - 1) {
-            _tutorialStep.value = step + 1
+        position += 1
+        if (position < warteschlange.size) {
+            _tutorialStep.value = warteschlange[position]
+            _tutorialPosition.value = position
         } else {
             closeTutorial()
         }
@@ -261,7 +315,37 @@ class GameViewModel(
     private fun closeTutorial() {
         _tutorialOpen.value = false
         resume()
-        viewModelScope.launch { preferences.markTutorialSeen() }
+        val danach = nachDemSchliessen
+        nachDemSchliessen = null
+        if (danach != null) viewModelScope.launch { danach() }
+    }
+
+    /**
+     * Die Erklärung zu den Leben — einmalig, beim ersten verlorenen Versuch.
+     *
+     * Genau dann bedeutet sie etwas: Es ist gerade etwas passiert, das man
+     * verstehen will. Vorher wäre sie eine Regel unter fünf anderen gewesen.
+     */
+    private fun zeigeLebenHinweis() {
+        viewModelScope.launch {
+            if (preferences.profile.first().hasSeenLivesHint) return@launch
+            zeige(listOf(SCHRITT_LEBEN)) { preferences.markLivesHintSeen() }
+        }
+    }
+
+    /**
+     * Die Erklärung zu den Helferlein — einmalig, zu Beginn des zweiten Levels.
+     *
+     * Nicht beim ersten: Da ist gerade genug zu begreifen. Wer ein Level
+     * geschafft hat, kennt das Spiel und nimmt den Hinweis als Angebot statt
+     * als weitere Hürde.
+     */
+    private fun zeigeHelferleinHinweis(level: Int) {
+        if (level != 2) return
+        viewModelScope.launch {
+            if (preferences.profile.first().hasSeenPowerUpHint) return@launch
+            zeige(listOf(SCHRITT_HELFERLEIN)) { preferences.markPowerUpHintSeen() }
+        }
     }
 
     /**
@@ -304,6 +388,7 @@ class GameViewModel(
             _showLevelSelect.value = false
             applyState(fresh)
             startLoop()
+            zeigeHelferleinHinweis(fresh.level)
         }
     }
 
@@ -330,6 +415,7 @@ class GameViewModel(
                 _isPreparing.value = false
                 applyState(next)
                 if (next.status == GameStatus.Running) startLoop()
+                zeigeHelferleinHinweis(next.level)
             }
 
             GameInput.Begin -> {
@@ -434,6 +520,16 @@ class GameViewModel(
         // dafür und nur dafür springt die Schleife an, siehe [startLoop].
         if (next.hintPulseMillis > previous.hintPulseMillis) startLoop()
 
+        // Ein Versuch ist verbraucht — der Augenblick, in dem die Leben zum
+        // ersten Mal etwas bedeuten. Siehe [zeigeLebenHinweis].
+        //
+        // Nur solange das Level weiterläuft: War es der letzte Versuch, kommt
+        // ohnehin gleich der Verloren-Dialog, und zwei Fenster übereinander
+        // erklären nichts, sie stapeln sich nur.
+        if (next.lives < previous.lives && next.status == GameStatus.Running) {
+            zeigeLebenHinweis()
+        }
+
         if (previous.status != GameStatus.GameOver && next.status == GameStatus.GameOver) {
             viewModelScope.launch {
                 preferences.recordFinishedGame(next.score)
@@ -494,6 +590,25 @@ class GameViewModel(
         TimeZone.getDefault().getOffset(millis).toLong()
 
     companion object {
+        /** Die Bildschirme der Anleitung, in der Reihenfolge von TutorialOverlay. */
+        private const val SCHRITT_REGELN = 0
+        private const val SCHRITT_ANFASSEN = 1
+        private const val SCHRITT_GESTEN = 2
+        const val SCHRITT_HELFERLEIN = 3
+        const val SCHRITT_LEBEN = 4
+
+        /** Alles am Stück — über den ❔-Knopf. */
+        val ALLE_SCHRITTE = listOf(
+            SCHRITT_REGELN, SCHRITT_ANFASSEN, SCHRITT_GESTEN,
+            SCHRITT_HELFERLEIN, SCHRITT_LEBEN,
+        )
+
+        /**
+         * Was man vor dem allerersten Zug wissen muss — und keine Seite mehr.
+         * Das Ziel, und wie man eine Fee setzt. Der Rest kommt, wenn er dran ist.
+         */
+        val ERSTLAUF_SCHRITTE = listOf(SCHRITT_REGELN, SCHRITT_GESTEN)
+
         private const val TICK_MILLIS = 16L
         private const val MAX_FRAME_MILLIS = 250L
 
@@ -501,7 +616,6 @@ class GameViewModel(
         private const val CYCLE_CHECK_MILLIS = 30_000L
 
         /** Willkommen, Berührungsregel, Antippen&Halten, Zauberhilfen, Leben. */
-        const val TUTORIAL_STEP_COUNT = 5
 
         /**
          * Ab wann die Werbe-Knöpfe erscheinen — siehe [adsUnlocked].

@@ -49,6 +49,15 @@ data class PlayerProfile(
     val nextIrrlichtAtMillis: Long = 0L,
     /** Ob die Anleitung schon einmal zu Ende gesehen oder übersprungen wurde. */
     val hasSeenTutorial: Boolean = false,
+    /**
+     * Erklärungen, die erst auftauchen, wenn sie gebraucht werden.
+     *
+     * Der Erstlauf zeigt nur noch Regeln und Gesten. Was danach kommt —
+     * Helferlein, Leben — erscheint einmalig in dem Augenblick, in dem es
+     * zum ersten Mal etwas bedeutet.
+     */
+    val hasSeenLivesHint: Boolean = false,
+    val hasSeenPowerUpHint: Boolean = false,
     /** Wie die Spielerin in der Rangliste heißen möchte — leer, bis gesetzt. */
     val playerName: String = "",
     /** Die Fee, die als Avatar in Profil und Rangliste erscheint. */
@@ -108,6 +117,8 @@ class GamePreferencesRepository(context: Context) {
             irrlicht = prefs[KeyIrrlicht] ?: IrrlichtSupply.max,
             nextIrrlichtAtMillis = prefs[KeyNextIrrlichtAt] ?: 0L,
             hasSeenTutorial = prefs[KeyTutorialSeen] ?: false,
+            hasSeenLivesHint = prefs[KeyLivesHintSeen] ?: false,
+            hasSeenPowerUpHint = prefs[KeyPowerUpHintSeen] ?: false,
             playerName = prefs[KeyPlayerName] ?: "",
             selectedAvatar = prefs[KeySelectedAvatar]
                 ?.let { stored -> FairySpecies.entries.find { it.name == stored } }
@@ -302,6 +313,16 @@ class GamePreferencesRepository(context: Context) {
         store.edit { it[KeyTutorialSeen] = true }
     }
 
+    /** Die Leben-Erklärung ist gezeigt worden — kommt nicht wieder. */
+    suspend fun markLivesHintSeen() {
+        store.edit { it[KeyLivesHintSeen] = true }
+    }
+
+    /** Dasselbe für die Helferlein. */
+    suspend fun markPowerUpHintSeen() {
+        store.edit { it[KeyPowerUpHintSeen] = true }
+    }
+
     suspend fun setPlayerName(name: String) {
         store.edit { it[KeyPlayerName] = name }
     }
@@ -444,6 +465,8 @@ class GamePreferencesRepository(context: Context) {
         val KeyIrrlicht = intPreferencesKey("irrlicht")
         val KeyNextIrrlichtAt = longPreferencesKey("next_irrlicht_at")
         val KeyTutorialSeen = booleanPreferencesKey("tutorial_seen")
+        val KeyLivesHintSeen = booleanPreferencesKey("hint_lives_seen")
+        val KeyPowerUpHintSeen = booleanPreferencesKey("hint_powerups_seen")
         val KeyPlayerName = stringPreferencesKey("player_name")
         val KeySelectedAvatar = stringPreferencesKey("selected_avatar")
 
