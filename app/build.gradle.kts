@@ -36,8 +36,8 @@ android {
         // Seither zählt sie über beiden bisherigen Ständen weiter und wird bei
         // jeder Fassung erhöht, die auf ein Telefon geht. Für den Store ist die
         // Zahl der ersten Einreichung beliebig; nur steigen muss sie danach.
-        versionCode = 54
-        versionName = "1.5.0"
+        versionCode = 55
+        versionName = "1.5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

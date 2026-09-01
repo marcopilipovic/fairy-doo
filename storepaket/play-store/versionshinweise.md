@@ -66,6 +66,48 @@ Bildschirmfoto sagt mehr als eine Beschreibung.
 
 ---
 
+## 2b. Testerhinweise zur zweiten Runde (Fassung 1.5.1, Nummer 55)
+
+```
+Was sich geändert hat
+
+Vier Sachen aus eurer ersten Rückmeldung sind behoben. Bitte schaut euch
+besonders diese an:
+
+• Wärme und Akku. Das Spiel hat im Hintergrund durchgehend gerechnet, obwohl
+  sich auf dem Brett nichts bewegt — sechzigmal pro Sekunde. Das ist raus.
+  Wenn das Gerät jetzt noch heiß wird, sagt bitte Bescheid, dann steckt mehr
+  dahinter.
+• Tippen. Ton und Bild sollten mitkommen, auch wenn ihr schnell setzt. Das
+  hing vermutlich an derselben Ursache.
+• Karte und zurück. Auf das Level zu tippen, das gerade läuft, bringt euch
+  jetzt dorthin zurück, statt es neu zu starten. Eure gesetzten ✕ bleiben
+  stehen, die Punkte auch.
+• Bildschirm. Er bleibt an, solange ein Rätsel offen ist. Auf der Karte und
+  in den Menüs dunkelt er wie gewohnt ab.
+• Punkte. Sie werden erst gutgeschrieben, wenn ihr den Gewinn-Dialog
+  schließt — dann zählt die Zahl sichtbar hoch. Vorher stand sie schon auf
+  dem neuen Wert, während der Dialog noch etwas versprach.
+
+Was weiter gilt
+
+Die Werbung zeigt Googles Beispielanzeigen, nicht echte. Ihr dürft sie
+gefahrlos anschauen und antippen.
+
+Auf Tablets ist die App benutzbar, aber nicht angepasst. Das ist bekannt.
+
+Noch offen
+
+Die Schwierigkeit der Level ist erzeugt, nicht entworfen — dass Level 5
+schwerer war als alles bis 20, ist bekannt und noch nicht geändert.
+
+Was ihr meldet
+
+Was passiert ist, was ihr erwartet habt, und auf welchem Gerät.
+```
+
+---
+
 ## 3. Anweisungen für Rezensenten
 
 **Wo:** App-Inhalte → „Zugriff auf App".
