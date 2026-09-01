@@ -244,7 +244,12 @@ private fun RewardHint(points: Int) {
     if (!current.isEmpty) {
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "Sicher ist dir schon:",
+            // „Sicher hast du schon" statt „Sicher ist dir schon": Darunter
+                // steht mal eine Plakette, mal zwei, und mal „2 Feenstaub". Die
+                // alte Fassung stimmte nur im Einzelfall — ein Tester ist am
+                // 1. September 2026 darüber gestolpert. Mit „hast du" fällt die
+                // Frage nach Ein- oder Mehrzahl weg, statt sie zu verzweigen.
+                text = "Sicher hast du schon:",
             style = MaterialTheme.typography.labelSmall,
             color = StatusPurple,
             fontSize = 11.sp,
