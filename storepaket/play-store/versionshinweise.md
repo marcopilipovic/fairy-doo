@@ -108,6 +108,47 @@ Was passiert ist, was ihr erwartet habt, und auf welchem Gerät.
 
 ---
 
+## 2c. Testerhinweise zur dritten Runde (Fassung 1.5.2, Nummer 56)
+
+```
+Vier Punkte aus eurer Rückmeldung sind eingebaut.
+
+Die Anleitung ist kürzer geworden
+Beim allerersten Start stehen jetzt zwei Bildschirme statt fünf: das Ziel und
+wie man setzt. Die Erklärung zu den Leben kommt beim ersten verbrauchten
+Versuch, die zu den Helferlein zu Beginn von Level 2. Jede genau einmal. Wer
+alles am Stück will, findet es weiter unter dem Fragezeichen.
+
+Wer schon gespielt hat, sieht davon nichts mehr. Zum Prüfen die App
+löschen und neu holen, oder unter Einstellungen die App-Daten löschen.
+
+Die Hilfe sagt nicht mehr die Unwahrheit
+Setzt der Feenstaub eine Fee und eine eurer eigenen Feen steht in derselben
+Reihe, wurde bisher alles rot markiert, auch die neue. Dabei ist gerade die
+garantiert richtig. Was aus einer Hilfe kommt, wird jetzt nie mehr rot. Das
+Rot bleibt auf den Feen, die weg müssen.
+
+Man sieht, wo die Hilfe gelandet ist
+Von dem neuen Feld laufen zwei goldene Ringe nach außen.
+
+Ein Satz stimmt jetzt
+„Sicher hast du schon:" statt „Sicher ist dir schon:".
+
+Was weiter offen ist
+• Die Punktezahlen. Im Rätsel steht der laufende Lauf, auf der Karte der
+  ganze Tag. Zwei verschiedene Zahlen, beide heißen Punkte. Das ist bekannt
+  und wird noch angefasst.
+• Tablets sind benutzbar, aber nicht angepasst.
+• Level 5 ist schwerer als die Level danach. Bekannt.
+
+Worauf ihr besonders achten könnt
+Wird das Gerät noch warm? In der letzten Fassung ist eine Dauerschleife
+herausgeflogen, die durchgehend gerechnet hat. Wenn es jetzt immer noch
+heiß wird, steckt mehr dahinter und wir müssen weitersuchen.
+```
+
+---
+
 ## 3. Anweisungen für Rezensenten
 
 **Wo:** App-Inhalte → „Zugriff auf App".
