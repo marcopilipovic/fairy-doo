@@ -1,4 +1,4 @@
-# Stand: 29. August 2026
+# Stand: 1. September 2026
 
 Diese Datei ist der Einstieg für jede neue Sitzung in diesem Ordner. Sie sagt,
 wo das Projekt steht und was noch fehlt — damit niemand aus Gesprächsresten
@@ -84,6 +84,31 @@ Feature-Grafik, alle Texte, die Antworten für Datensicherheit und
 Alterseinstufung sowie `pruefbericht.md`. Auf drei der Fotos stand noch die
 Spieluhr; sie ist am 29. August herausgenommen und die Blätterzeile wieder
 mittig gesetzt worden, damit die Bilder zeigen, was die App zeigt.
+
+---
+
+## Vorgemerkt für Nummer 56
+
+Die 55 ist als Testfassung hochgeladen; diese Änderungen liegen schon in `main`
+und warten auf die nächste Runde. Bewusst gesammelt statt einzeln ausgeliefert,
+sonst testet die Runde gegen andere Hinweise, als sie bekommen hat.
+
+**Schon fertig:**
+
+- Die Anleitung kommt in Stücken. Vor dem ersten Zug bleiben zwei Bildschirme
+  statt fünf; Leben und Helferlein tauchen auf, wenn sie das erste Mal etwas
+  bedeuten. Aus der Rückmeldung von Mirco Lehnhoff: „Kinder lesen nicht!"
+
+**Noch offen:**
+
+- **Schwierigkeit von Level 5.** Ein Tester fand es schwerer als alles bis
+  Level 20. Die Rätsel werden erzeugt, nicht entworfen — die Schwierigkeit ist
+  also Zufall innerhalb der Gittergröße. Messbar und glättbar, aber ein eigenes
+  Stück Arbeit.
+- **Tablets.** Benutzbar, nicht angepasst. Bekannt seit dem 30. August.
+- **Rückmeldung zur Wärme abwarten.** Die Dauerschleife ist raus; ob das Gerät
+  jetzt kühl bleibt, muss die Testrunde bestätigen. Falls nicht, steckt mehr
+  dahinter.
 
 ---
 
