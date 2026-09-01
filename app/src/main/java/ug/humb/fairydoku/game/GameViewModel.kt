@@ -393,9 +393,29 @@ class GameViewModel(
         startLoop()
     }
 
+    /**
+     * Startet die Schleife — aber nur, wenn es etwas zu takten gibt.
+     *
+     * Sie lief früher durchgehend mit 60 Hz, solange ein Level offen war: Jede
+     * der sechzig Runden je Sekunde schrieb einen neuen Zustand in den
+     * StateFlow und stieß damit eine Neuzeichnung des ganzen Spielfelds an —
+     * für ein Rätsel, das sich von selbst überhaupt nicht bewegt. Ein Tester
+     * meldete am 1. September 2026 heißes Gerät, leeren Akku und Eingaben, die
+     * hinterherhinken; das war die Ursache.
+     *
+     * Getaktet werden muss einzig das Nachleuchten eines Hinweises. Läuft
+     * keines, endet die Schleife und das Gerät hat Ruhe.
+     */
     private fun startLoop() {
-        loopJob?.cancel()
+        if (loopJob?.isActive == true) return
+        if (!brauchtTakt()) return
         loopJob = viewModelScope.launch { runLoop() }
+    }
+
+    /** Ob überhaupt etwas läuft, das Zeit vergehen sehen muss. */
+    private fun brauchtTakt(): Boolean {
+        val jetzt = _state.value
+        return jetzt.status == GameStatus.Running && jetzt.hintPulseMillis > 0L
     }
 
     /**
@@ -409,6 +429,10 @@ class GameViewModel(
         _state.value = next
 
         SoundEvents.diff(previous, next).forEach(_soundEvents::tryEmit)
+
+        // Ein frisch gesetzter Hinweis ist das Einzige, was von selbst abläuft —
+        // dafür und nur dafür springt die Schleife an, siehe [startLoop].
+        if (next.hintPulseMillis > previous.hintPulseMillis) startLoop()
 
         if (previous.status != GameStatus.GameOver && next.status == GameStatus.GameOver) {
             viewModelScope.launch {
@@ -440,7 +464,7 @@ class GameViewModel(
         var accumulator = 0L
         var lastMillis = System.nanoTime() / 1_000_000
 
-        while (viewModelScope.isActive && _state.value.status == GameStatus.Running) {
+        while (viewModelScope.isActive && brauchtTakt()) {
             delay(TICK_MILLIS)
 
             val now = System.nanoTime() / 1_000_000
@@ -449,7 +473,7 @@ class GameViewModel(
             accumulator += (now - lastMillis).coerceIn(0L, MAX_FRAME_MILLIS)
             lastMillis = now
 
-            while (accumulator >= TICK_MILLIS && _state.value.status == GameStatus.Running) {
+            while (accumulator >= TICK_MILLIS && brauchtTakt()) {
                 accumulator -= TICK_MILLIS
                 applyState(engine.tick(_state.value, TICK_MILLIS))
             }

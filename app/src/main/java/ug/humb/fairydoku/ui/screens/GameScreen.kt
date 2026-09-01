@@ -4,6 +4,7 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.StartOffset
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -67,6 +68,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.app.Activity
+import android.view.WindowManager
 import ug.humb.fairydoku.ads.AdOffer
 import ug.humb.fairydoku.ads.RewardedAdManager
 import ug.humb.fairydoku.audio.FairyAudio
@@ -284,6 +286,25 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     // Der Activity-Bezug wird erst hier gebraucht, direkt beim Zeigen der
     // Anzeige — der ViewModel bleibt dadurch Activity-unabhängig.
     val activity = LocalContext.current as Activity
+
+    // Der Bildschirm bleibt an, solange über einem Rätsel gebrütet wird.
+    //
+    // Ein Logikrätsel besteht aus Anschauen und Nachdenken, nicht aus Tippen —
+    // und Android zählt nur Berührungen. Wer eine Minute überlegt, sitzt vor
+    // einem dunklen Bildschirm. Ein Tester meldete das am 1. September 2026.
+    //
+    // Ausdrücklich nur beim laufenden Rätsel: Auf der Karte, in den
+    // Einstellungen oder im Willkommen darf das Gerät wie gewohnt abdunkeln,
+    // sonst kostet es Akku für nichts.
+    DisposableEffect(state.status) {
+        val fenster = activity.window
+        if (state.status == GameStatus.Running) {
+            fenster.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            fenster.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose { fenster.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
+    }
     // Die Uhr steht still, solange die Anzeige läuft — und zwar vom Tippen an,
     // nicht erst, wenn das Video anfängt: Einwilligung einholen und Anzeige
     // laden kostet beim ersten Mal ein paar Sekunden.
@@ -409,7 +430,19 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                 // Nur zurückkehrbar, wenn es überhaupt ein Spiel gibt, zu dem man
                 // zurückkönnte — nicht beim allerersten Start der App.
                 onClose = if (state.puzzle != null) viewModel::closeLevelSelect else null,
-                onSelectLevel = viewModel::startLevel,
+                // Auf das Level zu tippen, das gerade läuft, heißt „dahin
+                // zurück" — nicht „von vorn anfangen". Vorher warf das den
+                // angefangenen Stand weg: gesetzte Merkzeichen verschwanden
+                // und der Punktestand stand wieder auf null. Ein Tester ist
+                // am 1. September 2026 genau darüber gestolpert, und das ist
+                // kein Wunder — der laufende Punkt pulsiert und lädt zum
+                // Tippen ein.
+                onSelectLevel = { gewaehlt ->
+                    val laeuftGerade = state.puzzle != null &&
+                        gewaehlt == state.level &&
+                        (state.status == GameStatus.Running || state.status == GameStatus.Paused)
+                    if (laeuftGerade) viewModel.closeLevelSelect() else viewModel.startLevel(gewaehlt)
+                },
                 onOpenTutorial = viewModel::openTutorial,
                 onSetPlayerName = viewModel::setPlayerName,
                 onSetAvatar = viewModel::setSelectedAvatar,
@@ -552,7 +585,28 @@ private fun GameContent(
         ) {
             TitleRow()
 
-            ScoreRow(score = state.score, level = state.level)
+            // Die Punkte kommen erst an, wenn der Gewinn-Dialog zu ist.
+            //
+            // Gutgeschrieben werden sie in dem Augenblick, in dem das Rätsel
+            // aufgeht — die Anzeige hinter dem Dialog stand also schon auf dem
+            // neuen Wert, während der Dialog noch „+180 Punkte" versprach. Ein
+            // Tester schrieb am 1. September 2026: „Dachte immer ich hab keine
+            // bekommen. Hab mich dann aber gefragt woher die kamen, die ich
+            // schon hatte."
+            //
+            // Am Rechenweg ändert sich nichts, nur an dem, was man sieht:
+            // Solange der Dialog offen ist, bleibt der alte Stand stehen;
+            // danach zählt die Zahl sichtbar hoch. Das Versprechen des Dialogs
+            // wird eingelöst, statt vorweggenommen.
+            val punkteZiel =
+                if (state.status == GameStatus.LevelComplete) state.score - state.gained
+                else state.score
+            val punkte by animateIntAsState(
+                targetValue = punkteZiel,
+                animationSpec = tween(durationMillis = 900),
+                label = "punkte",
+            )
+            ScoreRow(score = punkte, level = state.level)
 
             LevelProgress(state = state)
 
