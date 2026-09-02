@@ -108,7 +108,7 @@ Was passiert ist, was ihr erwartet habt, und auf welchem Gerät.
 
 ---
 
-## 2c. Testerhinweise zur dritten Runde (Fassung 1.5.3, Nummer 57)
+## 2c. Testerhinweise zur dritten Runde (Fassung 1.5.4, Nummer 58)
 
 ```
 Vier Punkte aus eurer Rückmeldung sind eingebaut.
@@ -139,6 +139,15 @@ Im Rätsel steht dieselbe Zahl wie auf der Karte: die Punkte des heutigen
 Tages. Vorher stand dort der laufende Lauf, und weil beide Zahlen „Punkte"
 hießen, sah es nach einem Fehler aus. Der Lauf wird weiter mitgezählt, er
 füttert den Bestwert, ist aber nicht mehr zu sehen.
+
+Das Spielbrett ist größer
+Es war auf eine feste Breite gedeckelt, die noch aus der Entwurfsvorlage
+stammte. Auf jedem Handy, das breiter ist, lag daneben Platz brach — und je
+größer das Gitter, desto kleiner wurden die Felder darin. Bei 8×8 lagen sie
+unter dem Richtwert, den Android für ein Tippziel empfiehlt. Jetzt wächst das
+Brett mit, bis der Platz aufgebraucht ist.
+
+Auf großen Gittern sollte sich das deutlich anfühlen. Auf Tablets besonders.
 
 Was weiter offen ist
 • Tablets sind benutzbar, aber nicht angepasst.
