@@ -42,6 +42,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -140,6 +142,14 @@ import ug.humb.fairydoku.ui.theme.TitleTop
  * Tablet nicht zu Kacheln von Handflächengröße gerät.
  */
 private val MAX_CELL_SIZE = 74.dp
+
+/**
+ * Wie lange der Bildschirm nach der letzten Berührung wach bleibt.
+ *
+ * Drei Minuten: lang genug für ein schweres 8×8-Gitter, kurz genug, dass ein
+ * vergessenes Gerät nicht den halben Nachmittag leuchtet.
+ */
+private const val WACHZEIT_MILLIS = 3 * 60_000L
 
 /**
  * Der nächtliche Wald-Hintergrund — vier Verlaufsschichten plus Glühwürmchen.
@@ -313,14 +323,36 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     // Ausdrücklich nur beim laufenden Rätsel: Auf der Karte, in den
     // Einstellungen oder im Willkommen darf das Gerät wie gewohnt abdunkeln,
     // sonst kostet es Akku für nichts.
-    DisposableEffect(state.status) {
+    // Der Bildschirm bleibt an, solange nachgedacht wird — aber nicht ewig.
+    //
+    // Erst hielt er ihn an, solange ein Rätsel lief. Das war die Antwort auf
+    // „beim Nachdenken wird das Display dunkel", und für den Fall stimmt sie:
+    // Android zählt nur Berührungen, ein Logikrätsel besteht aber aus
+    // Anschauen. Nur wurde damit auch ein Gerät wachgehalten, das gar niemand
+    // ansieht. Mirco Lehnhoff am 2. September 2026: „Also ich lasse gerade das
+    // geöffnete Spiel einfach neben mir auf dem Schreibtisch liegen. Jedoch
+    // wird mein Pixel 3 warm und Akku schwindet ca. 1% alle 2 Minuten." Das
+    // ist im Wesentlichen der Preis eines eingeschalteten Bildschirms.
+    //
+    // Beide Anforderungen stehen gegeneinander, und die Uhr entscheidet: Jede
+    // Berührung schenkt [WACHZEIT_MILLIS] Ruhe vor dem Abdunkeln. Wer grübelt,
+    // hat sie; wer weggeht, verliert sie und das Gerät verhält sich wieder wie
+    // jedes andere.
+    var letzteEingabe by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(state.status, letzteEingabe) {
         val fenster = activity.window
-        if (state.status == GameStatus.Running) {
-            fenster.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        } else {
+        if (state.status != GameStatus.Running) {
             fenster.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            return@LaunchedEffect
         }
-        onDispose { fenster.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
+        fenster.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        delay(WACHZEIT_MILLIS)
+        fenster.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
     }
     // Die Uhr steht still, solange die Anzeige läuft — und zwar vom Tippen an,
     // nicht erst, wenn das Video anfängt: Einwilligung einholen und Anzeige
@@ -481,10 +513,23 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                 tagesPunkte = daily.points,
                 profile = profile,
                 showSoundSettings = showSoundSettings,
-                onTapCell = { viewModel.onInput(GameInput.TapCell(it)) },
-                onHoldCell = { viewModel.onInput(GameInput.HoldCell(it)) },
-                onUseFairyDust = { viewModel.onInput(GameInput.UseFairyDust) },
-                onUseIrrlicht = { viewModel.onInput(GameInput.UseIrrlicht) },
+                // Jede Berührung schiebt das Abdunkeln hinaus — siehe oben.
+                onTapCell = {
+                    letzteEingabe = System.currentTimeMillis()
+                    viewModel.onInput(GameInput.TapCell(it))
+                },
+                onHoldCell = {
+                    letzteEingabe = System.currentTimeMillis()
+                    viewModel.onInput(GameInput.HoldCell(it))
+                },
+                onUseFairyDust = {
+                    letzteEingabe = System.currentTimeMillis()
+                    viewModel.onInput(GameInput.UseFairyDust)
+                },
+                onUseIrrlicht = {
+                    letzteEingabe = System.currentTimeMillis()
+                    viewModel.onInput(GameInput.UseIrrlicht)
+                },
                 onBegin = { viewModel.onInput(GameInput.Begin) },
                 onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
                 onOpenLevelSelect = viewModel::openLevelSelect,
