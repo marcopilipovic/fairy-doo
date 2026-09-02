@@ -66,8 +66,12 @@ in jeder Zone vorbei — zehn Figuren mit eigenem Namen und eigener Farbe.
 WENN ES KLEMMT
 
 Der Feenstaub setzt eine Fee auf ein garantiert sicheres Feld. Das Irrlicht
-deckt umgekehrt ein Feld auf, auf dem keine sitzt. Von beidem hast du bis zu
-drei; verbrauchtes wächst von selbst nach — du musst nichts kaufen und nichts
+deckt umgekehrt ein Feld auf, auf dem keine sitzt. Der Feenkreis ist der
+dritte Helfer: Eine halbe Minute lang kreuzt jede Fee, die du setzt, selbst
+an, welche Felder sie ausschließt — er nimmt dir das Tippen ab, nicht das
+Nachdenken.
+
+Alle drei wachsen von selbst nach. Du musst nichts kaufen und nichts
 freischalten.
 
 Pro Level hast du drei Versuche. Einen kostet es nur, wenn du eine Fee auf ein
@@ -113,7 +117,7 @@ an Kinder. Die Inhalte selbst sind gewaltfrei und für jedes Alter
 unbedenklich — die Altersgrenze liegt an der enthaltenen Werbung, nicht am
 Spiel.
 ```
-(3628)
+(3778)
 
 ---
 
