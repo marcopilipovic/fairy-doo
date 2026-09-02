@@ -42,10 +42,12 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.semantics.Role
@@ -241,6 +243,7 @@ private fun BoardCell(
 ) {
     val puzzle = state.puzzle ?: return
     val haptics = LocalHapticFeedback.current
+    val view = LocalView.current
     val region = puzzle.regionAt(pos)
     val regionColor = RegionColors[region % RegionColors.size]
     val mark = state.markAt(pos)
@@ -310,7 +313,23 @@ private fun BoardCell(
             // macht.
             .pointerInput(pos) {
                 detectTapGestures(
-                    onTap = { onTap() },
+                    // Auch das kurze Tippen rüttelt — leicht, nicht wie
+                    // das Halten.
+                    //
+                    // Vorher gab es Haptik nur beim Halten. Ein ✕ zu setzen
+                    // war damit die einzige Geste im Spiel ohne Antwort im
+                    // Finger, und es ist die häufigste: Man schließt viel mehr
+                    // Felder aus, als man Feen setzt. Ein Tester am
+                    // 2. September 2026: „Haptik ein wenig träge." Nicht der
+                    // Rechner war langsam, es fehlte die Rückmeldung.
+                    //
+                    // CLOCK_TICK statt der Compose-Typen: Die kennen nur
+                    // LongPress und den Textmarken-Tick, beide sind für ein
+                    // Feld auf dem Brett zu schwer.
+                    onTap = {
+                        view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                        onTap()
+                    },
                     onLongPress = {
                         // Die Fee erscheint, während der Finger noch liegt; ohne
                         // ein Rütteln bliebe unklar, ob die Geste schon zählt.
