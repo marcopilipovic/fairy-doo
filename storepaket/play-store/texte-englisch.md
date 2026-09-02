@@ -158,7 +158,7 @@ place.
 | --- | --- |
 | Category | Games → Puzzle |
 | Tags | logic puzzle, brain teaser, relaxing |
-| Privacy policy (URL) | `https://fairydoku.sites.humb.ug/en/privacy` |
+| Privacy policy (URL) | `https://fairydoku.sites.humb.ug/en/datenschutz` |
 | Email address | info@humb.ug |
 | Website | https://humb.ug |
 | Contains ads | **Yes** — tick it, even though ads only run on request |
