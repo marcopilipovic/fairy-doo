@@ -84,6 +84,33 @@ object FairydokuRules {
             conflicts(puzzle, fairies).isEmpty()
 
     /**
+     * Alle leeren Felder, auf denen wegen der gesetzten Feen keine mehr sitzen
+     * kann — Zeile, Spalte, Zone und die acht Nachbarfelder.
+     *
+     * Für die abschaltbare Hilfe „verbotene Felder anzeigen". Sie ist bewusst
+     * hergeleitet und nicht gespeichert: Nimmt man eine Fee weg, verschwinden
+     * ihre Verbote von selbst, ohne dass jemand Buch führen müsste, welches
+     * Kreuz zu welcher Fee gehörte.
+     *
+     * Felder mit einer Fee bleiben draußen — die zeigen ihren Konflikt schon
+     * selbst, rot.
+     */
+    fun forbidden(puzzle: Puzzle, fairies: Set<Pos>): Set<Pos> {
+        if (fairies.isEmpty()) return emptySet()
+        val zonen = fairies.map { puzzle.regionAt(it) }.toSet()
+        val zeilen = fairies.map { it.row }.toSet()
+        val spalten = fairies.map { it.col }.toSet()
+        return puzzle.allPositions.filterTo(mutableSetOf()) { pos ->
+            pos !in fairies && (
+                pos.row in zeilen ||
+                    pos.col in spalten ||
+                    puzzle.regionAt(pos) in zonen ||
+                    fairies.any { touches(it, pos) }
+                )
+        }
+    }
+
+    /**
      * Darf an [pos] eine Fee gesetzt werden, ohne dass ein Konflikt entsteht?
      * Wird für Hinweise gebraucht, nicht zur Eingabeprüfung — falsche Züge
      * sind erlaubt und werden als Fehler gewertet.

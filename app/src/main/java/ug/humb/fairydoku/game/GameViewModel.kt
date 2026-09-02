@@ -110,6 +110,22 @@ class GameViewModel(
         initialValue = SupplyState(IrrlichtSupply.max, 0L),
     )
 
+    /** Der Feenkreis-Vorrat, live nachgeführt — wie die beiden anderen. */
+    val feenkreis: StateFlow<SupplyState> = combine(
+        preferences.profile,
+        tickerFlow(1_000L),
+    ) { current, _ ->
+        FeenkreisSupply.normalize(
+            current.feenkreis,
+            current.nextFeenkreisAtMillis,
+            System.currentTimeMillis(),
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SupplyState(FeenkreisSupply.max, 0L),
+    )
+
     /**
      * Die Tageswertung, live nachgeführt.
      *
@@ -189,6 +205,17 @@ class GameViewModel(
         viewModelScope.launch {
             preferences.grantIrrlicht()
             applyState(_state.value.copy(irrlicht = (_state.value.irrlicht + 1).coerceAtMost(IrrlichtSupply.max)))
+        }
+    }
+
+    fun grantFeenkreis() {
+        viewModelScope.launch {
+            preferences.grantFeenkreis()
+            applyState(
+                _state.value.copy(
+                    feenkreis = (_state.value.feenkreis + 1).coerceAtMost(FeenkreisSupply.max),
+                ),
+            )
         }
     }
 
@@ -383,6 +410,7 @@ class GameViewModel(
             val fresh = started.copy(
                 fairyDust = fairyDust.value.amount,
                 irrlicht = irrlicht.value.amount,
+                feenkreis = feenkreis.value.amount,
             )
             _isPreparing.value = false
             _showLevelSelect.value = false
@@ -434,6 +462,14 @@ class GameViewModel(
             }
 
             // Wie der Feenstaub: zusätzlich dauerhaft abgebucht.
+            GameInput.UseFeenkreis -> {
+                val before = _state.value
+                if (before.feenkreis > 0 && before.feenkreisMillis <= 0L) {
+                    applyState(engine.onInput(before, input))
+                    viewModelScope.launch { preferences.consumeFeenkreis() }
+                }
+            }
+
             GameInput.UseIrrlicht -> {
                 val before = _state.value
                 if (before.irrlicht > 0) {
@@ -501,7 +537,8 @@ class GameViewModel(
     /** Ob überhaupt etwas läuft, das Zeit vergehen sehen muss. */
     private fun brauchtTakt(): Boolean {
         val jetzt = _state.value
-        return jetzt.status == GameStatus.Running && jetzt.hintPulseMillis > 0L
+        return jetzt.status == GameStatus.Running &&
+            (jetzt.hintPulseMillis > 0L || jetzt.feenkreisMillis > 0L)
     }
 
     /**
@@ -518,7 +555,11 @@ class GameViewModel(
 
         // Ein frisch gesetzter Hinweis ist das Einzige, was von selbst abläuft —
         // dafür und nur dafür springt die Schleife an, siehe [startLoop].
-        if (next.hintPulseMillis > previous.hintPulseMillis) startLoop()
+        if (next.hintPulseMillis > previous.hintPulseMillis ||
+            next.feenkreisMillis > previous.feenkreisMillis
+        ) {
+            startLoop()
+        }
 
         // Ein Versuch ist verbraucht — der Augenblick, in dem die Leben zum
         // ersten Mal etwas bedeuten. Siehe [zeigeLebenHinweis].

@@ -119,6 +119,15 @@ data class GameState(
      * dort für die Begründung.
      */
     val irrlicht: Int = IrrlichtSupply.max,
+
+    /**
+     * Der Feenkreis-Vorrat und die Restzeit eines laufenden Kreises.
+     *
+     * Solange [feenkreisMillis] über null steht, kreuzt jede gesetzte Fee die
+     * Felder an, die sie ausschliesst — siehe [FeenkreisSupply].
+     */
+    val feenkreis: Int = FeenkreisSupply.max,
+    val feenkreisMillis: Long = 0L,
     val remainingMillis: Long = 0L,
     val roundDurationMillis: Long = 0L,
     val statusMessage: StatusMessage = StatusMessage.Hint,
@@ -156,6 +165,9 @@ data class GameState(
 
         /** Wie lange ein aufgedecktes Feld nachleuchtet. */
         const val HINT_PULSE_MILLIS = 2_000L
+
+        /** Wie lange ein Feenkreis wirkt — eine halbe Minute. */
+        const val FEENKREIS_MILLIS = 30_000L
 
         /** Der Wald wird dichter: alle zwei Level ein Feld mehr, bis 8×8. */
         fun sizeForLevel(level: Int): Int =

@@ -43,6 +43,18 @@ sealed interface GameInput {
 
     /** „Tiefer in den Wald" — nach gelöstem Rätsel. */
     data object NextLevel : GameInput
+
+    /**
+     * Das Brett leeren — alle eigenen Zeichen weg, das Level bleibt.
+     *
+     * Was aus einer Hilfe stammt, bleibt stehen: Dafür ist Feenstaub oder ein
+     * Irrlicht ausgegeben worden, und ein Knopf zum Aufräumen darf bezahlte
+     * Information nicht mitreissen.
+     */
+    data object ClearBoard : GameInput
+
+    /** Feenkreis einsetzen — kreuzt eine halbe Minute lang selbst an. */
+    data object UseFeenkreis : GameInput
 }
 
 /**
@@ -70,6 +82,11 @@ class FairydokuEngine : GameEngine {
             hintCell = if (pulse == 0L) null else state.hintCell,
         )
 
+        // Der Feenkreis läuft ab — neben dem Nachleuchten eines Hinweises die
+        // einzige Uhr, die es noch gibt.
+        val kreis = (withPulse.feenkreisMillis - deltaMillis).coerceAtLeast(0L)
+        val withKreis = withPulse.copy(feenkreisMillis = kreis)
+
         // Ohne Spieluhr.
         //
         // Es gab einen Countdown je Level; lief er ab, war das Level verloren.
@@ -81,10 +98,12 @@ class FairydokuEngine : GameEngine {
         // [GameState.remainingMillis] bleibt vorerst stehen und läuft einfach
         // nicht mehr herunter; wer die Uhr wieder will, braucht nur diese
         // Stelle und die Anzeige im StatusRow.
-        return withPulse
+        return withKreis
     }
 
     override fun onInput(state: GameState, input: GameInput): GameState = when (input) {
+        GameInput.ClearBoard -> onClearBoard(state)
+        GameInput.UseFeenkreis -> onUseFeenkreis(state)
         is GameInput.TapCell -> onTapCell(state, input.pos)
         is GameInput.HoldCell -> onHoldCell(state, input.pos)
         GameInput.UseFairyDust -> onUseFairyDust(state)
@@ -167,6 +186,18 @@ class FairydokuEngine : GameEngine {
                 species = GameState.speciesForZone(state.level, puzzle.regionAt(pos)),
             ),
         )
+
+        // Brennt ein Feenkreis, kreuzt die frisch gesetzte Fee gleich an, welche
+        // leeren Felder sie ausschliesst. Nur beim Setzen, nicht beim Wegnehmen:
+        // Sonst müsste jemand Buch führen, welches Kreuz zu welcher Fee gehörte —
+        // genau die Buchhaltung, die dem Spieler abgenommen werden soll.
+        if (target == CellMark.Fairy && next.feenkreisMillis > 0L) {
+            val erweitert = next.marks.toMutableMap()
+            for (feld in FairydokuRules.forbidden(puzzle, setOf(pos))) {
+                if (erweitert[feld] == null) erweitert[feld] = CellMark.Warded
+            }
+            next = next.copy(marks = erweitert)
+        }
 
         // Ein Fehler entsteht nur beim *Setzen* einer Fee, die sofort mit einer
         // anderen kollidiert — Wegnehmen und Merkzeichen kosten nie etwas.
@@ -263,6 +294,37 @@ class FairydokuEngine : GameEngine {
         )
     }
 
+    /**
+     * Den Feenkreis anzünden.
+     *
+     * Er verlängert nicht: Wer ihn setzt, während einer läuft, verschenkt
+     * einen. Deshalb wird abgelehnt statt aufaddiert.
+     */
+    private fun onUseFeenkreis(state: GameState): GameState {
+        if (state.status != GameStatus.Running) return state
+        if (state.feenkreis <= 0) return state
+        if (state.feenkreisMillis > 0L) return state
+        return state.copy(
+            feenkreis = state.feenkreis - 1,
+            feenkreisMillis = GameState.FEENKREIS_MILLIS,
+        )
+    }
+
+    /** Leert das Brett bis auf das, was aus einer Hilfe stammt. */
+    private fun onClearBoard(state: GameState): GameState {
+        val puzzle = state.puzzle ?: return state
+        if (state.status != GameStatus.Running) return state
+
+        val bleibt = state.marks.filterKeys { it in state.certain }
+        val fairies = bleibt.filterValues { it == CellMark.Fairy }.keys
+        return state.copy(
+            marks = bleibt,
+            conflicts = FairydokuRules.conflicts(puzzle, fairies),
+            hintCell = null,
+            hintPulseMillis = 0L,
+        )
+    }
+
     /** Alle Feen gesetzt und keine im Konflikt: Level geschafft. */
     private fun checkWin(state: GameState): GameState {
         val puzzle = state.puzzle ?: return state
@@ -320,6 +382,10 @@ class FairydokuEngine : GameEngine {
             fairyDust = previous.fairyDust,
             // Wie der Feenstaub: ein Vorrat des Spielers, kein levelweiser.
             irrlicht = previous.irrlicht,
+            // Wie die beiden anderen ein Vorrat des Spielers. Ein laufender
+            // Kreis erlischt dagegen mit dem Level — er gilt dem Rätsel,
+            // nicht dem Abend.
+            feenkreis = previous.feenkreis,
             remainingMillis = duration,
             roundDurationMillis = duration,
             statusMessage = StatusMessage.Hint,

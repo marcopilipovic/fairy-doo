@@ -18,6 +18,7 @@ import ug.humb.fairydoku.game.DailySettlement
 import ug.humb.fairydoku.game.FairyDustSupply
 import ug.humb.fairydoku.game.FairySpecies
 import ug.humb.fairydoku.game.GlobalLives
+import ug.humb.fairydoku.game.FeenkreisSupply
 import ug.humb.fairydoku.game.IrrlichtSupply
 import java.util.TimeZone
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +48,9 @@ data class PlayerProfile(
     /** Der Irrlicht-Vorrat — genauso übergreifend und nachwachsend. */
     val irrlicht: Int = IrrlichtSupply.max,
     val nextIrrlichtAtMillis: Long = 0L,
+    /** Der Feenkreis — knapper als die beiden anderen, siehe [FeenkreisSupply]. */
+    val feenkreis: Int = FeenkreisSupply.max,
+    val nextFeenkreisAtMillis: Long = 0L,
     /** Ob die Anleitung schon einmal zu Ende gesehen oder übersprungen wurde. */
     val hasSeenTutorial: Boolean = false,
     /**
@@ -56,6 +60,15 @@ data class PlayerProfile(
      * Helferlein, Leben — erscheint einmalig in dem Augenblick, in dem es
      * zum ersten Mal etwas bedeutet.
      */
+    /**
+     * Zeigt das Brett die Felder, auf denen wegen der gesetzten Feen keine
+     * mehr sitzen kann?
+     *
+     * Standardmässig aus. Wer die Verbote sieht, muss sie nicht mehr selbst
+     * herleiten — und genau das ist die Denkarbeit des Rätsels. Ein Tester hat
+     * es sich am 2. September 2026 gewünscht; als Angebot ja, als Regel nein.
+     */
+    val showForbidden: Boolean = false,
     val hasSeenLivesHint: Boolean = false,
     val hasSeenPowerUpHint: Boolean = false,
     /** Wie die Spielerin in der Rangliste heißen möchte — leer, bis gesetzt. */
@@ -116,7 +129,10 @@ class GamePreferencesRepository(context: Context) {
             nextFairyDustAtMillis = prefs[KeyNextFairyDustAt] ?: 0L,
             irrlicht = prefs[KeyIrrlicht] ?: IrrlichtSupply.max,
             nextIrrlichtAtMillis = prefs[KeyNextIrrlichtAt] ?: 0L,
+            feenkreis = prefs[KeyFeenkreis] ?: FeenkreisSupply.max,
+            nextFeenkreisAtMillis = prefs[KeyNextFeenkreisAt] ?: 0L,
             hasSeenTutorial = prefs[KeyTutorialSeen] ?: false,
+            showForbidden = prefs[KeyShowForbidden] ?: false,
             hasSeenLivesHint = prefs[KeyLivesHintSeen] ?: false,
             hasSeenPowerUpHint = prefs[KeyPowerUpHintSeen] ?: false,
             playerName = prefs[KeyPlayerName] ?: "",
@@ -248,6 +264,37 @@ class GamePreferencesRepository(context: Context) {
     }
 
     /** Werbung angesehen — ein Feenstaub extra, siehe [grantGlobalLife]. */
+    /** Einen Feenkreis verbrauchen — gleiches Vorgehen wie beim Feenstaub. */
+    suspend fun consumeFeenkreis() {
+        store.edit { prefs ->
+            val now = System.currentTimeMillis()
+            val normalized = FeenkreisSupply.normalize(
+                storedAmount = prefs[KeyFeenkreis] ?: FeenkreisSupply.max,
+                nextAtMillis = prefs[KeyNextFeenkreisAt] ?: 0L,
+                nowMillis = now,
+            )
+            val consumed = FeenkreisSupply.consume(normalized, now)
+            prefs[KeyFeenkreis] = consumed.amount
+            prefs[KeyNextFeenkreisAt] = consumed.nextAtMillis
+        }
+    }
+
+    /** Einen Feenkreis schenken — aus einem Belohnungsvideo. */
+    suspend fun grantFeenkreis() {
+        store.edit { prefs ->
+            val now = System.currentTimeMillis()
+            val normalized = FeenkreisSupply.normalize(
+                storedAmount = prefs[KeyFeenkreis] ?: FeenkreisSupply.max,
+                nextAtMillis = prefs[KeyNextFeenkreisAt] ?: 0L,
+                nowMillis = now,
+            )
+            val granted = (normalized.amount + 1).coerceAtMost(FeenkreisSupply.max)
+            prefs[KeyFeenkreis] = granted
+            prefs[KeyNextFeenkreisAt] =
+                if (granted >= FeenkreisSupply.max) 0L else normalized.nextAtMillis
+        }
+    }
+
     suspend fun grantFairyDust() {
         store.edit { prefs ->
             val now = System.currentTimeMillis()
@@ -311,6 +358,11 @@ class GamePreferencesRepository(context: Context) {
     /** Anleitung zu Ende gesehen oder übersprungen — erscheint nicht mehr von selbst. */
     suspend fun markTutorialSeen() {
         store.edit { it[KeyTutorialSeen] = true }
+    }
+
+    /** Die abschaltbare Hilfe „verbotene Felder anzeigen". */
+    suspend fun setShowForbidden(an: Boolean) {
+        store.edit { it[KeyShowForbidden] = an }
     }
 
     /** Die Leben-Erklärung ist gezeigt worden — kommt nicht wieder. */
@@ -462,9 +514,12 @@ class GamePreferencesRepository(context: Context) {
         val KeyNextGlobalLifeAt = longPreferencesKey("next_global_life_at")
         val KeyFairyDust = intPreferencesKey("fairy_dust")
         val KeyNextFairyDustAt = longPreferencesKey("next_fairy_dust_at")
+        val KeyFeenkreis = intPreferencesKey("feenkreis")
+        val KeyNextFeenkreisAt = longPreferencesKey("next_feenkreis_at")
         val KeyIrrlicht = intPreferencesKey("irrlicht")
         val KeyNextIrrlichtAt = longPreferencesKey("next_irrlicht_at")
         val KeyTutorialSeen = booleanPreferencesKey("tutorial_seen")
+        val KeyShowForbidden = booleanPreferencesKey("show_forbidden")
         val KeyLivesHintSeen = booleanPreferencesKey("hint_lives_seen")
         val KeyPowerUpHintSeen = booleanPreferencesKey("hint_powerups_seen")
         val KeyPlayerName = stringPreferencesKey("player_name")

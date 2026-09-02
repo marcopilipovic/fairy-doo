@@ -82,3 +82,18 @@ val FairyDustSupply = RegeneratingSupply(max = 3, intervalMillis = 2 * 60 * 60_0
  * kostbar sein.
  */
 val IrrlichtSupply = RegeneratingSupply(max = 3, intervalMillis = 2 * 60 * 60_000L)
+
+/**
+ * Der Feenkreis — für eine halbe Minute kreuzt jede gesetzte Fee selbst an,
+ * welche Felder sie ausschließt.
+ *
+ * Er nimmt kein Nachdenken ab, sondern Tipparbeit: Die Kreuze, die er setzt,
+ * sind genau die, die man ohnehin selbst gesetzt hätte, und sie sind so richtig
+ * oder falsch wie die Fee, die sie ausgelöst hat. Der Feenstaub darf die Lösung
+ * verraten, weil er sie kennt; der Feenkreis kennt nur die eigenen Züge.
+ *
+ * Knapper als die beiden anderen — zwei Stück, drei Stunden je Nachwuchs.
+ * Er wirkt auf ein ganzes Rätsel und nicht auf ein einzelnes Feld, und was
+ * mehr kann, soll seltener kommen.
+ */
+val FeenkreisSupply = RegeneratingSupply(max = 2, intervalMillis = 3 * 60 * 60_000L)

@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -296,6 +297,7 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     val globalLives by viewModel.globalLives.collectAsStateWithLifecycle()
     val fairyDust by viewModel.fairyDust.collectAsStateWithLifecycle()
     val irrlicht by viewModel.irrlicht.collectAsStateWithLifecycle()
+    val feenkreis by viewModel.feenkreis.collectAsStateWithLifecycle()
     val adsUnlocked by viewModel.adsUnlocked.collectAsStateWithLifecycle()
     // Die Tageswertung: der laufende Stand für die Levelkarte, und die
     // Abrechnung, die beim ersten Start nach Mitternacht fällig wird.
@@ -382,6 +384,7 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     val onWatchAdForFairyDust = { werbung { viewModel.grantFairyDust() } }
     val onWatchAdForIrrlicht = { werbung { viewModel.grantIrrlicht() } }
     val onWatchAdForLife = { werbung { viewModel.grantGlobalLife() } }
+    val onWatchAdForFeenkreis = { werbung { viewModel.grantFeenkreis() } }
 
     // Bis zur Werbe-Schwelle tritt an die Stelle der Werbung ein Geschenk-Popup, das
     // sofort auffüllt — welche Zauberhilfe bzw. welches Leben gerade dran ist,
@@ -530,6 +533,10 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                     letzteEingabe = System.currentTimeMillis()
                     viewModel.onInput(GameInput.UseIrrlicht)
                 },
+                onUseFeenkreis = {
+                    letzteEingabe = System.currentTimeMillis()
+                    viewModel.onInput(GameInput.UseFeenkreis)
+                },
                 onBegin = { viewModel.onInput(GameInput.Begin) },
                 onNextLevel = { viewModel.onInput(GameInput.NextLevel) },
                 onOpenLevelSelect = viewModel::openLevelSelect,
@@ -540,6 +547,8 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                 nextDustInMillis = (fairyDust.nextAtMillis - System.currentTimeMillis())
                     .coerceAtLeast(0L),
                 nextIrrlichtInMillis = (irrlicht.nextAtMillis - System.currentTimeMillis())
+                    .coerceAtLeast(0L),
+                nextFeenkreisInMillis = (feenkreis.nextAtMillis - System.currentTimeMillis())
                     .coerceAtLeast(0L),
                 adsUnlocked = adsUnlocked,
                 adOffer = adOffer,
@@ -561,6 +570,8 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                 onSoundChange = viewModel::setSoundVolume,
                 onVoiceChange = viewModel::setVoiceVolume,
                 onOpenTutorial = viewModel::openTutorial,
+                onClearBoard = { viewModel.onInput(GameInput.ClearBoard) },
+                onWatchAdForFeenkreis = onWatchAdForFeenkreis,
             )
         }
 
@@ -622,6 +633,7 @@ private fun GameContent(
     onHoldCell: (Pos) -> Unit,
     onUseFairyDust: () -> Unit,
     onUseIrrlicht: () -> Unit,
+    onUseFeenkreis: () -> Unit,
     onBegin: () -> Unit,
     onNextLevel: () -> Unit,
     onOpenLevelSelect: () -> Unit,
@@ -629,6 +641,7 @@ private fun GameContent(
     globalLives: ug.humb.fairydoku.game.GlobalLivesState,
     nextDustInMillis: Long,
     nextIrrlichtInMillis: Long,
+    nextFeenkreisInMillis: Long,
     adsUnlocked: Boolean,
     adOffer: AdOffer,
     onWatchAdForFairyDust: () -> Unit,
@@ -636,6 +649,7 @@ private fun GameContent(
     onWatchAdForLife: () -> Unit,
     onOpenGiftForFairyDust: () -> Unit,
     onOpenGiftForIrrlicht: () -> Unit,
+    onWatchAdForFeenkreis: () -> Unit,
     onOpenGiftForLife: () -> Unit,
     onOpenSoundSettings: () -> Unit,
     onCloseSoundSettings: () -> Unit,
@@ -643,6 +657,7 @@ private fun GameContent(
     onSoundChange: (Float) -> Unit,
     onVoiceChange: (Float) -> Unit,
     onOpenTutorial: () -> Unit,
+    onClearBoard: () -> Unit,
 ) {
     NightBackdrop {
         Column(
@@ -770,6 +785,9 @@ private fun GameContent(
             onWatchAdForIrrlicht = onWatchAdForIrrlicht,
             onOpenGiftForFairyDust = onOpenGiftForFairyDust,
             onOpenGiftForIrrlicht = onOpenGiftForIrrlicht,
+            nextFeenkreisInMillis = nextFeenkreisInMillis,
+            onUseFeenkreis = onUseFeenkreis,
+            onWatchAdForFeenkreis = onWatchAdForFeenkreis,
         )
         }
 
@@ -784,6 +802,13 @@ private fun GameContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             HelpButton(onClick = onOpenTutorial)
+            // Nur solange es etwas zu leeren gibt — ein Knopf, der nichts tut,
+            // ist schlimmer als keiner.
+            if (state.status == GameStatus.Running &&
+                state.marks.keys.any { it !in state.certain }
+            ) {
+                ClearButton(onClick = onClearBoard)
+            }
             SoundMenuButton(
                 anythingAudible = profile.musicEnabled || profile.soundEnabled || profile.voiceEnabled,
                 onClick = onOpenSoundSettings,
@@ -952,6 +977,40 @@ internal fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             contentDescription = "Anleitung",
             // Der gemessene Parchment-Ton der 📜-Emoji-Grafik daneben — so
             // liest sich das Fragezeichen als zugehörig statt als Fremdkörper.
+            tint = Color(0xFFFFD8A1),
+            modifier = Modifier.size(18.dp),
+        )
+    }
+}
+
+/**
+ * Der Knopf, der das Brett leert.
+ *
+ * Ein Tester am 2. September 2026: „hätte gerne einen Knopf um das Board zu
+ * leeren." Beim Rätseln sammeln sich Kreuze an, die sich als falsch erwiesen
+ * haben, und sie einzeln wegzutippen ist Arbeit ohne Denken.
+ *
+ * Er erscheint nur, wenn es etwas zu leeren gibt, und was aus einer Hilfe
+ * stammt, bleibt stehen — dafür ist bezahlt worden.
+ */
+@Composable
+private fun ClearButton(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(34.dp)
+            .clip(CircleShape)
+            .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
+            .border(2.dp, PanelBorder, CircleShape)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Refresh,
+            contentDescription = "Brett leeren",
             tint = Color(0xFFFFD8A1),
             modifier = Modifier.size(18.dp),
         )

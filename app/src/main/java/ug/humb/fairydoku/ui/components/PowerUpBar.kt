@@ -34,6 +34,7 @@ import ug.humb.fairydoku.ads.AdOffer
 import ug.humb.fairydoku.game.GameState
 import ug.humb.fairydoku.ui.GameCopy
 import ug.humb.fairydoku.ui.theme.Gold
+import ug.humb.fairydoku.ui.theme.LeafGreen
 import ug.humb.fairydoku.ui.theme.StatusPurple
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.graphicsLayer
@@ -67,14 +68,17 @@ fun PowerUpBar(
     state: GameState,
     nextDustInMillis: Long,
     nextIrrlichtInMillis: Long,
+    nextFeenkreisInMillis: Long,
     onUseFairyDust: () -> Unit,
     onUseIrrlicht: () -> Unit,
+    onUseFeenkreis: () -> Unit,
     adsUnlocked: Boolean,
     adOffer: AdOffer,
     onWatchAdForFairyDust: () -> Unit,
     onWatchAdForIrrlicht: () -> Unit,
     onOpenGiftForFairyDust: () -> Unit,
     onOpenGiftForIrrlicht: () -> Unit,
+    onWatchAdForFeenkreis: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // In den ersten Leveln ersetzt ein Geschenk (sofortiges Auffüllen per Antippen)
@@ -85,10 +89,16 @@ fun PowerUpBar(
     val offerGiftForFairyDust = state.fairyDust <= 0 && !adsUnlocked
     val offerAdForIrrlicht = state.irrlicht <= 0 && adsUnlocked
     val offerGiftForIrrlicht = state.irrlicht <= 0 && !adsUnlocked
+    val kreisBrennt = state.feenkreisMillis > 0L
+    // Fuer den Feenkreis gibt es keinen Geschenk-Weg: In den ersten drei
+    // Leveln, in denen das Geschenk die Werbung ersetzt, braucht ihn niemand —
+    // ein 4x4-Gitter hat vier Feen. Wer ohne dasteht, wartet drei Stunden oder
+    // sieht sich ein Video an.
+    val offerAdForFeenkreis = state.feenkreis <= 0 && !kreisBrennt && adsUnlocked
 
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
     ) {
         PowerUpButton(
             glyph = when {
@@ -134,6 +144,38 @@ fun PowerUpBar(
                 offerAdForIrrlicht -> onWatchAdForIrrlicht
                 offerGiftForIrrlicht -> onOpenGiftForIrrlicht
                 else -> onUseIrrlicht
+            },
+        )
+        // Der Feenkreis. Er nimmt kein Nachdenken ab, sondern Tipparbeit:
+        // Solange er brennt, kreuzt jede gesetzte Fee selbst an, welche
+        // Felder sie ausschliesst. Deshalb zeigt sein Knopf als einziger
+        // eine laufende Zeit statt eines Nachwachs-Countdowns.
+        PowerUpButton(
+            glyph = when {
+                offerAdForFeenkreis -> "\ud83d\udcfa"
+                else -> "\ud83d\udcab"
+            },
+            label = when {
+                kreisBrennt ->
+                    "Feenkreis\nnoch ${(state.feenkreisMillis + 999L) / 1000L} s"
+                offerAdForFeenkreis -> werbeLabel(adOffer)
+                state.feenkreis > 0 || nextFeenkreisInMillis <= 0L ->
+                    "Feenkreis\nkreuzt selbst an"
+                else ->
+                    "Feenkreis\nin ${GameCopy.formatWaitTime((nextFeenkreisInMillis / 1000L).toInt())}"
+            },
+            count = state.feenkreis,
+            accent = LeafGreen,
+            badgeTextColor = Color(0xFF0F2A16),
+            active = kreisBrennt,
+            enabled = when {
+                kreisBrennt -> false
+                offerAdForFeenkreis -> adOffer == AdOffer.Available
+                else -> true
+            },
+            onClick = when {
+                offerAdForFeenkreis -> onWatchAdForFeenkreis
+                else -> onUseFeenkreis
             },
         )
     }
