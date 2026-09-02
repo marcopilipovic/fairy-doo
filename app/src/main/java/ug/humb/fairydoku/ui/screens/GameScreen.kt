@@ -125,8 +125,21 @@ import ug.humb.fairydoku.ui.theme.TitleBottom
 import ug.humb.fairydoku.ui.theme.TitleMiddle
 import ug.humb.fairydoku.ui.theme.TitleTop
 
-/** Breitengrenze des Spielbretts, entspricht den 352 px der Vorlage. */
-private val BOARD_MAX_WIDTH = 352.dp
+/**
+ * Obergrenze für ein einzelnes Feld — nicht mehr für das ganze Brett.
+ *
+ * Vorher war das Brett bei 352 dp gedeckelt, der Breite aus der Entwurfsvorlage.
+ * Damit teilten sich immer mehr Felder dieselbe Fläche: 82 dp bei einem
+ * 4×4-Gitter, aber nur noch 41 bei 8×8. Genau dann, wenn das Rätsel schwer wird,
+ * sieht und trifft man am schlechtesten — und 41 dp liegen unter Androids
+ * Richtwert von 48 dp für ein Tippziel. Mirco Lehnhoff am 2. September 2026:
+ * „das wird immer kleiner."
+ *
+ * Jetzt wächst das Brett mit dem Gitter, bis der Platz aufgebraucht ist.
+ * Gedeckelt wird stattdessen das einzelne Feld, damit ein 4×4-Gitter auf einem
+ * Tablet nicht zu Kacheln von Handflächengröße gerät.
+ */
+private val MAX_CELL_SIZE = 74.dp
 
 /**
  * Der nächtliche Wald-Hintergrund — vier Verlaufsschichten plus Glühwürmchen.
@@ -665,12 +678,7 @@ private fun GameContent(
                 if (isPreparing || state.puzzle == null) {
                     CircularProgressIndicator(color = Gold)
                 } else {
-                    BoxWithConstraints(
-                        // Die Vorlage deckelt das Brett bei 352 px; auf breiteren
-                        // Displays soll es nicht mitwachsen, sonst werden die
-                        // Felder unhandlich groß.
-                        modifier = Modifier.widthIn(max = BOARD_MAX_WIDTH),
-                    ) {
+                    BoxWithConstraints {
                         // Zellgröße abgerundet, damit das Gitter exakt aufgeht
                         // und rechts kein halbes Feld übrig bleibt. Was die
                         // Moos-Matte an Breite verbraucht, weiß das Brett
@@ -687,7 +695,11 @@ private fun GameContent(
                             maxWidth
                         }
                         val available = side - BoardFrameInsets
-                        val cell = (available.value / state.boardSize).toInt().dp
+                        // Erst so groß wie möglich, dann gedeckelt — siehe MAX_CELL_SIZE.
+                        val cell = minOf(
+                            (available.value / state.boardSize).toInt().dp,
+                            MAX_CELL_SIZE,
+                        )
 
                         FairydokuBoard(
                             state = state,
