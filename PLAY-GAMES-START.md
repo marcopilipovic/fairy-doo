@@ -25,8 +25,10 @@ Texte allein starten den Dienst nicht. Dazu gehört:
 2. Die Anmeldung: Play Games meldet beim Start selbst an, wenn der Spieler das
    im Google-Konto erlaubt hat. Lehnt er ab, muss die App vollständig
    weiterlaufen — die Tageswertung dann rein lokal.
-3. Das Einreichen der Tagespunktzahl an die Bestenliste, am Stichtag oder nach
-   jedem Level.
+3. Das Einreichen des laufenden Tagesstands an die Bestenliste nach jedem
+   geschafften Level. Play Games behält je Spieler den höchsten gemeldeten
+   Wert — mehr braucht es nicht, und ein verpasstes Einreichen holt das
+   nächste nach.
 4. Ein Weg zur Rangliste — Googles eigene Ansicht genügt, eine eigene braucht es
    nicht.
 5. Der Eintrag „Play Games" in den Einstellungen der App, der zur Verknüpfung
@@ -60,8 +62,8 @@ Das Gitter wächst alle zwei Level. Eine Uhr läuft nicht: Du darfst überlegen,
 so lange du magst. Drei Helfer nehmen dir Arbeit ab, keiner nimmt dir das
 Nachdenken.
 
-In der Tageswertung sammelst du Punkte bis vier Uhr früh. Was du an einem Tag
-zusammenbekommst, zählt für die Bestenliste dieses Tages.
+In der Tageswertung sammelst du Punkte bis vier Uhr früh. Dein bester Tag
+zählt für die Bestenliste.
 ```
 
 ### Bestenliste
@@ -71,32 +73,60 @@ in der ersten steht.
 
 | Feld | Wert |
 | --- | --- |
-| Anzeigename | `Tageswertung` |
-| Kennung (ID) | wird von Google vergeben — im Code als `leaderboard_tageswertung` referenzieren |
+| Anzeigename | `Bester Tag` |
+| Kennung (ID) | wird von Google vergeben — im Code als `leaderboard_bester_tag` referenzieren |
 | Format | Ganzzahl, ohne Nachkommastellen |
 | Sortierung | **Größer ist besser** |
-| Zurücksetzen | **Täglich** |
+| Zurücksetzen | **nie** |
 | Sichtbarkeit | öffentlich |
 | Symbol | `storepaket/play-store/symbol-512x512.png` |
 
-**Achtung beim Zurücksetzen:** Googles Tagesbestenliste wechselt nach Googles
-Zeitzone, die Tageswertung der App um vier Uhr früh in Ortszeit
-(`DailyCycle.cycleIdAt`). Beide Zeitpunkte fallen auseinander. Entweder man
-reicht die Punktzahl am eigenen Stichtag ein und lebt mit der Verschiebung, oder
-man erklärt sie im Text — verschweigen sollte man sie nicht, sonst hält es
-jemand für einen Fehler.
+**Warum ohne Zurücksetzen — und warum das das Problem löst.** Googles
+Tagesbestenliste wechselt nach Googles Zeitplan, die Tageswertung der App um
+vier Uhr früh in Ortszeit (`DailyCycle.cycleIdAt`). Beide Zeitpunkte fallen
+auseinander, und ein Spieler, dessen Punkte um fünf Uhr früh in der falschen
+Liste stehen, hält das für einen Fehler.
+
+Also andersherum: **Was ein Tag ist, entscheidet die App, nicht Google.** Die
+Bestenliste läuft ohne Zurücksetzen und heißt „Bester Tag" — sie zeigt, wer an
+einem einzelnen Tag am meisten geschafft hat. Eingereicht wird nach jedem
+geschafften Level der laufende Tagesstand; Play Games behält je Spieler
+ohnehin nur den höchsten je gemeldeten Wert. Um vier Uhr früh beginnt die
+Tageswertung wieder bei null, der nächste Tag zählt also von vorn.
+
+Damit gibt es keinen zweiten Stichtag, nichts zu erklären und nichts, was
+auseinanderlaufen kann. Der Preis: Die Liste ist eine ewige Bestenliste der
+besten Einzeltage, keine Momentaufnahme von heute. Das ist der bessere Tausch —
+eine Tagesliste, die zur falschen Stunde umspringt, kostet Vertrauen; eine
+Bestenliste der besten Tage ist auf Anhieb verständlich.
 
 ### Erfolge
 
 Zum Start keine. Erfolge, die niemand erreichen kann, weil das Spiel sie nicht
 meldet, sind schlimmer als gar keine.
 
-### Testende
+### Testende — vor der ersten Testfassung, nicht danach
 
-Vor der Veröffentlichung sieht nur, wer in der Play Console als Testender für
-die Play Games-Dienste eingetragen ist, überhaupt eine Anmeldung. Das ist die
-häufigste Fehlersuche der ersten Stunde: Die Anmeldung „geht nicht", weil das
-Konto nicht in der Liste steht.
+**Solange das Spiel nicht veröffentlicht ist, sieht nur eine Anmeldung, wer in
+der Play Console unter *Play Games-Dienste → Konfiguration → Testende* mit
+seiner Google-Adresse eingetragen ist.** Alle anderen bekommen wortlos keine.
+Das ist die häufigste Fehlersuche der ersten Stunde — und sie trifft
+ausgerechnet die Testrunde, die dann „die Anmeldung geht nicht" meldet, obwohl
+alles richtig gebaut ist.
+
+Deshalb gehört das Eintragen **vor** das Ausliefern der ersten Fassung mit
+Anbindung. Einzutragen sind die Google-Adressen, mit denen die Testenden auf
+ihrem Telefon angemeldet sind — nicht die, unter der sie Post bekommen. Beides
+ist oft dasselbe, aber eben nicht immer.
+
+| Wer | Google-Adresse | eingetragen am |
+| --- | --- | --- |
+| Nataly | | |
+| Mirco | | |
+| *(weitere aus der Testrunde)* | | |
+
+Die Testerhinweise unten fragen die Adresse ausdrücklich ab, damit niemand
+raten muss.
 
 ---
 
@@ -155,7 +185,7 @@ Empfänger der oben genannten Daten ist Google — als Anbieter der Werbung (AdM
 
 ```
 9. Speicherdauer
-Wir selbst speichern keine personenbezogenen Daten. Die Tagesbestenliste bei Play Games wird von Google turnusmäßig zurückgesetzt. Im Übrigen richtet sich die Speicherdauer der durch Google verarbeiteten Daten nach dessen Datenschutzbestimmungen.
+Wir selbst speichern keine personenbezogenen Daten. Deine Punktzahl bleibt in der Bestenliste stehen, bis du sie über die Play-Games-Einstellungen deines Google-Kontos löschst oder die Verknüpfung mit Fairydoku aufhebst. Im Übrigen richtet sich die Speicherdauer der durch Google verarbeiteten Daten nach dessen Datenschutzbestimmungen.
 ```
 
 ### Abschnitt 10 (bisher 9) — Absatz anhängen
@@ -193,8 +223,6 @@ Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden 
 Nimmst du an der Bestenliste teil, wird deine Tagespunktzahl an Google Play Games übertragen und ist dort für andere Teilnehmende sichtbar — zusammen mit deinem Play-Games-Spielernamen und deinem Play-Games-Profilbild. Die Teilnahme ist freiwillig und jederzeit beendbar; ohne sie bleibt die App vollständig spielbar.
 
 Die Tageswertung sammelt Punkte bis zu einem festen täglichen Stichtag. Danach verfallen die gesammelten Punkte, und es wird eine Belohnung in virtuellen Spielhilfen gutgeschrieben. Ein Anspruch auf den Erhalt gesammelter Punkte über den Stichtag hinaus besteht nicht. Der Anbieter kann Zeitpunkt des Stichtags, Punkteberechnung und Belohnungsstufen anpassen.
-
-Der Stichtag der App und der Zurücksetzungszeitpunkt der Bestenliste bei Google können auseinanderfallen; ein Anspruch auf eine bestimmte Zuordnung von Punkten zu einem Tag besteht nicht.
 
 Löschst du die App oder die App-Daten oder hebst du die Verknüpfung mit Play Games auf, gehen Spielstand, Tageswertung, Bestleistungen und Platzierung verloren; eine Wiederherstellung durch den Anbieter ist nicht möglich.
 ```
@@ -256,7 +284,7 @@ In der Bestenliste steht dein Play-Games-Name.
 
 | Fall | Text |
 | --- | --- |
-| Punktzahl eingereicht | `🏆 {Punkte} Punkte in der Bestenliste!` |
+| Punktzahl eingereicht | `🏆 {Punkte} Punkte — dein bester Tag steht in der Liste!` |
 | kein Netz | `Keine Verbindung — deine Punkte werden später eingereicht.` |
 | Anmeldung abgelehnt | `Alles gut. Du spielst weiter für dich.` |
 | Play Games nicht verfügbar | *(nichts anzeigen)* |
@@ -271,7 +299,7 @@ Punktzahl steht lokal und geht beim nächsten gelungenen Einreichen mit.
 ### Kurzbeschreibung (deutsch, 80 Zeichen)
 
 ```
-Feen-Logikrätsel im Nachtwald — mit Tagesbestenliste. Ohne Zeitdruck.
+Feen-Logikrätsel im Nachtwald — mit Bestenliste. Ohne Zeitdruck.
 ```
 
 ### Vollbeschreibung — Absatz zum Einfügen (deutsch)
@@ -279,37 +307,37 @@ Feen-Logikrätsel im Nachtwald — mit Tagesbestenliste. Ohne Zeitdruck.
 Hinter den Absatz über die Tageswertung:
 
 ```
-🏆 DIE TAGESBESTENLISTE
-Deine Tagespunkte zählen für die Bestenliste des Tages. Sie läuft über Google
-Play Games — mit dem Namen und dem Bild, die dort in deinem Konto stehen. Die
-Teilnahme ist freiwillig: Ohne Anmeldung spielst du genauso weiter, nur für
-dich allein.
+🏆 BESTER TAG
+Wie viel schaffst du an einem Tag? Dein bester Tag steht in der Bestenliste,
+neben denen der anderen. Sie läuft über Google Play Games — mit dem Namen und
+dem Bild, die dort in deinem Konto stehen. Die Teilnahme ist freiwillig: Ohne
+Anmeldung spielst du genauso weiter, nur für dich allein.
 ```
 
 ### Kurzbeschreibung (englisch, 80 Zeichen)
 
 ```
-Fairy logic puzzles in a night forest — with a daily leaderboard. No timer.
+Fairy logic puzzles in a night forest — with a leaderboard. No timer.
 ```
 
 ### Vollbeschreibung — Absatz zum Einfügen (englisch)
 
 ```
-🏆 THE DAILY LEADERBOARD
-Your points for the day count towards that day's leaderboard, run through
-Google Play Games — under the name and picture from your account there. Taking
-part is optional: without signing in you play exactly the same, just for
-yourself.
+🏆 YOUR BEST DAY
+How much can you manage in one day? Your best day goes on the leaderboard,
+next to everyone else's. It runs through Google Play Games — under the name and
+picture from your account there. Taking part is optional: without signing in
+you play exactly the same, just for yourself.
 ```
 
 ### Versionshinweise (deutsch, max. 500 Zeichen)
 
 ```
-Neu: die Tagesbestenliste.
+Neu: die Bestenliste „Bester Tag".
 
-Deine Punkte des Tages zählen jetzt für eine Bestenliste über Google Play
-Games. Anmelden, mitspielen — oder es lassen: Ohne Anmeldung läuft alles
-weiter wie bisher, nur für dich.
+Wie viel schaffst du an einem Tag? Dein bester Tag zählt jetzt für eine
+Bestenliste über Google Play Games. Anmelden, mitspielen — oder es lassen:
+Ohne Anmeldung läuft alles weiter wie bisher, nur für dich.
 
 Dein Name im Feenreich bleibt, wo er war. In der Bestenliste steht dein
 Play-Games-Name.
@@ -318,11 +346,11 @@ Play-Games-Name.
 ### Versionshinweise (englisch)
 
 ```
-New: the daily leaderboard.
+New: the "Best day" leaderboard.
 
-Your points for the day now count towards a leaderboard run through Google
-Play Games. Sign in and join — or don't: without signing in everything works
-as before, just for you.
+How much can you manage in one day? Your best day now counts towards a
+leaderboard run through Google Play Games. Sign in and join — or don't:
+without signing in everything works as before, just for you.
 
 Your name in the fairy realm stays where it was. The leaderboard shows your
 Play Games name.
@@ -332,7 +360,7 @@ Play Games name.
 
 ```
 Was neu ist
-Die Tagesbestenliste über Google Play Games.
+Die Bestenliste „Bester Tag" über Google Play Games.
 
 Worauf ihr besonders achten könnt
 • Die Anmeldung. Sie kommt beim ersten Start, wenn euer Konto Play Games
@@ -342,13 +370,13 @@ Worauf ihr besonders achten könnt
 • Die zwei Namen. In den Einstellungen vergebt ihr einen Namen fürs Feenreich;
   in der Bestenliste steht der aus eurem Google-Konto. Wirkt das verständlich
   oder wie ein Fehler?
-• Der Tageswechsel. Unsere Tageswertung wechselt um vier Uhr früh, Googles
-  Bestenliste zu ihrer eigenen Zeit. Sagt Bescheid, wenn euch das
-  durcheinanderbringt.
+• Die Bestenliste heißt „Bester Tag". Sie zeigt nicht den heutigen Stand,
+  sondern euren besten Tag überhaupt. Wirkt das verständlich?
 
-Was wir schon wissen
-Wer nicht als Testender für die Play Games-Dienste eingetragen ist, sieht gar
-keine Anmeldung. Sagt Bescheid, dann tragen wir euer Konto nach.
+Bevor ihr anfangt
+Schickt uns die Google-Adresse, mit der euer Telefon angemeldet ist — ohne
+Eintrag in der Play Console bekommt ihr gar keine Anmeldung zu sehen, und dann
+sucht ihr an der falschen Stelle.
 ```
 
 ---
@@ -392,9 +420,9 @@ fremde Spielernamen sichtbar werden.
 
 ## 7. Was offen bleibt
 
-- **Der Stichtag.** Vier Uhr früh in der App gegen Googles eigenen
-  Zurücksetzungszeitpunkt. Entscheiden, ob man das erklärt oder die Einreichung
-  danach ausrichtet.
+- ~~Der Stichtag.~~ **Erledigt:** Die Bestenliste läuft ohne Zurücksetzen als
+  „Bester Tag". Was ein Tag ist, entscheidet damit die App; Googles Zeitplan
+  spielt keine Rolle mehr.
 - **Der doppelte Name.** Hier bleibt der eigene Anzeigename erhalten und wird
   eingeordnet („in der Bestenliste steht dein Play-Games-Name"). Die Alternative
   wäre, ihn ganz zu streichen — das spart eine Erklärung und nimmt dem Spiel

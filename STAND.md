@@ -197,14 +197,24 @@ nicht:
 hinaus. Eine Erklärung, die eine Anmeldung beschreibt, die es noch nicht gibt,
 ist genauso falsch wie eine, die sie verschweigt.
 
-**Zwei Dinge sind dabei zu entscheiden**, beide in `PLAY-GAMES-START.md`
-festgehalten: wie mit dem Auseinanderfallen der Stichtage umgegangen wird
-(unsere Tageswertung wechselt um vier Uhr früh in Ortszeit, Googles
-Bestenliste zu ihrer eigenen Zeit), und ob der selbst getippte Anzeigename
-bleibt. Vorgesehen ist: Er bleibt, wird aber eingeordnet — „in der Bestenliste
-steht dein Play-Games-Name". So verlässt kein frei getippter Text das Gerät,
-und es entsteht keine Moderationspflicht für Namen, die wir weder sehen noch
-ändern können.
+**Zwei Fallen sind dabei schon umgangen**, beide in `PLAY-GAMES-START.md`
+ausgeführt:
+
+- **Die Bestenliste heißt „Bester Tag" und wird nie zurückgesetzt.** Eine
+  Tagesbestenliste bei Google wechselt nach Googles Zeitplan, unsere
+  Tageswertung um vier Uhr früh in Ortszeit — das wäre auseinandergelaufen und
+  hätte wie ein Fehler ausgesehen. So entscheidet die App, was ein Tag ist:
+  Eingereicht wird der laufende Tagesstand, Play Games behält den höchsten je
+  gemeldeten Wert, und um vier Uhr früh beginnt die Wertung wieder bei null.
+- **Die Testenden gehören in die Console, bevor die erste Fassung ausgeliefert
+  wird.** Wer dort nicht mit seiner Google-Adresse steht, bekommt wortlos gar
+  keine Anmeldung zu sehen. In `PLAY-GAMES-START.md` steht dafür eine Tabelle
+  zum Ausfüllen, und die Testerhinweise fragen die Adresse ausdrücklich ab.
+
+**Der selbst getippte Anzeigename bleibt** und wird eingeordnet — „in der
+Bestenliste steht dein Play-Games-Name". So verlässt kein frei getippter Text
+das Gerät, und es entsteht keine Moderationspflicht für Namen, die wir weder
+sehen noch ändern können.
 
 **Und der Grund, warum es trotzdem nicht eilt:** Eine Bestenliste ohne Spieler
 zeigt eine leere Liste. Sie lohnt sich, sobald das Spiel gespielt wird.
