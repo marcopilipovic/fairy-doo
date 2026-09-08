@@ -140,7 +140,11 @@ in `versionshinweise.md` unter 2e und 2f.
    Weg, ein AdMob-Konto zu verlieren.
 2. **Einwilligungsnachricht im AdMob-Konto** anlegen und veröffentlichen
    (EU-Einstellungen). Sonst zeigt die App den Dialog, bekommt aber keinen
-   Inhalt.
+   Inhalt. **Offen ist womöglich nur noch die Frage:** Am 8. September stand
+   dieser Punkt seit dem 31. August unangetastet da, ohne dass jemand sagen
+   konnte, ob er erledigt ist. **Mirco fragen** — er verwaltet das Konto. Nicht
+   zu verwechseln mit den Kennungen aus Punkt 1; die sind seit dem 31. August
+   drin.
 3. ~~**Datenschutz-Seite ins Netz.**~~ **Erledigt am 31. August.** Sie steht
    unter `fairydoku.sites.humb.ug` mit vier getrennten Adressen; für den Store
    zählt `/de/datenschutz`. Alle vier geprüft und wortgleich mit der Quelle.
@@ -162,6 +166,40 @@ in `versionshinweise.md` unter 2e und 2f.
 **Es bleiben also drei Dinge, und zwei davon gehören demselben Konto:** die
 echten AdMob-Kennungen samt Einwilligungsnachricht, und die Datenschutz-Seite
 unter ihrer Adresse. Der Rest ist Spielen.
+
+---
+
+## Play Games-Dienste: vorerst nein
+
+Die Play Console hat am 8. September gefragt, ob Fairydoku die Play
+Games-Dienste bekommen soll. Die Antwort ist **nein, nicht zu dieser
+Veröffentlichung** — nicht aus Abneigung, sondern weil das Spiel heute nichts
+davon benutzt und die Papiere dagegen stehen:
+
+- **Die Rechtstexte in `GameCopy.kt` sagen das Gegenteil.** Datenschutz
+  Abschnitt 2: „Eine Anmeldung findet nicht statt." AGB § 6: Spielstand nur
+  lokal. Play Games meldet still am Google-Konto an — die Texte würden mit dem
+  Einschalten falsch, und zwar in der Richtung, die Google beanstandet.
+- **Das Datensicherheitsformular müsste mit.** Es sagt heute: nichts verlässt
+  das Gerät. Ein Widerspruch zwischen Formular und Datenschutzerklärung ist
+  einer der häufigsten Ablehnungsgründe.
+- **Der selbst getippte Name und die Avatar-Fee kollidierten.** Name und Bild
+  kämen dann vom Google-Konto; nebeneinander wären es zwei Namen, und der
+  selbst getippte wäre der, für den eine Moderationspflicht entstünde. Steht so
+  schon in `RECHTSTEXTE-RANGLISTE.md`, Punkt 5 der offenen Fragen.
+- **Es gibt nichts anzuschließen.** Keine Rangliste, keine Erfolge, kein
+  Spielstand in der Wolke. Play Games ohne diese Dinge ist Aufwand ohne
+  Wirkung.
+
+**Nachrüstbar bleibt es jederzeit** — die Dienste lassen sich später zuschalten,
+der Schlüssel-Fingerabdruck dafür steht in `VEROEFFENTLICHUNG.md`. Verloren geht
+durch das Nein nichts.
+
+**Vorher zu klären, wenn die Rangliste kommt:** `VEROEFFENTLICHUNG.md` sagt
+„Firebase, nicht Play Games", `RECHTSTEXTE-RANGLISTE.md` entwirft die Texte
+dagegen für Play Games. Beides zusammen geht nicht. Die Entscheidung gehört
+getroffen, bevor jemand anfängt zu bauen — sie bestimmt, welche Rechtstexte
+gelten.
 
 ---
 
