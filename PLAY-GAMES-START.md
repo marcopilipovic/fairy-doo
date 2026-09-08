@@ -16,6 +16,39 @@ verschweigt. Bis dahin gelten die heutigen Texte in `ui/GameCopy.kt`.
 
 ---
 
+## Wo überall Text steht — und wer ihn ändert
+
+Damit niemand halb Deutschland fragen muss, was noch offen ist:
+
+| Wo | Was zu tun ist | Steht hier drin? | Wer kann es? |
+| --- | --- | --- | --- |
+| **App, Rechtstexte** (`ui/GameCopy.kt`) | Datenschutz 2, 4, neuer 5, 8, 9, 10, 11; AGB § 6, neuer § 7, § 9 | **ja**, Abschnitt 2 und 3 | wer am Code arbeitet |
+| **App, Bedienoberfläche** | Anmeldung, Einstellungen, vier Meldungen, Hinweis beim Anzeigenamen | **ja**, Abschnitt 4 | dito |
+| **Webseite, deutsch** (`/de/…`) | nichts zu schreiben — die vier Seiten entstehen aus `GameCopy.kt`, wenn die Tests laufen | entfällt | erzeugen: jeder; **hochladen: nur wer Zugriff auf die Seite hat** |
+| **Webseite, englisch** (`/en/…`) | dieselben Abschnitte auf Englisch | **ja**, Abschnitt 5 | von Hand einpflegen — siehe Warnung unten |
+| **Store-Eintrag deutsch** (`texte.md`) | Kurz- und Vollbeschreibung | **ja**, Abschnitt 6 | wer den Eintrag pflegt |
+| **Store-Eintrag englisch** (`texte-englisch.md`) | dasselbe auf Englisch | **ja**, Abschnitt 6 | dito |
+| **Versions- und Testerhinweise** | beide Sprachen | **ja**, Abschnitt 6 | dito |
+| **Datensicherheits- und IARC-Fragebogen** | geänderte Antworten | **ja**, Abschnitt 7 | dito |
+| **Play Console, Play Games-Dienste** | Spiel anlegen, Bestenliste, Testende | **ja**, Abschnitt 1 | wer das Konto führt |
+| **AdMob-Konto** | nichts — die Bestenliste hat mit Werbung nichts zu tun | entfällt | — |
+| **`README.md`, `STAND.md`** | Beschreibung des Spiels nachziehen | nein — mache ich beim Einbauen | wer am Code arbeitet |
+
+**Zwei Stellen, an denen es ohne fremde Hilfe nicht geht:**
+
+1. **Die Webseite hochladen.** Die deutschen Seiten entstehen von selbst
+   (`./gradlew testDebugUnitTest` → `app/build/rechtstexte/`, von dort nach
+   `storepaket/webseite/seiten/`), aber irgendwer muss sie unter
+   `fairydoku.sites.humb.ug` austauschen. **Das muss am selben Tag geschehen wie
+   die Veröffentlichung** — Google ruft die Adresse ab, und eine Erklärung, die
+   die Bestenliste verschweigt, ist dann falsch.
+2. **Die englischen Seiten.** Sie entstehen *nicht* aus dem Projekt. Sie sind
+   außerhalb geschrieben worden und lagen bis zum 8. September nur auf dem
+   Server; seither liegt ein Abzug in `storepaket/webseite/englisch/`. Sie
+   müssen von Hand nachgezogen werden — die Texte dafür stehen in Abschnitt 5.
+
+---
+
 ## 0. Was gebaut sein muss, bevor diese Texte gelten
 
 Texte allein starten den Dienst nicht. Dazu gehört:
@@ -294,7 +327,115 @@ Punktzahl steht lokal und geht beim nächsten gelungenen Einreichen mit.
 
 ---
 
-## 5. Store-Eintrag
+## 5. Die englischen Rechtstexte (`/en/…`)
+
+Dieselben Änderungen für die englische Fassung der Webseite. Sie trägt den
+Vorbehalt „In case of any discrepancy, the German version governs" — deshalb
+folgt sie der deutschen Wort für Wort, statt eigene Wege zu gehen.
+
+Die Nummerierung ist dieselbe: ein neuer Abschnitt 5, die bisherigen 5 bis 11
+rücken auf 6 bis 12.
+
+### Privacy Policy, section 2 — replace
+
+```
+2. Principle of data minimization
+Fairydoku is a pure logic game and free to use. We do not operate our own user management, we do not require registration with an email address or password, and we store no personal data on a server of ours — we have none.
+
+For the leaderboard, the App uses Google Play Games. It uses the Google account already set up on your device; you do not need an additional account. Taking part is voluntary: if you decline to sign in, or if Play Games is unavailable on your device, the App remains fully playable. Your daily score then simply stays on the device.
+```
+
+### Privacy Policy, section 4 — replace
+
+```
+4. Save data, daily score, and best results
+Your score, your daily score, and your past best results are stored locally on your device. Nothing of this is transmitted to us.
+
+We do not ask your permission for this storage, and there is a reason: it is strictly necessary for the App to do what you opened it for — without a saved game, every level would start over from zero. § 25 (2) no. 2 TDDDG exempts exactly this case from the consent requirement. Anything beyond that, we do ask for (see sections 3 and 5).
+
+If you take part in the leaderboard, your daily score is additionally transmitted to Google Play Games and stored there together with your Play Games player ID. Other participants see your Play Games player name, your Play Games profile picture, and your score. You manage both yourself in your Google account; we have no influence over them and do not store the scores ourselves.
+
+The daily score stores how many points were collected during the current day, the best daily result, and the time of the last daily reset. A display name and an avatar fairy can be set in the settings; both are stored only locally and appear only on this device. The leaderboard does not show that name — it shows your Play Games player name.
+
+One exception we want to state openly: Android backs up app data to your own Google account on request ("Auto backup"), and Fairydoku participates in this. This lets you find your save again on a new phone. This backup lives in your account, not with us — we have no access to it. You can turn it off in the Android settings under "Backup" or "Google — Backup".
+```
+
+### Privacy Policy, section 5 — new
+
+```
+5. Google Play Games
+For the leaderboard we use Google Play Games Services, a service of Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland.
+
+The following is processed: your Play Games player ID, your Play Games player name, your Play Games profile picture, the scores transmitted, and technical information required to operate the service.
+
+The legal basis is your consent (Art. 6(1)(a) GDPR). You give it by agreeing to the Play Games sign-in. You can withdraw it at any time with effect for the future: in the Play Games settings of your Google account, by removing the link to Fairydoku. No further scores are transmitted after that; the App remains playable.
+
+Without consent, no transmission takes place. More information can be found in Google's privacy policy.
+```
+
+### Privacy Policy, section 8 (formerly 7) — replace
+
+```
+8. Recipients and data transfers to third countries
+The recipient of the data described above is Google — as the provider of the advertising (AdMob) and as the provider of the leaderboard (Play Games Services). This may involve transferring data to countries outside the EU/EEA (in particular the USA). Google bases such transfers on appropriate safeguards (e.g. EU Standard Contractual Clauses or the EU-US Data Privacy Framework).
+```
+
+### Privacy Policy, section 9 (formerly 8) — replace
+
+```
+9. Retention period
+We ourselves do not store any personal data. Your score remains on the leaderboard until you delete it through the Play Games settings of your Google account or remove the link to Fairydoku. Beyond that, the retention period for data processed by Google is governed by its own privacy policy.
+```
+
+### Privacy Policy, section 10 (formerly 9) — append
+
+```
+You can delete the game data stored at Play Games yourself: the Play Games settings of your Google account let you remove the saved data for individual games. Since this data is not held by us, that is the fastest route — a message to us takes the same road, only slower.
+```
+
+### Privacy Policy, section 11 (formerly 10) — append
+
+```
+Independently of this, you end your participation in the leaderboard in the Play Games settings of your Google account, by removing the link to Fairydoku.
+```
+
+### Terms of Use, § 6 — replace
+
+```
+§ 6 Save data, daily score, and leaderboard
+Your score, your daily score, and your past best results are stored locally on your device.
+
+If you take part in the leaderboard, your daily score is transmitted to Google Play Games and is visible there to other participants — together with your Play Games player name and your Play Games profile picture. Taking part is voluntary and can be ended at any time; without it, the App remains fully playable.
+
+The daily score accumulates points up to a fixed daily cutoff. After that, the accumulated points expire, and a reward in virtual helpers is credited. There is no entitlement to keep accumulated points beyond the cutoff. The Provider may adjust the timing of the cutoff, the point calculation, and the reward tiers.
+
+If you delete the App or its app data, or remove the link to Play Games, your save, daily score, best results, and ranking are lost; recovery by the Provider is not possible.
+```
+
+### Terms of Use, § 7 — new
+
+```
+§ 7 Leaderboard rules
+The leaderboard is meant to reflect actual play. The following are not permitted, in particular:
+• submitting scores that did not arise from regular play
+• using helper programs, altering the save data, or modifying the App
+• changing the device clock in order to complete daily scores more than once
+• using multiple player accounts with the aim of influencing the leaderboard
+
+Where there is reasonable suspicion of a breach, the Provider may remove individual scores from the ranking, reset a ranking, or permanently exclude the player ID concerned from the leaderboard. There is no entitlement to take part in the leaderboard.
+
+Rewards from the daily score are virtual items within the meaning of § 5. They have no monetary value and are forfeited without replacement upon exclusion.
+```
+
+### Terms of Use, § 9 (formerly § 8) — append
+
+```
+The leaderboard shows the player names and profile pictures of other participants. These come from their Google accounts and are managed and moderated by Google; the Provider has no influence over their choice and cannot change them.
+```
+
+---
+
+## 6. Store-Eintrag
 
 ### Kurzbeschreibung (deutsch, 80 Zeichen)
 
@@ -381,7 +522,7 @@ sucht ihr an der falschen Stelle.
 
 ---
 
-## 6. Datensicherheitsformular
+## 7. Datensicherheitsformular
 
 Ersetzt die heutige Fassung in
 `storepaket/play-store/datensicherheit-und-einstufung.md`, sobald die Anbindung
@@ -418,7 +559,7 @@ fremde Spielernamen sichtbar werden.
 
 ---
 
-## 7. Was offen bleibt
+## 8. Was offen bleibt
 
 - ~~Der Stichtag.~~ **Erledigt:** Die Bestenliste läuft ohne Zurücksetzen als
   „Bester Tag". Was ein Tag ist, entscheidet damit die App; Googles Zeitplan
@@ -434,6 +575,14 @@ fremde Spielernamen sichtbar werden.
   Inhaltseinstufung bleibt „ab 0". Ordnet Google die App trotz ihrer Gestaltung
   als kindgerichtet ein, ist eine Bestenliste mit fremden Anzeigenamen neu zu
   bewerten. Vorab sicher sagen lässt sich das nicht.
+- **Die englischen Rechtstexte haben keine Quelle im Projekt.** Die deutschen
+  Seiten entstehen aus `GameCopy.kt`, die englischen sind außerhalb geschrieben
+  worden und lagen nur auf dem Server; seit dem 8. September liegt ein Abzug in
+  `storepaket/webseite/englisch/`. Solange das so ist, muss jede Änderung dort
+  von Hand nachgezogen werden — und wer es vergisst, hat eine englische Seite,
+  die etwas anderes behauptet als die deutsche. Sauber wäre eine englische
+  Fassung von `GameCopy.legalBody`, aus der derselbe Test beide Sprachen
+  ausgibt.
 - **Die anwaltliche Prüfung.** Bisher wurde bewusst darauf verzichtet. Mit einer
   Bestenliste, auf der fremde Namen erscheinen, und einer Zielgruppe ab 13 ist
   das eine andere Lage als bei einer App, die nichts überträgt.

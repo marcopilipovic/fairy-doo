@@ -216,6 +216,17 @@ Bestenliste steht dein Play-Games-Name". So verlässt kein frei getippter Text
 das Gerät, und es entsteht keine Moderationspflicht für Namen, die wir weder
 sehen noch ändern können.
 
+**Dabei ist eine Lücke aufgefallen, die nichts mit Play Games zu tun hat:** Die
+**englischen Rechtstexte entstehen nirgends im Projekt.** Die vier deutschen
+Seiten erzeugt ein Test aus `GameCopy.kt` und hält sie mit der App gleich; die
+englischen unter `/en/…` sind außerhalb geschrieben worden und lagen allein auf
+dem Server. Ändert sich ein deutscher Abschnitt, zieht die deutsche Seite
+automatisch nach — die englische bleibt stehen und behauptet weiter das Alte.
+Seit dem 8. September liegt wenigstens ein Abzug in
+`storepaket/webseite/englisch/`, damit niemand suchen muss. Sauber wäre eine
+englische Fassung von `GameCopy.legalBody`, aus der derselbe Test beide
+Sprachen ausgibt.
+
 **Und der Grund, warum es trotzdem nicht eilt:** Eine Bestenliste ohne Spieler
 zeigt eine leere Liste. Sie lohnt sich, sobald das Spiel gespielt wird.
 
