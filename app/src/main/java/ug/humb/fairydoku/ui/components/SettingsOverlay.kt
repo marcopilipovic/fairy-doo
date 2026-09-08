@@ -30,18 +30,25 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -252,9 +259,35 @@ private fun SectionLabel(text: String) {
 private fun PlayerNameField(value: String, onValueChange: (String) -> Unit) {
     val focusManager = LocalFocusManager.current
 
+    // Das Feld führt seinen eigenen Stand, samt Schreibmarke.
+    //
+    // Bis 1.5.6 hing es unmittelbar am gespeicherten Namen, und der kommt einen
+    // weiten Weg zurück: schreiben, auf die Platte, durch den Fluss, neu
+    // zeichnen. Beim Tippen traf er später ein als der nächste Tastendruck;
+    // Compose setzte das Feld dann auf den älteren Text zurück und die
+    // Schreibmarke an dessen Ende. Aus der Testrunde zu 1.5.6: „springt bei
+    // jedem einzelnen Buchstaben hin und her" — eine Eingabe war nicht möglich.
+    //
+    // Solange das Feld den Fokus hat, gilt deshalb allein, was hier getippt
+    // wird. Gespeichert wird weiterhin bei jedem Zeichen — nur hängt die
+    // Anzeige nicht mehr davon ab, wann das Gespeicherte zurückkommt.
+    var eingabe by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    var hatFokus by remember { mutableStateOf(false) }
+
+    // Von außen wird übernommen, sobald niemand tippt: der erste geladene
+    // Stand und alles, was den Namen anderswo ändert.
+    LaunchedEffect(value, hatFokus) {
+        if (!hatFokus && value != eingabe.text) {
+            eingabe = TextFieldValue(value, TextRange(value.length))
+        }
+    }
+
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = eingabe,
+        onValueChange = {
+            eingabe = it
+            onValueChange(it.text)
+        },
         singleLine = true,
         textStyle = TextStyle(color = TextPrimary, fontSize = 14.sp),
         cursorBrush = Brush.verticalGradient(listOf(Gold, Gold)),
@@ -268,12 +301,13 @@ private fun PlayerNameField(value: String, onValueChange: (String) -> Unit) {
         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         modifier = Modifier
             .fillMaxWidth()
+            .onFocusChanged { hatFokus = it.isFocused }
             .clip(RoundedCornerShape(14.dp))
             .background(Color.Black.copy(alpha = 0.32f))
             .border(1.5.dp, PanelBorder, RoundedCornerShape(14.dp))
             .padding(horizontal = 14.dp, vertical = 11.dp),
         decorationBox = { inner ->
-            if (value.isEmpty()) {
+            if (eingabe.text.isEmpty()) {
                 Text(
                     text = "z. B. Lichtfängerin",
                     color = TextPrimary.copy(alpha = 0.35f),
