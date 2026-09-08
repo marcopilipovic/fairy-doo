@@ -139,7 +139,8 @@ Im **IARC-Fragebogen** ändern sich zwei Zeilen:
 
 Das ist zugleich der Grund, die Sache nicht nebenbei zu machen: Sichtbare
 fremde Namen bei einer Zielgruppe ab 13 sind eine eigene Bewertung wert. Die
-Rechtstexte dazu liegen fertig in `RECHTSTEXTE-RANGLISTE.md`.
+Rechtstexte dazu liegen fertig in `PLAY-GAMES-START.md`, dort auch die
+endgültige Fassung dieses Fragebogens.
 
 ---
 

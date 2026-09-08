@@ -174,12 +174,12 @@ gilt sie nicht.
 
 - **Illustrierte Pilze** — im Spielbildschirm stehen noch Emoji als Platzhalter
 - **Feentitel aus Bausteinen** statt des freien Namensfelds
-- **Online-Rangliste.** Erst wenn es Spielerinnen gibt: Ein Server kostet ab dem
-  ersten Tag, und eine Rangliste ohne Spieler zeigt eine leere Liste. Ob über
-  Firebase oder über Play Games, ist offen — `RECHTSTEXTE-RANGLISTE.md` entwirft
-  die Rechtstexte für Play Games, hier stand bisher „Firebase, nicht Play
-  Games". Das gehört entschieden, bevor jemand baut; es bestimmt, welche
-  Rechtstexte gelten.
+- **Online-Bestenliste über Play Games.** Erst wenn es Spielerinnen gibt: Eine
+  Bestenliste ohne Spieler zeigt eine leere Liste. Sämtliche Texte dafür liegen
+  fertig in `PLAY-GAMES-START.md` — Rechtstexte, Store, Oberfläche, Einrichtung
+  in der Console, beide Fragebögen. *(Hier stand bis zum 8. September
+  „Firebase, nicht Play Games". Play Games kostet nichts und braucht keinen
+  eigenen Server; Firebase beides.)*
 - **Ligen.** Brauchen 25–30 Aktive je Gruppe, sonst wirken sie leer.
 - **iOS.** Die Spiellogik ließe sich übernehmen, die Oberfläche wäre neu —
   Kotlin mit Compose läuft nicht auf dem iPhone.

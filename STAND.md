@@ -169,41 +169,45 @@ unter ihrer Adresse. Der Rest ist Spielen.
 
 ---
 
-## Play Games-Dienste: nein zu dieser Veröffentlichung — vorbereitet ist alles
+## Play Games: die Bestenliste kommt mit
 
 Die Play Console hat am 8. September gefragt, ob Fairydoku die Play
-Games-Dienste bekommen soll. Zu **dieser** Veröffentlichung nicht. Nicht aus
-Abneigung, sondern weil das Spiel heute nichts davon benutzt und die Papiere
-den heutigen Stand beschreiben. Nachrüsten soll ein Schalter sein, kein Umbau —
-deshalb liegt zu jedem Einwand schon bereit, was er verlangt:
+Games-Dienste bekommen soll. **Ja** — und damit ist zugleich der alte
+Widerspruch entschieden: Es wird Play Games, nicht Firebase. Play Games kostet
+nichts und braucht keinen eigenen Server; Firebase beides.
 
-| Was dagegen steht | Was dafür bereitliegt |
-| --- | --- |
-| Die Rechtstexte sagen „Eine Anmeldung findet nicht statt" (Datenschutz, Abschnitt 2) und „Spielstand nur lokal" (AGB § 6). Play Games meldet still am Google-Konto an. | `RECHTSTEXTE-RANGLISTE.md` hält die Ersatzabschnitte fertig im Wortlaut — Datenschutz 2, 4, 7, 8, 9, ein eigener Abschnitt 5 zu Play Games, AGB § 6 und ein neuer Paragraf zu den Ranglistenregeln. Getauscht wird am Tag des Einschaltens, nicht vorher: Sonst beschreibt die Erklärung etwas, das es nicht gibt. |
-| Das Datensicherheitsformular sagt heute: nichts verlässt das Gerät. | `storepaket/play-store/datensicherheit-und-einstufung.md` führt jetzt beide Fassungen — die heutige und die mit Play Games, Zeile für Zeile. |
-| Der selbst getippte Anzeigename stünde neben dem des Google-Kontos, und für den getippten entstünde eine Moderationspflicht. | Entschieden und notiert: Er wird dann zur Zierde ohne Sichtbarkeit für andere — oder er entfällt. Steht als Punkt 5 der offenen Fragen in `RECHTSTEXTE-RANGLISTE.md`. |
-| Es gibt nichts anzuschließen: keine Rangliste, keine Erfolge, kein Spielstand in der Wolke. | Die Daten dafür liegen längst und überleben den Neustart: Tageswertung, Bestleistung, Anzeigename, Avatar-Fee (`GamePreferences`). Was eine Rangliste einreichen würde, ist da — es fehlt allein die Gegenstelle. |
-| Play Games verlangt die Bindung an den Signierschlüssel. | SHA-1 und SHA-256 stehen in `VEROEFFENTLICHUNG.md`. |
+**Sämtliche Texte dafür liegen fertig in `PLAY-GAMES-START.md`**: die
+Rechtstexte im Wortlaut und mit der Nummerierung aus `GameCopy.kt`, die
+Einrichtung in der Console samt Bestenlisten-Einstellungen, die Texte in der
+App, Store-Eintrag und Versionshinweise auf deutsch und englisch, beide
+Fragebögen.
 
-**Was am Tag des Einschaltens zu tun ist**, in dieser Reihenfolge:
+**Was noch fehlt, ist die Anbindung selbst** — Texte allein starten den Dienst
+nicht:
 
-1. Entscheiden, ob die Gegenstelle Play Games oder Firebase ist — die beiden
-   Papiere widersprechen sich hier noch (siehe unten).
-2. Rechtstexte in `ui/GameCopy.kt` gegen die Fassungen aus
-   `RECHTSTEXTE-RANGLISTE.md` tauschen, Tests laufen lassen; Webseite und PDFs
-   entstehen daraus von selbst.
-3. Datensicherheitsformular auf die zweite Fassung umstellen.
-4. Anzeigename und Avatar-Fee entscheiden: Zierde oder weg.
-5. Erst dann in der Play Console die Dienste zuschalten.
+1. Abhängigkeit `play-services-games-v2` und die Projekt-ID ins Manifest.
+2. Anmeldung, die sich ablehnen lässt, ohne dass das Spiel etwas verliert.
+3. Die Tagespunktzahl an die Bestenliste einreichen.
+4. Ein Weg zur Bestenliste; Googles eigene Ansicht genügt.
+5. Der Eintrag in den Einstellungen der App.
+6. Die Einrichtung in der Console — und die Testenden dort eintragen, sonst
+   sieht niemand eine Anmeldung.
 
-**Vorher zu klären:** `VEROEFFENTLICHUNG.md` sagt „Firebase, nicht Play Games",
-`RECHTSTEXTE-RANGLISTE.md` entwirft die Texte dagegen für Play Games. Beides
-zusammen geht nicht. Die Entscheidung bestimmt, welche Rechtstexte gelten, und
-gehört getroffen, bevor jemand anfängt zu bauen.
+**Erst danach die Rechtstexte tauschen**, und beides in derselben Fassung
+hinaus. Eine Erklärung, die eine Anmeldung beschreibt, die es noch nicht gibt,
+ist genauso falsch wie eine, die sie verschweigt.
 
-**Und der Grund, warum es nicht eilt:** Ein Server kostet ab dem ersten Tag, und
-eine Rangliste ohne Spieler zeigt eine leere Liste. Erst wird das Spiel
-gespielt, dann bekommt es eine Gegenstelle.
+**Zwei Dinge sind dabei zu entscheiden**, beide in `PLAY-GAMES-START.md`
+festgehalten: wie mit dem Auseinanderfallen der Stichtage umgegangen wird
+(unsere Tageswertung wechselt um vier Uhr früh in Ortszeit, Googles
+Bestenliste zu ihrer eigenen Zeit), und ob der selbst getippte Anzeigename
+bleibt. Vorgesehen ist: Er bleibt, wird aber eingeordnet — „in der Bestenliste
+steht dein Play-Games-Name". So verlässt kein frei getippter Text das Gerät,
+und es entsteht keine Moderationspflicht für Namen, die wir weder sehen noch
+ändern können.
+
+**Und der Grund, warum es trotzdem nicht eilt:** Eine Bestenliste ohne Spieler
+zeigt eine leere Liste. Sie lohnt sich, sobald das Spiel gespielt wird.
 
 ---
 
