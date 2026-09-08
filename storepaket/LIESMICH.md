@@ -1,6 +1,6 @@
 # Fairydoku — alles für die Veröffentlichung
 
-Stand: 30. August 2026. Alles in diesem Ordner ist fertig zum Verwenden, außer
+Stand: 8. September 2026. Alles in diesem Ordner ist fertig zum Verwenden, außer
 dem, was unter „Was noch fehlt" steht.
 
 **Es gibt nur noch eine Fassung des Spiels.** Bis zum 28. August liefen zwei
@@ -83,8 +83,11 @@ Paket liegt trotzdem eine unter `app/`:
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-1.5.0-54-TEST.aab` | **das hier hochladen**, in eine Testspur |
-| `Fairydoku-1.5.0-54-TEST.apk` | dieselbe Fassung zum Ausprobieren am Gerät |
+| `Fairydoku-1.5.7-61-TEST.aab` | **das hier hochladen**, in eine Testspur |
+| `Fairydoku-1.5.7-61-TEST.apk` | dieselbe Fassung zum Ausprobieren am Gerät |
+
+Was zu dieser Fassung gehört, steht in `app/LIESMICH.md` — auch, was sie
+behebt und was an ihr noch offen ist.
 
 **In diesem Paket liegt bewusst die Testfassung**, nicht die
 Veröffentlichungsfassung. Sie ist in allem gleich — derselbe Paketname
@@ -125,7 +128,12 @@ Die **APK** ist zum Ausprobieren auf einem Telefon. Das **App Bundle** (`.aab`)
 ist das, was der Play Store haben will — die APK dort hochzuladen geht nicht.
 
 Alles davon ist signiert, sofern `keystore.properties` im Projektordner liegt.
-Der Stand: **versionCode 54, versionName 1.5.0, Paket `ug.humb.fairydoku`.**
+Der Stand: **versionCode 61, versionName 1.5.7, Paket `ug.humb.fairydoku`.**
+
+Die Zuordnungsdatei für die Absturzberichte muss nicht getrennt hochgeladen
+werden: Sie liegt im Bundle selbst unter
+`BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`, und die
+Play Console nimmt sie von dort.
 
 ---
 

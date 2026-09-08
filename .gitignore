@@ -16,8 +16,12 @@ local.properties
 *.keystore
 keystore.properties
 
-# Das Store-Paket entsteht aus dem Projekt; die APK darin gehört nicht ins Repo.
+# Das Store-Paket entsteht aus dem Projekt; die gebauten Fassungen darin
+# gehören nicht ins Repo — nach zwei Änderungen sind sie veraltet, und
+# niemand sieht ihnen das an.
 storepaket/*.apk
+storepaket/app/*.aab
+storepaket/app/*.apk
 
 # Von den Werkzeugen erzeugt, nicht von Hand gepflegt
 werkzeuge/rechtstexte.txt

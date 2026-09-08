@@ -153,11 +153,6 @@ Auch das Tippen rüttelt jetzt
 Bisher gab es Haptik nur beim Halten. Ein ✕ zu setzen war die häufigste Geste
 im Spiel und die einzige ohne Antwort im Finger.
 
-Das Spielbrett nutzt die volle Breite
-Es war auf eine feste Größe gedeckelt, die noch aus der Entwurfsvorlage
-stammte. Bei großen Gittern waren die Felder dadurch kleiner als der
-Richtwert, den Android für Tippziele empfiehlt.
-
 Der Bildschirm bleibt drei Minuten wach
 Vorher blieb er an, solange ein Rätsel offen war — auch bei einem Handy, das
 auf dem Tisch lag. Jede Berührung schenkt jetzt drei Minuten, danach dunkelt
@@ -241,6 +236,79 @@ Known and still open
   designed, so difficulty varies within a grid size.
 • The day rolls over at 4 a.m. on purpose: anyone playing at half past eleven
   should not lose their score mid-session.
+
+What to report
+What happened, what you expected, and on which device.
+```
+
+---
+
+## 2e. Testerhinweise zur fünften Runde (Fassung 1.5.7, Nummer 61)
+
+Diese Fassung enthält alles aus 1.5.6 — die Hinweise unter 2c gelten also
+weiter — und behebt einen Fehler, der aus der Runde gemeldet wurde.
+
+```
+Der Profilname ließ sich nicht eintippen
+
+Aus eurer Rückmeldung: „Das Textfeld zum Eingeben des Profilnamens spinnt. Es
+springt bei jedem einzelnen Buchstaben hin und her. Dadurch ist keine Eingabe
+möglich."
+
+Das Feld zeigte nicht, was ihr tipptet, sondern was schon gespeichert war —
+und der Weg dahin geht über die Platte des Geräts. Beim Tippen kam der
+gespeicherte Text später zurück als der nächste Tastendruck, und das Feld
+sprang jedes Mal auf den älteren Stand samt Schreibmarke.
+
+Jetzt gilt beim Tippen allein, was im Feld steht. Gespeichert wird weiterhin
+bei jedem Zeichen — die Zeile darunter geht also sofort mit.
+
+Bitte prüft dabei auch: einen langen Namen schnell eintippen, mitten im Wort
+löschen, und die Schreibmarke von Hand versetzen.
+
+Alles Übrige ist wie in 1.5.6 — Feenkreis, Brett leeren, größeres Brett,
+Haptik beim Tippen, drei Minuten Bildschirmzeit, eine Punktezahl.
+
+Was weiter offen ist
+• Tablets sind benutzbar, aber nicht angepasst.
+• Level 5 ist schwerer als die Level danach. Bekannt.
+• Wird das Gerät noch warm? Die Dauerschleife ist raus; wenn es trotzdem
+  heiß wird, steckt mehr dahinter.
+
+Was ihr meldet
+Was passiert ist, was ihr erwartet habt, und auf welchem Gerät.
+```
+
+---
+
+## 2f. Tester notes, English (version 1.5.7, build 61)
+
+```
+The profile name could not be typed
+
+From your feedback: the text field for the profile name jumped back with
+every single letter, which made it impossible to type anything.
+
+The field showed what had already been saved rather than what you were
+typing, and saving goes through the device's storage. While typing, the
+saved text came back later than the next keystroke, so the field kept
+resetting to the older state — cursor included.
+
+Now only what stands in the field counts while you type. It is still saved
+with every character, so the line below it keeps up.
+
+Worth checking as well: type a long name quickly, delete in the middle of a
+word, and move the cursor by hand.
+
+Everything else is as in 1.5.6 — the fairy ring, clearing the board, the
+larger board, haptics on tap, three minutes of screen time, one points
+figure.
+
+Known and still open
+• Tablets are usable but not specifically adapted.
+• Level 5 is harder than the levels after it.
+• Does the device still get warm? The permanent loop is gone; if it still
+  heats up, there is more to it.
 
 What to report
 What happened, what you expected, and on which device.

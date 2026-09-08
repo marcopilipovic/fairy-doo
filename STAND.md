@@ -1,4 +1,4 @@
-# Stand: 1. September 2026
+# Stand: 8. September 2026
 
 Diese Datei ist der Einstieg für jede neue Sitzung in diesem Ordner. Sie sagt,
 wo das Projekt steht und was noch fehlt — damit niemand aus Gesprächsresten
@@ -87,19 +87,32 @@ mittig gesetzt worden, damit die Bilder zeigen, was die App zeigt.
 
 ---
 
-## Vorgemerkt für Nummer 56
+## Seit der 55: bis zur 1.5.7 als Nummer 61
 
-Die 55 ist als Testfassung hochgeladen; diese Änderungen liegen schon in `main`
-und warten auf die nächste Runde. Bewusst gesammelt statt einzeln ausgeliefert,
-sonst testet die Runde gegen andere Hinweise, als sie bekommen hat.
+Die 55 ging als Testfassung in den Store. Was danach kam, liegt in `main` und
+steckt in der 61, die am 8. September für die Testspur gebaut ist
+(`storepaket/app/`):
 
-**Schon fertig:**
+- **Die Anleitung kommt in Stücken.** Vor dem ersten Zug bleiben zwei
+  Bildschirme statt fünf; Leben und Helferlein tauchen auf, wenn sie das erste
+  Mal etwas bedeuten. Aus Mirco Lehnhoffs Rückmeldung: „Kinder lesen nicht!"
+- **Der Feenkreis**, der dritte Helfer: eine halbe Minute, in der jede gesetzte
+  Fee selbst ankreuzt, was sie ausschließt. Zwei Stück, drei Stunden je
+  Nachwuchs. Dazu der Knopf zum Leeren des Bretts.
+- **Das Brett wächst mit dem Gitter**, statt bei 352 dp stehenzubleiben.
+- **Haptik auch beim kurzen Tippen**, dem häufigsten Zug im Spiel.
+- **Der Bildschirm bleibt drei Minuten wach** statt so lange, wie ein Rätsel
+  offen ist.
+- **Eine Punktezahl**, und sie ist beschriftet.
+- **Das Namensfeld ließ sich nicht bedienen** — es sprang bei jedem Buchstaben
+  zurück, weil es am gespeicherten Namen hing und der den Umweg über die
+  Platte nimmt. Gemeldet am 8. September, behoben in der 1.5.7.
 
-- Die Anleitung kommt in Stücken. Vor dem ersten Zug bleiben zwei Bildschirme
-  statt fünf; Leben und Helferlein tauchen auf, wenn sie das erste Mal etwas
-  bedeuten. Aus der Rückmeldung von Mirco Lehnhoff: „Kinder lesen nicht!"
+Die Store-Texte gibt es seit dem 2. September auch auf Englisch
+(`storepaket/play-store/texte-englisch.md`), die Testerhinweise zur 61 stehen
+in `versionshinweise.md` unter 2e und 2f.
 
-**Noch offen:**
+**Noch offen aus der Testrunde:**
 
 - **Schwierigkeit von Level 5.** Ein Tester fand es schwerer als alles bis
   Level 20. Die Rätsel werden erzeugt, nicht entworfen — die Schwierigkeit ist
@@ -109,6 +122,12 @@ sonst testet die Runde gegen andere Hinweise, als sie bekommen hat.
 - **Rückmeldung zur Wärme abwarten.** Die Dauerschleife ist raus; ob das Gerät
   jetzt kühl bleibt, muss die Testrunde bestätigen. Falls nicht, steckt mehr
   dahinter.
+- **Der Feenkreis steht noch allein im Code.** Die Anleitung erklärt ihn
+  nicht, die AGB zählen ihn nicht zu den virtuellen Elementen, es gibt keine
+  Statusmeldung für ihn und keinen Test.
+- **Die Bildschirmfotos sind vom 29. August** und zeigen das kleinere Brett und
+  zwei Helfer statt drei. Für eine Testspur gleichgültig, vor der
+  Veröffentlichung nicht.
 
 ---
 

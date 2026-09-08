@@ -71,9 +71,11 @@ Gerät eine passende, kleinere Fassung.
 
 ### Nach jedem Upload
 
-`app/build/outputs/mapping/release/mapping.txt` in der Play Console
-hinterlegen. Ohne diese Datei sind Absturzberichte unlesbar, weil der
-Release-Build die Namen verschleiert.
+Nichts. Die Zuordnungsdatei, ohne die Absturzberichte unlesbar bleiben, liegt
+im Bundle selbst: `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`,
+nachgesehen am 8. September 2026 im Bundle der 1.5.7. Die Play Console nimmt
+sie von dort. Nur wer eine APK statt eines Bundles hochlädt, muss
+`app/build/outputs/mapping/<Bauart>/mapping.txt` von Hand hinterlegen.
 
 ---
 
