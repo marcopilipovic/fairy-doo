@@ -9,8 +9,14 @@ braucht**: die Rechtstexte für die App, die Einrichtung in der Play Console,
 die Bedienoberfläche, den Store-Eintrag und die beiden Fragebögen. Zum Kopieren
 gedacht, nicht zum Nacherzählen.
 
-**Die eine Bedingung:** Diese Texte gehen mit *derselben* Fassung hinaus wie die
-Anbindung — keinen Tag früher. Eine Datenschutzerklärung, die eine Anmeldung
+**Am 8. September zurückgestellt.** Fairydoku bleibt vorerst ohne Play Games:
+Das Spiel braucht den Dienst nicht, und die Anregung kam von außen statt aus
+dem Spiel. Diese Datei bleibt trotzdem vollständig stehen — sie ist der Vorrat,
+falls eine Bestenliste eines Tages aus dem Spiel heraus sinnvoll wird.
+Einzelheiten zur Entscheidung in `STAND.md`.
+
+**Die eine Bedingung, wenn es doch dazu kommt:** Diese Texte gehen mit
+*derselben* Fassung hinaus wie die Anbindung — keinen Tag früher. Eine Datenschutzerklärung, die eine Anmeldung
 beschreibt, die es noch nicht gibt, ist genauso falsch wie eine, die sie
 verschweigt. Bis dahin gelten die heutigen Texte in `ui/GameCopy.kt`.
 

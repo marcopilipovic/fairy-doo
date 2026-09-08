@@ -169,66 +169,36 @@ unter ihrer Adresse. Der Rest ist Spielen.
 
 ---
 
-## Play Games: die Bestenliste kommt mit
+## Play Games: nein — die Texte liegen als Vorrat
 
 Die Play Console hat am 8. September gefragt, ob Fairydoku die Play
-Games-Dienste bekommen soll. **Ja** — und damit ist zugleich der alte
-Widerspruch entschieden: Es wird Play Games, nicht Firebase. Play Games kostet
-nichts und braucht keinen eigenen Server; Firebase beides.
+Games-Dienste bekommen soll. **Nein.** Entschieden am selben Tag, nachdem alle
+Texte dafür geschrieben waren:
 
-**Sämtliche Texte dafür liegen fertig in `PLAY-GAMES-START.md`**: die
-Rechtstexte im Wortlaut und mit der Nummerierung aus `GameCopy.kt`, die
-Einrichtung in der Console samt Bestenlisten-Einstellungen, die Texte in der
-App, Store-Eintrag und Versionshinweise auf deutsch und englisch, beide
-Fragebögen.
+**Das Spiel braucht den Dienst nicht.** Fairydoku ist ein Rätsel für einen
+ruhigen Moment; die Tageswertung auf dem Gerät ist genau das, was es dafür
+braucht. Eine Bestenliste macht es nicht besser, sie macht es größer. Und die
+Anregung kam von außen, nicht aus dem Spiel — „wäre bequemer" ist kein Grund,
+eine App umzubauen, die bereits in der Testspur liegt und tut, was sie soll.
 
-**Was noch fehlt, ist die Anbindung selbst** — Texte allein starten den Dienst
-nicht:
+**Was es gekostet hätte:** die Anbindung bauen, die Rechtstexte in der App
+tauschen, vier deutsche und vier englische Webseiten nachziehen — die
+englischen von Hand, weil sie im Projekt keine Quelle haben —, das
+Datensicherheitsformular ändern, und all das in *einer* Fassung gemeinsam
+hinaus. Dazu eine rechtliche Freigabe, auf die bisher bewusst verzichtet wurde:
+Bei einer App, die nichts überträgt, ist das vertretbar; mit fremden
+Anzeigenamen und Zielgruppe ab 13 wäre es das nicht mehr.
 
-1. Abhängigkeit `play-services-games-v2` und die Projekt-ID ins Manifest.
-2. Anmeldung, die sich ablehnen lässt, ohne dass das Spiel etwas verliert.
-3. Die Tagespunktzahl an die Bestenliste einreichen.
-4. Ein Weg zur Bestenliste; Googles eigene Ansicht genügt.
-5. Der Eintrag in den Einstellungen der App.
-6. Die Einrichtung in der Console — und die Testenden dort eintragen, sonst
-   sieht niemand eine Anmeldung.
+**Verloren ist dabei nichts.** `PLAY-GAMES-START.md` enthält jeden Text, den
+ein Start brauchte — Rechtstexte in beiden Sprachen mit der Nummerierung aus
+`GameCopy.kt`, die Einrichtung in der Console samt Bestenliste, die Texte in
+der App, Store-Eintrag und Versionshinweise, beide Fragebögen. Es liegt
+vollständig da und wartet. Sollte die Bestenliste eines Tages aus dem Spiel
+heraus sinnvoll werden — wenn es Spielerinnen gibt, die sich vergleichen
+wollen —, ist es ein Nachmittag Arbeit und keine Woche.
 
-**Erst danach die Rechtstexte tauschen**, und beides in derselben Fassung
-hinaus. Eine Erklärung, die eine Anmeldung beschreibt, die es noch nicht gibt,
-ist genauso falsch wie eine, die sie verschweigt.
-
-**Zwei Fallen sind dabei schon umgangen**, beide in `PLAY-GAMES-START.md`
-ausgeführt:
-
-- **Die Bestenliste heißt „Bester Tag" und wird nie zurückgesetzt.** Eine
-  Tagesbestenliste bei Google wechselt nach Googles Zeitplan, unsere
-  Tageswertung um vier Uhr früh in Ortszeit — das wäre auseinandergelaufen und
-  hätte wie ein Fehler ausgesehen. So entscheidet die App, was ein Tag ist:
-  Eingereicht wird der laufende Tagesstand, Play Games behält den höchsten je
-  gemeldeten Wert, und um vier Uhr früh beginnt die Wertung wieder bei null.
-- **Die Testenden gehören in die Console, bevor die erste Fassung ausgeliefert
-  wird.** Wer dort nicht mit seiner Google-Adresse steht, bekommt wortlos gar
-  keine Anmeldung zu sehen. In `PLAY-GAMES-START.md` steht dafür eine Tabelle
-  zum Ausfüllen, und die Testerhinweise fragen die Adresse ausdrücklich ab.
-
-**Der selbst getippte Anzeigename bleibt** und wird eingeordnet — „in der
-Bestenliste steht dein Play-Games-Name". So verlässt kein frei getippter Text
-das Gerät, und es entsteht keine Moderationspflicht für Namen, die wir weder
-sehen noch ändern können.
-
-**Dabei ist eine Lücke aufgefallen, die nichts mit Play Games zu tun hat:** Die
-**englischen Rechtstexte entstehen nirgends im Projekt.** Die vier deutschen
-Seiten erzeugt ein Test aus `GameCopy.kt` und hält sie mit der App gleich; die
-englischen unter `/en/…` sind außerhalb geschrieben worden und lagen allein auf
-dem Server. Ändert sich ein deutscher Abschnitt, zieht die deutsche Seite
-automatisch nach — die englische bleibt stehen und behauptet weiter das Alte.
-Seit dem 8. September liegt wenigstens ein Abzug in
-`storepaket/webseite/englisch/`, damit niemand suchen muss. Sauber wäre eine
-englische Fassung von `GameCopy.legalBody`, aus der derselbe Test beide
-Sprachen ausgibt.
-
-**Und der Grund, warum es trotzdem nicht eilt:** Eine Bestenliste ohne Spieler
-zeigt eine leere Liste. Sie lohnt sich, sobald das Spiel gespielt wird.
+**Es gilt also weiter:** Die App überträgt nichts, die Rechtstexte
+beschreiben genau das, und das Datensicherheitsformular stimmt damit überein.
 
 ---
 
