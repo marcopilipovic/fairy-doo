@@ -169,37 +169,41 @@ unter ihrer Adresse. Der Rest ist Spielen.
 
 ---
 
-## Play Games-Dienste: vorerst nein
+## Play Games-Dienste: nein zu dieser Veröffentlichung — vorbereitet ist alles
 
 Die Play Console hat am 8. September gefragt, ob Fairydoku die Play
-Games-Dienste bekommen soll. Die Antwort ist **nein, nicht zu dieser
-Veröffentlichung** — nicht aus Abneigung, sondern weil das Spiel heute nichts
-davon benutzt und die Papiere dagegen stehen:
+Games-Dienste bekommen soll. Zu **dieser** Veröffentlichung nicht. Nicht aus
+Abneigung, sondern weil das Spiel heute nichts davon benutzt und die Papiere
+den heutigen Stand beschreiben. Nachrüsten soll ein Schalter sein, kein Umbau —
+deshalb liegt zu jedem Einwand schon bereit, was er verlangt:
 
-- **Die Rechtstexte in `GameCopy.kt` sagen das Gegenteil.** Datenschutz
-  Abschnitt 2: „Eine Anmeldung findet nicht statt." AGB § 6: Spielstand nur
-  lokal. Play Games meldet still am Google-Konto an — die Texte würden mit dem
-  Einschalten falsch, und zwar in der Richtung, die Google beanstandet.
-- **Das Datensicherheitsformular müsste mit.** Es sagt heute: nichts verlässt
-  das Gerät. Ein Widerspruch zwischen Formular und Datenschutzerklärung ist
-  einer der häufigsten Ablehnungsgründe.
-- **Der selbst getippte Name und die Avatar-Fee kollidierten.** Name und Bild
-  kämen dann vom Google-Konto; nebeneinander wären es zwei Namen, und der
-  selbst getippte wäre der, für den eine Moderationspflicht entstünde. Steht so
-  schon in `RECHTSTEXTE-RANGLISTE.md`, Punkt 5 der offenen Fragen.
-- **Es gibt nichts anzuschließen.** Keine Rangliste, keine Erfolge, kein
-  Spielstand in der Wolke. Play Games ohne diese Dinge ist Aufwand ohne
-  Wirkung.
+| Was dagegen steht | Was dafür bereitliegt |
+| --- | --- |
+| Die Rechtstexte sagen „Eine Anmeldung findet nicht statt" (Datenschutz, Abschnitt 2) und „Spielstand nur lokal" (AGB § 6). Play Games meldet still am Google-Konto an. | `RECHTSTEXTE-RANGLISTE.md` hält die Ersatzabschnitte fertig im Wortlaut — Datenschutz 2, 4, 7, 8, 9, ein eigener Abschnitt 5 zu Play Games, AGB § 6 und ein neuer Paragraf zu den Ranglistenregeln. Getauscht wird am Tag des Einschaltens, nicht vorher: Sonst beschreibt die Erklärung etwas, das es nicht gibt. |
+| Das Datensicherheitsformular sagt heute: nichts verlässt das Gerät. | `storepaket/play-store/datensicherheit-und-einstufung.md` führt jetzt beide Fassungen — die heutige und die mit Play Games, Zeile für Zeile. |
+| Der selbst getippte Anzeigename stünde neben dem des Google-Kontos, und für den getippten entstünde eine Moderationspflicht. | Entschieden und notiert: Er wird dann zur Zierde ohne Sichtbarkeit für andere — oder er entfällt. Steht als Punkt 5 der offenen Fragen in `RECHTSTEXTE-RANGLISTE.md`. |
+| Es gibt nichts anzuschließen: keine Rangliste, keine Erfolge, kein Spielstand in der Wolke. | Die Daten dafür liegen längst und überleben den Neustart: Tageswertung, Bestleistung, Anzeigename, Avatar-Fee (`GamePreferences`). Was eine Rangliste einreichen würde, ist da — es fehlt allein die Gegenstelle. |
+| Play Games verlangt die Bindung an den Signierschlüssel. | SHA-1 und SHA-256 stehen in `VEROEFFENTLICHUNG.md`. |
 
-**Nachrüstbar bleibt es jederzeit** — die Dienste lassen sich später zuschalten,
-der Schlüssel-Fingerabdruck dafür steht in `VEROEFFENTLICHUNG.md`. Verloren geht
-durch das Nein nichts.
+**Was am Tag des Einschaltens zu tun ist**, in dieser Reihenfolge:
 
-**Vorher zu klären, wenn die Rangliste kommt:** `VEROEFFENTLICHUNG.md` sagt
-„Firebase, nicht Play Games", `RECHTSTEXTE-RANGLISTE.md` entwirft die Texte
-dagegen für Play Games. Beides zusammen geht nicht. Die Entscheidung gehört
-getroffen, bevor jemand anfängt zu bauen — sie bestimmt, welche Rechtstexte
-gelten.
+1. Entscheiden, ob die Gegenstelle Play Games oder Firebase ist — die beiden
+   Papiere widersprechen sich hier noch (siehe unten).
+2. Rechtstexte in `ui/GameCopy.kt` gegen die Fassungen aus
+   `RECHTSTEXTE-RANGLISTE.md` tauschen, Tests laufen lassen; Webseite und PDFs
+   entstehen daraus von selbst.
+3. Datensicherheitsformular auf die zweite Fassung umstellen.
+4. Anzeigename und Avatar-Fee entscheiden: Zierde oder weg.
+5. Erst dann in der Play Console die Dienste zuschalten.
+
+**Vorher zu klären:** `VEROEFFENTLICHUNG.md` sagt „Firebase, nicht Play Games",
+`RECHTSTEXTE-RANGLISTE.md` entwirft die Texte dagegen für Play Games. Beides
+zusammen geht nicht. Die Entscheidung bestimmt, welche Rechtstexte gelten, und
+gehört getroffen, bevor jemand anfängt zu bauen.
+
+**Und der Grund, warum es nicht eilt:** Ein Server kostet ab dem ersten Tag, und
+eine Rangliste ohne Spieler zeigt eine leere Liste. Erst wird das Spiel
+gespielt, dann bekommt es eine Gegenstelle.
 
 ---
 

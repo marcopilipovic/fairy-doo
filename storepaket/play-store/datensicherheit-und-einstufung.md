@@ -106,12 +106,49 @@ Rechtstexten.
 
 ---
 
+## Die zweite Fassung: mit Play Games oder Rangliste
+
+**Heute gilt sie nicht.** Sie steht hier, damit das Umschalten später eine
+Viertelstunde dauert und keine Woche — und damit niemand den Fragebogen aus
+dem Gedächtnis neu beantwortet, während die Rechtstexte etwas anderes sagen.
+
+Sobald Punkte, Anzeigename oder Spielstand das Gerät verlassen, ändert sich am
+Fragebogen genau dies:
+
+| Datenart | Heute | Mit Rangliste | Warum |
+| --- | --- | --- | --- |
+| Geräte- oder andere IDs | erhoben, geteilt | unverändert | AdMob |
+| App-Interaktionen | erhoben, geteilt | unverändert | AdMob |
+| **Name** | leer | **erhoben und geteilt**, Zweck „App-Funktionalität", optional | Der Anzeigename wird für andere sichtbar. Entfällt, wenn er mit Play Games zur bloßen Zierde wird — dann bleibt die Zeile leer. |
+| **Sonstige nutzergenerierte Inhalte** | leer | **erhoben**, wenn der Name frei tippbar bleibt | Ein frei getippter, für andere sichtbarer Text ist genau das. Damit entsteht auch die Moderationspflicht. |
+| **Spielaktivität / App-Interaktionen** | siehe oben | zusätzlich Punktzahlen | Die Punkte gehen an die Gegenstelle. |
+
+Und bei den Sicherheitsangaben:
+
+| Frage | Heute | Mit Rangliste |
+| --- | --- | --- |
+| Können Nutzer die Löschung ihrer Daten verlangen? | Nein — es wird nichts gespeichert | **Ja** — plus ein Weg, auf dem das geht (bei Play Games die Selbstbedienung in dessen Einstellungen) |
+| Werden Daten bei der Übertragung verschlüsselt? | Ja | Ja |
+
+Im **IARC-Fragebogen** ändern sich zwei Zeilen:
+
+| Frage | Heute | Mit Rangliste |
+| --- | --- | --- |
+| Nutzer können miteinander kommunizieren | Nein | Nein, solange es bei einer Bestenliste ohne Nachrichten bleibt |
+| Nutzergenerierte Inhalte | Nein | **Ja**, sobald fremde Anzeigenamen sichtbar werden |
+
+Das ist zugleich der Grund, die Sache nicht nebenbei zu machen: Sichtbare
+fremde Namen bei einer Zielgruppe ab 13 sind eine eigene Bewertung wert. Die
+Rechtstexte dazu liegen fertig in `RECHTSTEXTE-RANGLISTE.md`.
+
+---
+
 ## Vor dem Einreichen prüfen
 
-- [ ] Die echten AdMob-Kennungen sind eingetragen — App-ID im
-      `AndroidManifest.xml`, Anzeigenblock-ID im `RewardedAdManager`.
-      **Solange dort die Test-IDs stehen, darf die App nicht veröffentlicht
-      werden.**
+- [ ] Es geht die `release`-Fassung hinaus, nicht `releaseTest`. Die
+      Kennungen stehen seit dem 31. August in `app/build.gradle.kts`, je Bauart
+      getrennt: `release` trägt die echten, `releaseTest` und `debug` Googles
+      Testkennungen. **Eine Testfassung darf nicht in die Produktion.**
 - [ ] Im AdMob-Konto ist unter den EU-Einstellungen eine Einwilligungsnachricht
       angelegt und veröffentlicht — sonst zeigt die App zwar den Dialog an,
       bekommt aber keinen Inhalt dafür.
