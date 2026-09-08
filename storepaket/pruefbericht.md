@@ -6,6 +6,15 @@ seit der Zusammenführung, laufend auf den Telefonen der Testrunde. Die erste
 Fassung dieses Berichts stammt vom 19. August; was seither dazukam, steht unten
 in der Tabelle.
 
+**Nachtrag vom 8. September 2026.** Geprüft wurde an der 1.5.0; inzwischen
+steht die App bei 1.5.7 als Nummer 61. Auf die drei Fragen unten wirkt sich das
+nicht aus: Die angeforderten Rechte sind unverändert — die neun in der Tabelle
+weiter unten, nachgezählt an der APK der 1.5.7 — und dazugekommen sind allein
+Dinge, die auf dem Gerät bleiben: der Feenkreis als dritter Helfer, der Knopf
+zum Leeren des Bretts, ein mitwachsendes Brett, Haptik beim Tippen, eine
+begrenzte Bildschirm-Wachzeit. Keine neue Anzeigen-Kennung, keine neue
+Bibliothek, kein neuer Empfänger von Daten.
+
 Drei Fragen: Können die Rechte an Mitgeliefertem Ärger machen? Kann der Store
 Ärger machen? Und kann die App auf fremden Telefonen Schaden anrichten?
 

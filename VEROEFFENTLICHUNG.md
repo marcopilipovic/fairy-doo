@@ -1,49 +1,49 @@
 # Veröffentlichung im Play Store
 
-Diese Datei sammelt, was für die Veröffentlichung nötig ist und was bereits
-erledigt wurde. Sie liegt bewusst im Repo — der Schlüssel selbst und seine
-Passwörter dagegen ausdrücklich **nicht**.
+Das Handbuch zum Ausliefern: der Schlüssel, die Baubefehle, die Angaben für den
+Eintrag und die Reihenfolge, in der eine Fassung nach draußen geht.
+
+**Was noch offen ist, steht nicht hier, sondern in `STAND.md`.** Diese Datei
+führte bis zum 8. September eine zweite Liste davon — sie war an sechs Stellen
+überholt und behauptete unter anderem, die Datenschutzseite sei noch nicht
+hochgeladen und im Code stünden noch Testkennungen. Zwei Listen desselben
+Inhalts laufen auseinander, und man merkt es beim Falschen.
+
+Aufgeteilt ist es so:
+
+| Frage | Datei |
+| --- | --- |
+| Was fehlt noch? | `STAND.md` |
+| Wie liefere ich aus? | diese Datei |
+| Was liegt im weitergereichten Paket? | `storepaket/LIESMICH.md` |
+| Was wurde vor der Veröffentlichung geprüft? | `storepaket/pruefbericht.md` |
 
 ---
 
 ## ⚠️ Der Signierschlüssel — das Wichtigste zuerst
 
-Der Upload-Schlüssel ist angelegt:
-
 ```
-fairydoku-upload.keystore     der Schlüssel selbst
-keystore.properties           Alias und Passwörter
+fairydoku-upload.keystore     der Schlüssel selbst, 4302 Byte
+keystore.properties           Alias und die zwei Kennwörter
 ```
 
-Beide Dateien liegen im Projektordner und sind über `.gitignore` von Git
-ausgeschlossen. Sie sind **nirgendwo sonst gespeichert**.
+Beide liegen im Projektordner und sind über `.gitignore` von Git ausgeschlossen.
+**Gehen sie verloren, lässt sich die App im Play Store nicht mehr
+aktualisieren** — mit allen Bewertungen und Installationen.
 
-**Gehen sie verloren, lässt sich die App im Play Store nie wieder
-aktualisieren.** Der Eintrag wäre dann tot — mit allen Bewertungen,
-Installationen und Ranglisten. Es gibt dafür keine Wiederherstellung, auch
-nicht durch Google.
+**Gesichert am 30. August 2026 an drei Orten:** dieser Rechner, ein USB-Stick
+und ein Ausdruck. Das Druckblatt schreibt den Schlüssel als 80 Zeilen Text um,
+jede mit eigener Prüfsumme, dazu Fingerabdruck und Rückweg — erzeugt von
+`/home/nataly/schluessel-sicherung/bauen.py`, und die Rückrechnung ist
+nachgeprüft: Byte für Byte identisch.
 
-### Sicherungen
-
-- ✅ **USB-Stick** — am 6. August 2026 kopiert, Größe geprüft (4.302 Bytes)
-- ⬜ **Zweiter Ort** — noch offen. Am einfachsten der Passwortmanager, wenn er
-  Dateianhänge kann; sonst ein zweiter Stick, der woanders liegt.
-
-Zwei Sicherungen an *unabhängigen* Orten sind der Sinn der Sache — nicht zweimal
-derselbe Rechner, nicht zweimal dieselbe Cloud.
-
-### Weiter zu tun
-
-1. Das Passwort zusätzlich im Passwortmanager ablegen — getrennt von der Datei.
-2. In der Play Console **Play App Signing** aktivieren (Standard bei neuen
-   Apps). Google verwahrt dann den eigentlichen Verteilschlüssel; dieser hier
-   ist nur der Upload-Schlüssel. Geht er trotzdem verloren, kann Google einen
-   Austausch anbieten — aber verlassen sollte man sich darauf nicht.
+Beim ersten Upload **Play App Signing** aktivieren (Standard bei neuen Apps).
+Google verwahrt dann den eigentlichen Verteilschlüssel; dieser hier ist nur der
+Upload-Schlüssel und ließe sich im Notfall über den Support austauschen.
 
 ### Fingerabdrücke
 
-Für die Play Console und für Dienste, die eine Schlüsselbindung brauchen
-(etwa Play Games oder Firebase):
+Für die Play Console und für Dienste, die eine Schlüsselbindung brauchen:
 
 ```
 SHA-1:   B4:10:3C:F8:E6:61:20:0D:19:1F:28:76:E5:05:DE:75:2A:13:8B:6B
@@ -59,76 +59,66 @@ Gültig bis: 22. Dezember 2053
 export JAVA_HOME=~/.jdks/jdk-17.0.20+8
 export ANDROID_HOME=~/Android/Sdk
 
-./gradlew bundleRelease      # app-release.aab — das lädst du hoch
-./gradlew assembleRelease    # app-release.apk — zum Ausprobieren auf dem Gerät
-./gradlew testDebugUnitTest  # Tests
+./gradlew testDebugUnitTest    # Tests, erzeugt nebenbei die Rechtstext-Seite
+./gradlew bundleReleaseTest    # .aab für die Testspuren, mit Googles Testwerbung
+./gradlew bundleRelease        # .aab für die Veröffentlichung, echte Kennungen
+./gradlew assembleReleaseTest  # dieselbe Testfassung als APK fürs Telefon
 ```
 
-Ergebnisse liegen in `app/build/outputs/`.
+Ergebnisse liegen unter `app/build/outputs/`. **Hochgeladen wird die `.aab`**,
+nicht die APK — Google baut daraus für jedes Gerät eine passende, kleinere
+Fassung.
 
-**Hochgeladen wird die `.aab`**, nicht die APK. Google baut daraus für jedes
-Gerät eine passende, kleinere Fassung.
+**Es gibt zwei Bauarten, die im Store landen können.** Beide tragen denselben
+Paketnamen `ug.humb.fairydoku`, sind verkleinert, verschleiert und mit demselben
+Schlüssel signiert; sie unterscheiden sich allein in der Werbung:
 
-### Nach jedem Upload
+| | Werbung | wofür |
+| --- | --- | --- |
+| `releaseTest` | Googles Testanzeigen | interne und geschlossene Tests |
+| `release` | die echten Kennungen | die Veröffentlichung |
 
-Nichts. Die Zuordnungsdatei, ohne die Absturzberichte unlesbar bleiben, liegt
-im Bundle selbst: `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`,
-nachgesehen am 8. September 2026 im Bundle der 1.5.7. Die Play Console nimmt
-sie von dort. Nur wer eine APK statt eines Bundles hochlädt, muss
-`app/build/outputs/mapping/<Bauart>/mapping.txt` von Hand hinterlegen.
+Der Sinn: Wer auf eine echte Anzeige tippt, erzeugt „ungültigen Traffic" — der
+häufigste Weg, ein AdMob-Konto zu verlieren. Auf die Testfassung darf die
+Testrunde tippen, so oft sie will.
 
----
+**Die Nummer muss steigen**, und zwar spurübergreifend. Zuletzt gebaut:
+versionCode 61, versionName 1.5.7.
 
-## Stand der Vorbereitung
+### Nach dem Upload
 
-| | Punkt | Stand |
-|---|---|---|
-| 1 | Signierschlüssel | ✅ angelegt, eine Sicherung auf USB — zweite fehlt |
-| 2 | Signierter Release-Build (AAB + APK) | ✅ baut durch, 5,5 MB APK |
-| 3 | Entwicklerkonto bei Google (einmalig ~25 USD) | ⬜ **nur Nataly** |
-| 4 | Einwilligungswerkzeug für Werbung (UMP) | ✅ eingebaut, Widerruf in den Einstellungen |
-| 5 | Datenschutzerklärung unter einer Web-Adresse | ✅ Seite neu erzeugt (22.8., ohne Vermerke) — **hochladen fehlt** |
-| 6 | Platzhalter in den Rechtstexten ausfüllen | ⬜ **nur Nataly** |
-| 7 | Store-Eintrag: Symbol, Bilder, Beschreibung, Fragebögen | ⬜ offen |
-| 8 | **Echte AdMob-Anzeigen-ID** statt der Test-ID | ⬜ **nur Nataly** |
+Nichts. Die Zuordnungsdatei, ohne die Absturzberichte unlesbar bleiben, liegt im
+Bundle selbst unter
+`BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map` — nachgesehen
+am 8. September 2026 im Bundle der 1.5.7. Nur wer eine APK statt eines Bundles
+hochlädt, muss `app/build/outputs/mapping/<Bauart>/mapping.txt` von Hand
+hinterlegen.
 
 ### Die Rechtstext-Seite
 
-`./gradlew testDebugUnitTest` erzeugt sie nach `app/build/rechtstexte/index.html`
-— aus derselben Quelle, aus der auch die App ihre Texte bezieht. Beide können
-damit nicht auseinanderlaufen.
+`./gradlew testDebugUnitTest` erzeugt sie nach `app/build/rechtstexte/` — aus
+derselben Quelle, aus der die App ihre Texte bezieht (`ui/GameCopy.kt`). Beide
+können damit nicht auseinanderlaufen; ein Test hält sie gleich. Die Seiten
+liegen unter `storepaket/webseite/seiten/` und stehen im Netz:
 
-Daneben entsteht `offene-platzhalter.txt` mit allem, was noch auszufüllen ist.
+```
+https://fairydoku.sites.humb.ug/de/impressum
+https://fairydoku.sites.humb.ug/de/nutzungsbedingungen
+https://fairydoku.sites.humb.ug/de/datenschutz     ← die für den Store
+https://fairydoku.sites.humb.ug/de/lizenzen
+```
 
-Die Datei muss irgendwo öffentlich erreichbar liegen; die Adresse trägst du in
-der Play Console ein. Es genügt eine einzelne Datei — sie braucht kein
-JavaScript und lädt nichts nach.
-
-### Werbung: noch die Test-ID im Code
-
-`app/src/main/java/com/fairydoo/game/ads/RewardedAdManager.kt` benutzt bislang
-Googles offizielle **Test**-Anzeigen-ID, und im `AndroidManifest.xml` steht die
-Test-App-ID. Beides muss vor der Veröffentlichung durch die echten Werte aus
-einem AdMob-Konto ersetzt werden — sonst verdient die App nichts, und Google
-beanstandet Testanzeigen in einer veröffentlichten App.
-
-### Was nur Nataly erledigen kann
-
-**Entwicklerkonto.** play.google.com/console, einmalig etwa 25 US-Dollar.
-Die Identitätsprüfung dauert je nach Andrang ein paar Tage — das lohnt sich
-früh anzustoßen.
-
-**Die Platzhalter in `app/src/main/java/com/fairydoo/game/ui/GameCopy.kt`:**
-`[Firmenname / Rechtsform]`, `[Straße und Hausnummer]`, `[PLZ und Ort]`,
-`[E-Mail-Adresse]`, `[Name der Geschäftsführung]`, `[Monat Jahr]`.
-Sie stehen in Impressum, AGB und Datenschutzerklärung.
+Für den Eintrag zählt `/de/datenschutz` — nicht die Startseite. Google ruft
+genau diese Adresse ab.
 
 ---
 
 ## Angaben für den Store-Eintrag
 
-Ergibt sich aus dem, was besprochen wurde:
-
+- **Konto:** das Organisationskonto der App HUMB UG, nicht ein Privatkonto.
+  Dafür ist eine D-U-N-S-Nummer nötig. Google zeigt bei verifizierten Konten
+  Name und Anschrift im Eintrag an; sie müssen mit dem Impressum
+  übereinstimmen — App HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle.
 - **Kategorie:** Puzzle — nicht „Familie"
 - **Zielgruppe:** ab 13 Jahren; **nicht** ins Programm „Designed for Families"
 - **Inhaltseinstufung:** kommt über den Fragebogen von allein auf die niedrigste
@@ -138,6 +128,11 @@ Ergibt sich aus dem, was besprochen wurde:
   Familienrichtlinien greifen doch.
 - **Datensicherheitsformular:** muss zur Datenschutzerklärung passen.
   Widersprüche zwischen beiden sind ein häufiger Ablehnungsgrund.
+- **Play Games-Dienste:** nein, nicht zu dieser Veröffentlichung. Begründung in
+  `STAND.md`.
+
+Texte, Bilder und die Antworten für beide Fragebögen liegen fertig in
+`storepaket/play-store/`.
 
 ---
 
@@ -149,76 +144,42 @@ Nicht direkt in die Produktion, sondern der Reihe nach:
    Aktualisierung in Minuten
 2. **Pre-Launch-Report abwarten** — Google lässt die App automatisch auf echten
    Geräten laufen und meldet Abstürze, bevor irgendwer sie sieht
-3. **Geschlossener Test**
-4. **Stufenweise Freigabe** — mit 5 % anfangen, Android Vitals beobachten,
-   dann erhöhen
+3. **Stufenweise Freigabe** — mit 5 % anfangen, Android Vitals beobachten, dann
+   erhöhen
 
 Der Grund: Eine schlechte Bewertung aus der Startwoche bleibt jahrelang stehen,
 auch wenn der Fehler in einer Stunde behoben ist.
+
+*Der geschlossene Test dazwischen entfällt.* Er ist die Auflage für
+Privatkonten — zwölf Testende über vierzehn Tage; für das Organisationskonto
+gilt sie nicht.
+
+---
+
+## Was sich nur auf einem echten Telefon prüfen lässt
+
+| | Was | Warum |
+| --- | --- | --- |
+| ⬜ | **Tagesabschluss** | Kommt das Overlay nach vier Uhr früh? Kommt der Feenstaub im Vorrat an? Erscheint es nur einmal? |
+| ⬜ | **Werbung** | Ab dem vierten Level. Kommt die Belohnung an? |
+| ⬜ | **Einwilligungsdialog** | Nur bei frischer Installation und nur in der EU. Ablehnen muss sauber funktionieren. |
+| ⬜ | **Neustart** | Steht der Stand nach vollständigem Schließen noch? |
+| ⬜ | **Querformat** | Android 16 erzwingt auf großen Bildschirmen kein Hochformat mehr. Das Brett ist vorbereitet, gesehen hat es dort noch niemand. |
+| ✅ | **Release-Fassung** | Läuft. Die Testrunde spielt seit dem 28. August signierte Fassungen. |
+| ✅ | **Klang insgesamt** | Gehört — und daraufhin sind die berechnete Musik und der Schreckenslaut wieder durch die Aufnahmen ersetzt. |
 
 ---
 
 ## Später, nicht jetzt
 
-- **Online-Rangliste** (Firebase, nicht Play Games — siehe
-  `RECHTSTEXTE-RANGLISTE.md`). Erst wenn es Spielerinnen gibt.
-- **Ligen.** Brauchen 25–30 Aktive pro Gruppe, sonst wirken sie leer.
-- **iOS.** Die Spiellogik ließe sich übernehmen, die Oberfläche wäre neu —
-  Kotlin mit Compose läuft nicht auf dem iPhone.
-
----
-
-## Die vollständige Liste
-
-Angelegt am 7. August 2026, fortgeschrieben bis zum 29. August. Alles, was
-zwischen heute und dem Play Store steht.
-
-### Nur Nataly
-
-| | Was | Anmerkung |
-|---|---|---|
-| ⬜ | **Entwicklerkonto bei Google** | play.google.com/console, einmalig ~25 USD. Die Identitätsprüfung dauert Tage — früh anstoßen. |
-| ⬜ | **AdMob-Konto** | Liefert die echte App-ID und Anzeigen-ID. Ohne sie läuft die App mit Googles Testanzeigen, und die werden beanstandet. |
-| ✅ | **Platzhalter ausfüllen** | Erledigt am 22. August 2026. `offene-platzhalter.txt` meldet: keine offenen mehr. Die ENTWURF-Vermerke sind im selben Zug entfernt. |
-| ⬜ | **Rechtstexte prüfen lassen** | Empfehlung der Texte selbst: Fachanwalt IT-/Datenschutzrecht. |
-| ⬜ | **Datenschutzseite hochladen** | Datei entsteht per Test, braucht nur einen öffentlich erreichbaren Ort. |
-| ⬜ | **Zweite Sicherung des Schlüssels** | Der USB-Stick ist die erste. Eine reicht nicht. |
-| ✅ | **App-Namen festlegen** | „Fairydoku", 9 Zeichen. Steht in `storepaket/play-store/texte.md`. |
-| ✅ | **Klang-Lizenz klären** | Erledigt am 29. August: ElevenLabs, Tarif *Starter*, dessen Leistungsumfang die kommerzielle Lizenz für Sprache und Musik ausdrücklich nennt. Das Abo bestand, bevor die Klänge erzeugt wurden. Deshalb sind `ambient_forest.mp3` und `fairy_startled.mp3` seit dem 28. August wieder in der App. |
-
-### Zu entscheiden
-
-| | Was |
-|---|---|
-| ✅ | **Die zehn Feenmotive** — entschieden am 28. August: die Zeichnungen aus dem Handoff „Feen schlicht", nachgebaut als Vektoren. |
-| ✅ | **Die gesprochenen Lobsätze** — entschieden am 29. August beim Spielen: weglassen. Sie standen dem Weiterspielen im Weg. |
-
-### Testen, nur auf dem Gerät möglich
-
-| | Was | Warum |
-|---|---|---|
-| ⬜ | **Tagesabschluss** | Kommt das Overlay nach 4 Uhr früh? Kommt der Feenstaub im Vorrat an? Erscheint es nur einmal? |
-| ✅ | **Release-Fassung** | Läuft. Die Testrunde spielt seit dem 28. August signierte Release-APKs. |
-| ⬜ | **Werbung** | Nach den ersten drei Leveln. Kommt die Belohnung an? |
-| ⬜ | **Einwilligungsdialog** | Nur bei frischer Installation und nur in der EU. Ablehnen muss sauber funktionieren. |
-| ✅ | **Klang insgesamt** | Gehört. Genau deshalb sind die berechnete Musik und der Schreckenslaut wieder durch die Aufnahmen ersetzt. |
-| ⬜ | **Neustart** | Stand nach vollständigem Schließen noch vollständig da? |
-| ⬜ | **Querformat** | Neu seit Ziel-API 36: Android 16 erzwingt auf großen Bildschirmen kein Hochformat mehr. Das Brett ist vorbereitet, gesehen hat es dort noch niemand. |
-
-### Bei mir
-
-| | Was | Dringlichkeit |
-|---|---|---|
-| ✅ | **`targetSdk` von 35 auf 36** | Erledigt am 25. August, zusammen mit AGP 8.13.2 und Gradle 8.13. |
-| ✅ | **App-Symbol einreichfertig** | Salta in Gold, reiner Vektor — dieselbe Zeichnung wie im Spiel. `storepaket/play-store/symbol-512x512.png` für den Store. |
-| ⬜ | **Echte AdMob-Kennungen einsetzen** | Sobald das Konto steht. |
-| ✅ | **Feenmotive einbauen** | Zehn Vektorzeichnungen, alle PNG-Dateien und alle 🧚-Emoji sind raus. |
-| ✅ | **Lobsätze anpassen** | Erledigt: Sie sind ganz entfallen, mit ihnen die Sprachausgabe. |
-| ⬜ | **Signiertes AAB zum Hochladen** | Zuletzt, wenn alles andere steht. Baut fehlerfrei — zuletzt am 29. August. |
-
-### Nach der Veröffentlichung
-
 - **Illustrierte Pilze** — im Spielbildschirm stehen noch Emoji als Platzhalter
 - **Feentitel aus Bausteinen** statt des freien Namensfelds
-- **Online-Rangliste** über Firebase, wenn es Spielerinnen gibt
-- **Ligen**, ab einigen hundert Aktiven
+- **Online-Rangliste.** Erst wenn es Spielerinnen gibt: Ein Server kostet ab dem
+  ersten Tag, und eine Rangliste ohne Spieler zeigt eine leere Liste. Ob über
+  Firebase oder über Play Games, ist offen — `RECHTSTEXTE-RANGLISTE.md` entwirft
+  die Rechtstexte für Play Games, hier stand bisher „Firebase, nicht Play
+  Games". Das gehört entschieden, bevor jemand baut; es bestimmt, welche
+  Rechtstexte gelten.
+- **Ligen.** Brauchen 25–30 Aktive je Gruppe, sonst wirken sie leer.
+- **iOS.** Die Spiellogik ließe sich übernehmen, die Oberfläche wäre neu —
+  Kotlin mit Compose läuft nicht auf dem iPhone.
