@@ -38,16 +38,23 @@ GOLD, HELL = "0xFFD76B", "0xF2EFFA"
 
 # Was in welcher Szene unten steht. Der Schluessel ist die Marke aus dem Test —
 # so wandert die Schrift mit, wenn sich der Ablauf aendert.
+# Nicht jede Szene braucht eine Zeile. Das Brett am Anfang und das Lösen am
+# Ende zeigen sich selbst; wo staendig Schrift steht, liest man keine mehr.
 TEXTE = {
-    "brett": "Sechs Feen suchen ihren Platz",
-    "kreuze": "Kurz tippen: hier wohnt keine",
+    "kreuze": "Kurz tippen: keine Fee",
     "fee": "Halten: hier wohnt eine",
-    "kreis-an": "Der Feenkreis brennt",
-    "kreis-wirkt": "Jede Fee kreuzt selbst an,\nwas sie ausschließt",
-    "loesen": "Eine je Reihe, Spalte und Zone —\nund keine berührt die andere",
-    "geschafft": "Gelöst. Ohne Uhr, ohne Eile",
-    "grosses-gitter": "Alle zwei Level wächst der Wald",
+    "kreis-wirkt": "Der Feenkreis\nkreuzt selbst an",
+    "geschafft": "Gelöst — ohne Uhr",
+    "grosses-gitter": "Alle zwei Level\nwächst der Wald",
 }
+
+# Der Aufpopper: erst zu gross, dann eine Spur zu klein, dann sitzt es. Drei
+# Bilder je Stufe, zusammen ein Zehntel Sekunde. ffmpeg kann die Schriftgroesse
+# nicht ueber die Zeit rechnen (drawtext kennt hier kein `eval`), deshalb liegt
+# jede Stufe als eigenes Bild vor und wird nacheinander eingeblendet.
+STUFEN = (1.18, 0.94, 1.0)
+STUFEN_BILDER = 3
+GROESSE = 74
 
 # Sechs Kichern liegen im Spiel, und im Spiel wuerfelt es sie. Im Film gehen
 # sie der Reihe nach durch — immer dasselbe klingt nach Schleife, und genau das
@@ -74,28 +81,18 @@ def marken():
     return paare
 
 
-def schrift(text, von, bis, groesse=44):
-    """Eine Zeile, die ins Bild kommt und wieder geht.
-
-    Kein Kasten mehr. Ein Balken unter der Schrift macht aus einem Film eine
-    Bedienungsanleitung — und er deckt genau das zu, was man sehen soll. Statt
-    dessen dieselbe geschwungene Schrift wie im Titel des Spiels, in Goldcreme,
-    mit einem weichen dunklen Schatten darunter. Der Schatten ist das, was sie
-    ueber jedem Untergrund lesbar macht, ohne etwas zu verdecken.
-
-    Dazu steigt die Zeile beim Erscheinen ein Stueck auf und faellt beim Gehen
-    wieder zurueck — zwanzig Bildpunkte, kaum bewusst zu bemerken. Genau
-    deshalb wirkt sie gesetzt statt eingeblendet.
-    """
+def zeilenbild(text, groesse, ziel):
+    """Malt eine Zeile auf durchsichtigen Grund und legt sie als PNG ab."""
     t = text.replace("'", "’").replace(":", r"\:").replace("%", r"\%")
-    ein, aus = 0.5, 0.45
-    alpha = (f"if(lt(t,{von}),0,if(lt(t,{von + ein}),(t-{von})/{ein},"
-             f"if(lt(t,{bis - aus}),1,if(lt(t,{bis}),({bis}-t)/{aus},0))))")
-    steigen = f"h*0.605-18*min(1,max(0,(t-{von})/{ein}))"
-    return (f"drawtext=fontfile='{SCHRIFT_ZEILE}':text='{t}':fontcolor=0xFFE9A8"
-            f":fontsize={groesse}:x=(w-text_w)/2:y='{steigen}':line_spacing=22"
-            f":shadowcolor=0x05060F@0.85:shadowx=0:shadowy=5"
-            f":borderw=4:bordercolor=0x05060F@0.55:alpha='{alpha}'")
+    hoehe = int(groesse * 3.4)
+    lauf(
+        f"ffmpeg -v error -y -f lavfi -i \"color=c=black@0:s={BREITE}x{hoehe}:d=1,format=rgba\" "
+        f"-vf \"drawtext=fontfile='{SCHRIFT_ZEILE}':text='{t}':fontcolor=0xFFE9A8"
+        f":fontsize={groesse}:x=(w-text_w)/2:y=(h-text_h)/2:line_spacing={int(groesse * 0.45)}"
+        f":shadowcolor=0x05060F@0.9:shadowx=0:shadowy=6:borderw=5:bordercolor=0x05060F@0.6\" "
+        f"-frames:v 1 {ziel}"
+    )
+    return hoehe
 
 
 def main():
@@ -113,19 +110,66 @@ def main():
     # sind Tonspuren-Marken; stuenden sie hier mit drin, endete eine Zeile in
     # dem Augenblick, in dem sie beginnt — und waere nie zu sehen.
     szenen = [(name, bild) for name, bild in liste if name in TEXTE or name == "ende"]
-    texte = []
+
+    # Jede Zeile kommt als eigenes Bild ins Spiel — einmal je Stufe des
+    # Aufpoppers. Ueberlagert wird mittig, ueber allem, was das Spiel zeigt.
+    bilderordner = ZIEL.parent / "zeilen"
+    bilderordner.mkdir(exist_ok=True)
+    eingaben, ueberlagerungen = [], []
+    strom = 2  # 0 = Hintergrund, 1 = Bildfolge
+    ketten = ""
     for (name, von), (_, bis) in zip(szenen, szenen[1:]):
         if name not in TEXTE:
             continue
-        texte.append(schrift(TEXTE[name], von / FPS + 0.15, bis / FPS - 0.1))
-    filter_video = aufbau + ";[gelegt]" + ",".join(texte) + ",format=yuv420p[v]"
+        beginn = von / FPS + 0.12
+        ende = bis / FPS - 0.15
+        stufen_dauer = STUFEN_BILDER / FPS
+        for i, faktor in enumerate(STUFEN):
+            datei = bilderordner / f"{name}-{i}.png"
+            zeilenbild(TEXTE[name], int(GROESSE * faktor), datei)
+            # Das Standbild muss den ganzen Film ueber bereitstehen: Der
+            # Ueberlagerer nimmt sein Bild zur Zeit des Hauptstroms, und ein
+            # Standbild, das vorher endet, ist im Fenster einfach nicht da.
+            # Sichtbar wird es erst durch `enable`.
+            eingaben.append(f"-loop 1 -t {spielzeit:.2f} -i {datei}")
+            ab = beginn + i * stufen_dauer
+            bis_hier = (beginn + (i + 1) * stufen_dauer) if i < len(STUFEN) - 1 else ende
+            # Die letzte Stufe bleibt stehen und geht weich wieder weg.
+            if i == len(STUFEN) - 1:
+                ketten += (f"[{strom}:v]format=rgba,fade=t=in:st={ab:.2f}:d=0.12:alpha=1,"
+                           f"fade=t=out:st={max(0.2, ende - 0.35):.2f}:d=0.35:alpha=1[z{strom}];")
+                ueberlagerungen.append((strom, ab, bis_hier))
+            else:
+                ketten += f"[{strom}:v]format=rgba[z{strom}];"
+                ueberlagerungen.append((strom, ab, bis_hier))
+            strom += 1
+
+    # Die Kette der Ueberlagerungen: mittig, jede nur in ihrem Zeitfenster.
+    vorher = "[gelegt]"
+    schritte = []
+    for nummer, (idx, ab, bis_hier) in enumerate(ueberlagerungen):
+        marke_aus = f"[u{nummer}]" if nummer < len(ueberlagerungen) - 1 else "[v]"
+        schritte.append(
+            f"{vorher}[z{idx}]overlay=(W-w)/2:(H-h)/2-60"
+            f":enable='between(t,{ab:.2f},{bis_hier:.2f})'"
+            + marke_aus
+        )
+        vorher = marke_aus
+    if not schritte:
+        schritte = ["[gelegt]format=yuv420p[v]"]
+        filter_video = aufbau + ";" + ";".join(schritte)
+    else:
+        filter_video = aufbau + ";" + ketten + ";".join(schritte)
+        # Am Ende noch das Format fuer den Kodierer.
+        filter_video = filter_video.replace(marke_aus, "[vmix]") + ";[vmix]format=yuv420p[v]"
 
     # Ton: Musik unter allem, Kichern bei den Feen, Jubel beim Gewinn.
     quellen = [f"-i {KLANG / 'ambient_forest.mp3'}"]
-    mische = [f"[2:a]atrim=0:{spielzeit + 4:.2f},volume=0.5,"
+    ton0 = strom  # die Tonspuren kommen hinter den Zeilenbildern
+    mische = [f"[{ton0}:a]atrim=0:{spielzeit + 4:.2f},volume=0.5,"
               f"afade=t=in:st=0:d=2,afade=t=out:st={spielzeit + 1.5:.2f}:d=2.5[m]"]
     namen = ["[m]"]
-    n = 3
+    n = ton0 + 1
     kicher = 0
     for name, bild in liste:
         if name == "fee-gesetzt":
@@ -153,6 +197,7 @@ def main():
 
     teil = ZIEL.parent / "teil-spiel.mp4"
     lauf(f"ffmpeg -v error -y {hintergrund} -framerate {FPS} -i {BILDER}/%05d.png "
+         + " ".join(eingaben) + " "
          + " ".join(quellen)
          + f" -filter_complex \"{filter_video};{filter_ton}\" -map \"[v]\" -map \"[a]\" "
          f"-c:v libx264 -crf 20 -preset medium -pix_fmt yuv420p -r {FPS} "
