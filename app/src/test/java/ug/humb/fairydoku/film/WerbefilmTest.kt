@@ -97,6 +97,7 @@ class WerbefilmTest {
 
         // 3. Eine Fee setzen.
         marke("fee")
+        marke("fee-gesetzt")
         zustand.value = engine.onInput(zustand.value, GameInput.HoldCell(loesung[0]))
         halte(1.6)
 
@@ -106,12 +107,14 @@ class WerbefilmTest {
         zustand.value = engine.onInput(zustand.value, GameInput.UseFeenkreis)
         halte(0.9)
         marke("kreis-wirkt")
+        marke("fee-gesetzt")
         zustand.value = engine.onInput(zustand.value, GameInput.HoldCell(loesung[1]))
         halte(2.0)
 
         // 5. Fertig loesen.
         marke("loesen")
         for (feld in loesung.drop(2)) {
+            marke("fee-gesetzt")
             zustand.value = engine.onInput(zustand.value, GameInput.HoldCell(feld))
             halte(0.5)
         }

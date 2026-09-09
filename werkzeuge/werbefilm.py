@@ -48,8 +48,10 @@ TEXTE = {
     "grosses-gitter": "Alle zwei Level wächst der Wald.",
 }
 
-# Wo das Kichern liegt: bei jeder gesetzten Fee. Die Marken sagen es.
-KICHERN_BEI = ("fee", "kreis-wirkt", "loesen")
+# Sechs Kichern liegen im Spiel, und im Spiel wuerfelt es sie. Im Film gehen
+# sie der Reihe nach durch — immer dasselbe klingt nach Schleife, und genau das
+# ist beim ersten Ansehen aufgefallen.
+KICHERN = [f"fairy_giggle_{i}.mp3" for i in range(1, 7)]
 
 
 def lauf(befehl):
@@ -71,13 +73,22 @@ def marken():
     return paare
 
 
-def schrift(text, von, bis, farbe=HELL, groesse=44):
+def schrift(text, von, bis, farbe=HELL, groesse=40):
+    """Die Zeile liegt **ueber** dem Spiel, nicht darunter.
+
+    Ein Streifen unter dem Bild macht aus dem Film eine Tafel mit Untertiteln;
+    daraufgelegt bleibt es ein Film, in dem jemand danebensteht und sagt, was
+    passiert. Damit sie auf jedem Untergrund lesbar bleibt, sitzt sie in einem
+    halbdurchsichtigen Kasten — dort, wo im Spiel nur der Name der Waldzone
+    steht.
+    """
     t = text.replace("'", "’").replace(":", r"\:").replace("%", r"\%")
     ein = 0.35
     alpha = (f"if(lt(t,{von}),0,if(lt(t,{von + ein}),(t-{von})/{ein},"
              f"if(lt(t,{bis - ein}),1,if(lt(t,{bis}),({bis}-t)/{ein},0))))")
     return (f"drawtext=fontfile='{SCHRIFT_TEXT}':text='{t}':fontcolor={farbe}"
-            f":fontsize={groesse}:x=(w-text_w)/2:y=1740:line_spacing=14:alpha='{alpha}'")
+            f":fontsize={groesse}:x=(w-text_w)/2:y=h*0.63:line_spacing=16"
+            f":box=1:boxcolor=0x0A0E21@0.78:boxborderw=26:alpha='{alpha}'")
 
 
 def main():
@@ -88,17 +99,15 @@ def main():
     spielzeit = anzahl / FPS
     liste = marken() + [("ende", anzahl)]
 
-    # Das Spielbild sitzt oben, unten bleibt ein Streifen fuer die Schrift.
-    # Nichts wird beschnitten: Die Helferleiste ist der halbe Film.
-    hoch = 1660
-    quer = int(hoch * BREITE / HOEHE)
-    aufbau = (
-        f"[1:v]scale={quer}:{hoch}[spiel];"
-        f"[0:v][spiel]overlay=(W-w)/2:40[gelegt]"
-    )
+    # Das Spielbild fuellt das ganze Bild — die Schrift liegt darauf.
+    aufbau = f"[1:v]scale={BREITE}:{HOEHE}[gelegt]"
 
+    # Fuer die Schrift zaehlen nur die Szenen. Die Marken der einzelnen Feen
+    # sind Tonspuren-Marken; stuenden sie hier mit drin, endete eine Zeile in
+    # dem Augenblick, in dem sie beginnt — und waere nie zu sehen.
+    szenen = [(name, bild) for name, bild in liste if name in TEXTE or name == "ende"]
     texte = []
-    for (name, von), (_, bis) in zip(liste, liste[1:]):
+    for (name, von), (_, bis) in zip(szenen, szenen[1:]):
         if name not in TEXTE:
             continue
         texte.append(schrift(TEXTE[name], von / FPS + 0.15, bis / FPS - 0.1))
@@ -110,13 +119,18 @@ def main():
               f"afade=t=in:st=0:d=2,afade=t=out:st={spielzeit + 1.5:.2f}:d=2.5[m]"]
     namen = ["[m]"]
     n = 3
+    kicher = 0
     for name, bild in liste:
-        if name in KICHERN_BEI:
-            quellen.append(f"-i {KLANG / 'fairy_giggle_2.mp3'}")
+        if name == "fee-gesetzt":
+            quellen.append(f"-i {KLANG / KICHERN[kicher % len(KICHERN)]}")
             ms = int(bild / FPS * 1000) + 120
-            mische.append(f"[{n}:a]adelay={ms}|{ms},volume=0.75[k{n}]")
+            # Jedes Kichern eine Spur anders laut — sechs gleich laute
+            # hintereinander klingen wieder nach Wiederholung.
+            laut = 0.62 + 0.06 * (kicher % 3)
+            mische.append(f"[{n}:a]adelay={ms}|{ms},volume={laut:.2f}[k{n}]")
             namen.append(f"[k{n}]")
             n += 1
+            kicher += 1
         if name == "geschafft":
             quellen.append(f"-i {KLANG / 'level_complete.mp3'}")
             ms = int(bild / FPS * 1000)
