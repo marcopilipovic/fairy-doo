@@ -52,9 +52,9 @@ TEXTE = {
 # Bilder je Stufe, zusammen ein Zehntel Sekunde. ffmpeg kann die Schriftgroesse
 # nicht ueber die Zeit rechnen (drawtext kennt hier kein `eval`), deshalb liegt
 # jede Stufe als eigenes Bild vor und wird nacheinander eingeblendet.
-STUFEN = (1.18, 0.94, 1.0)
+STUFEN = (1.10, 0.97, 1.0)
 STUFEN_BILDER = 3
-GROESSE = 74
+GROESSE = 68
 
 # Sechs Kichern liegen im Spiel, und im Spiel wuerfelt es sie. Im Film gehen
 # sie der Reihe nach durch — immer dasselbe klingt nach Schleife, und genau das
@@ -166,7 +166,7 @@ def main():
     # Ton: Musik unter allem, Kichern bei den Feen, Jubel beim Gewinn.
     quellen = [f"-i {KLANG / 'ambient_forest.mp3'}"]
     ton0 = strom  # die Tonspuren kommen hinter den Zeilenbildern
-    mische = [f"[{ton0}:a]atrim=0:{spielzeit + 4:.2f},volume=0.5,"
+    mische = [f"[{ton0}:a]atrim=0:{spielzeit + 4:.2f},volume=0.62,"
               f"afade=t=in:st=0:d=2,afade=t=out:st={spielzeit + 1.5:.2f}:d=2.5[m]"]
     namen = ["[m]"]
     n = ton0 + 1
@@ -177,7 +177,7 @@ def main():
             ms = int(bild / FPS * 1000) + 120
             # Jedes Kichern eine Spur anders laut — sechs gleich laute
             # hintereinander klingen wieder nach Wiederholung.
-            laut = 0.62 + 0.06 * (kicher % 3)
+            laut = 0.42 + 0.05 * (kicher % 3)
             mische.append(f"[{n}:a]adelay={ms}|{ms},volume={laut:.2f}[k{n}]")
             namen.append(f"[k{n}]")
             n += 1
@@ -185,7 +185,7 @@ def main():
         if name == "geschafft":
             quellen.append(f"-i {KLANG / 'level_complete.mp3'}")
             ms = int(bild / FPS * 1000)
-            mische.append(f"[{n}:a]adelay={ms}|{ms},volume=0.9[j{n}]")
+            mische.append(f"[{n}:a]adelay={ms}|{ms},volume=0.8[j{n}]")
             namen.append(f"[j{n}]")
             n += 1
     filter_ton = ";".join(mische) + ";" + "".join(namen) + \

@@ -85,41 +85,41 @@ class WerbefilmTest {
 
         // 1. Das Brett, einen Augenblick in Ruhe.
         marke("brett")
-        halte(1.4)
+        halte(2.2)
 
         // 2. Kreuze setzen — die haeufigste Geste im Spiel.
         marke("kreuze")
         val zumAusschliessen = alleFelder.filter { it !in loesung.toSet() }.take(4)
         for (feld in zumAusschliessen) {
             zustand.value = engine.onInput(zustand.value, GameInput.TapCell(feld))
-            halte(0.45)
+            halte(0.8)
         }
 
         // 3. Eine Fee setzen.
         marke("fee")
         marke("fee-gesetzt")
         zustand.value = engine.onInput(zustand.value, GameInput.HoldCell(loesung[0]))
-        halte(1.6)
+        halte(2.4)
 
         // 4. Der Feenkreis: anzuenden, dann eine Fee setzen — das halbe Brett
         //    kreuzt sich von selbst zu. Der beste Augenblick, den das Spiel hat.
         marke("kreis-an")
         zustand.value = engine.onInput(zustand.value, GameInput.UseFeenkreis)
-        halte(0.9)
+        halte(1.4)
         marke("kreis-wirkt")
         marke("fee-gesetzt")
         zustand.value = engine.onInput(zustand.value, GameInput.HoldCell(loesung[1]))
-        halte(2.0)
+        halte(3.2)
 
         // 5. Fertig loesen.
         marke("loesen")
         for (feld in loesung.drop(2)) {
             marke("fee-gesetzt")
             zustand.value = engine.onInput(zustand.value, GameInput.HoldCell(feld))
-            halte(0.5)
+            halte(1.0)
         }
         marke("geschafft")
-        halte(2.2)
+        halte(3.4)
 
         // 6. Ein grosses Gitter — dafuer ein neues Spiel, Level 9.
         marke("grosses-gitter")
@@ -128,7 +128,7 @@ class WerbefilmTest {
         zustand.value = grossLoesung.take(5).fold(gross) { acc, pos ->
             engine.onInput(acc, GameInput.HoldCell(pos))
         }
-        halte(2.4)
+        halte(3.6)
 
         File(ziel.parentFile, "marken.txt").writeText(
             marken.joinToString("\n") { "${it.second}\t${it.first}" } + "\n",
