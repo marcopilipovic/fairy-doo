@@ -29,6 +29,7 @@ MARKEN = WURZEL / "app" / "build" / "werbefilm" / "marken.txt"
 KLANG = WURZEL / "app" / "src" / "main" / "res" / "raw"
 SCHRIFT_TITEL = WURZEL / "app" / "src" / "main" / "res" / "font" / "cinzel_decorative_black.ttf"
 SCHRIFT_TEXT = WURZEL / "app" / "src" / "main" / "res" / "font" / "quicksand_variable.ttf"
+SCHRIFT_ZEILE = WURZEL / "app" / "src" / "main" / "res" / "font" / "cinzel_decorative_bold.ttf"
 ZIEL = WURZEL / "app" / "build" / "werbefilm" / "Fairydoku-Werbefilm.mp4"
 
 FPS = 30
@@ -38,14 +39,14 @@ GOLD, HELL = "0xFFD76B", "0xF2EFFA"
 # Was in welcher Szene unten steht. Der Schluessel ist die Marke aus dem Test —
 # so wandert die Schrift mit, wenn sich der Ablauf aendert.
 TEXTE = {
-    "brett": "Ein Gitter aus Waldzonen. Sechs Feen suchen ihren Platz.",
-    "kreuze": "Kurz tippen setzt ein Kreuz — hier wohnt keine Fee.",
-    "fee": "Gedrückt halten setzt die Fee.",
-    "kreis-an": "Der Feenkreis brennt — eine halbe Minute lang.",
-    "kreis-wirkt": "Jetzt kreuzt jede gesetzte Fee selbst an,\nwelche Felder sie ausschließt.",
-    "loesen": "Eine je Reihe, eine je Spalte, eine je Zone —\nund keine berührt die andere.",
-    "geschafft": "Gelöst. Keine Uhr hat gedrängt.",
-    "grosses-gitter": "Alle zwei Level wächst der Wald.",
+    "brett": "Sechs Feen suchen ihren Platz",
+    "kreuze": "Kurz tippen: hier wohnt keine",
+    "fee": "Halten: hier wohnt eine",
+    "kreis-an": "Der Feenkreis brennt",
+    "kreis-wirkt": "Jede Fee kreuzt selbst an,\nwas sie ausschließt",
+    "loesen": "Eine je Reihe, Spalte und Zone —\nund keine berührt die andere",
+    "geschafft": "Gelöst. Ohne Uhr, ohne Eile",
+    "grosses-gitter": "Alle zwei Level wächst der Wald",
 }
 
 # Sechs Kichern liegen im Spiel, und im Spiel wuerfelt es sie. Im Film gehen
@@ -73,22 +74,28 @@ def marken():
     return paare
 
 
-def schrift(text, von, bis, farbe=HELL, groesse=40):
-    """Die Zeile liegt **ueber** dem Spiel, nicht darunter.
+def schrift(text, von, bis, groesse=44):
+    """Eine Zeile, die ins Bild kommt und wieder geht.
 
-    Ein Streifen unter dem Bild macht aus dem Film eine Tafel mit Untertiteln;
-    daraufgelegt bleibt es ein Film, in dem jemand danebensteht und sagt, was
-    passiert. Damit sie auf jedem Untergrund lesbar bleibt, sitzt sie in einem
-    halbdurchsichtigen Kasten — dort, wo im Spiel nur der Name der Waldzone
-    steht.
+    Kein Kasten mehr. Ein Balken unter der Schrift macht aus einem Film eine
+    Bedienungsanleitung — und er deckt genau das zu, was man sehen soll. Statt
+    dessen dieselbe geschwungene Schrift wie im Titel des Spiels, in Goldcreme,
+    mit einem weichen dunklen Schatten darunter. Der Schatten ist das, was sie
+    ueber jedem Untergrund lesbar macht, ohne etwas zu verdecken.
+
+    Dazu steigt die Zeile beim Erscheinen ein Stueck auf und faellt beim Gehen
+    wieder zurueck — zwanzig Bildpunkte, kaum bewusst zu bemerken. Genau
+    deshalb wirkt sie gesetzt statt eingeblendet.
     """
     t = text.replace("'", "’").replace(":", r"\:").replace("%", r"\%")
-    ein = 0.35
+    ein, aus = 0.5, 0.45
     alpha = (f"if(lt(t,{von}),0,if(lt(t,{von + ein}),(t-{von})/{ein},"
-             f"if(lt(t,{bis - ein}),1,if(lt(t,{bis}),({bis}-t)/{ein},0))))")
-    return (f"drawtext=fontfile='{SCHRIFT_TEXT}':text='{t}':fontcolor={farbe}"
-            f":fontsize={groesse}:x=(w-text_w)/2:y=h*0.63:line_spacing=16"
-            f":box=1:boxcolor=0x0A0E21@0.78:boxborderw=26:alpha='{alpha}'")
+             f"if(lt(t,{bis - aus}),1,if(lt(t,{bis}),({bis}-t)/{aus},0))))")
+    steigen = f"h*0.605-18*min(1,max(0,(t-{von})/{ein}))"
+    return (f"drawtext=fontfile='{SCHRIFT_ZEILE}':text='{t}':fontcolor=0xFFE9A8"
+            f":fontsize={groesse}:x=(w-text_w)/2:y='{steigen}':line_spacing=22"
+            f":shadowcolor=0x05060F@0.85:shadowx=0:shadowy=5"
+            f":borderw=4:bordercolor=0x05060F@0.55:alpha='{alpha}'")
 
 
 def main():
