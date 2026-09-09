@@ -140,6 +140,17 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+
+            all {
+                // Der Werbefilm laeuft nur auf Anforderung: Er schreibt
+                // Hunderte Bilder und dauert Minuten.
+                //
+                //     ./gradlew testDebugUnitTest --tests '*WerbefilmTest*' -Dwerbefilm=ja
+                //
+                // Ohne das Weiterreichen bliebe die Eigenschaft beim
+                // Gradle-Prozess haengen und der Test uebersprungen.
+                it.systemProperty("werbefilm", System.getProperty("werbefilm") ?: "")
+            }
         }
     }
 

@@ -620,8 +620,16 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     }
 }
 
+/**
+ * Der Spielbildschirm ohne alles, was ihn mit dem Gerät verbindet.
+ *
+ * `internal` statt `private`, damit der Werbefilm ihn zeichnen kann: Er wird
+ * auf dem Rechner gerechnet statt auf einem Telefon gedreht, und dafür muss der
+ * Test dieselbe Oberfläche aufrufen können, die die App zeigt. Nachgebaut wäre
+ * sie ein zweites Mal zu pflegen — und beim ersten Umbau veraltet.
+ */
 @Composable
-private fun GameContent(
+internal fun GameContent(
     state: GameState,
     isPreparing: Boolean,
     bestScore: Int,
