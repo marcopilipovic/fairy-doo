@@ -7,18 +7,22 @@ Die Aufnahme steht in `app/src/test/java/ug/humb/fairydoku/film/WerbefilmTest.kt
     ./gradlew testDebugUnitTest --tests '*WerbefilmTest*' -Dwerbefilm=ja
     python3 werkzeuge/werbefilm.py
 
-Hier kommt nur noch dazu, was kein Bildschirm hergibt: die Schrift, die sagt,
-was gerade passiert, ein Schlussbild und der Ton. **Gesprochen wird nichts.**
-Die Stimme aus der ersten Fassung ist am 9. September 2026 herausgeflogen — sie
-passte zu einem Buehnen-Oger, nicht zu einem Feenwald, und in den sozialen
-Netzen laeuft der Ton bei den meisten ohnehin nicht mit.
+**Der Aufbau, und warum er dreimal umgeworfen wurde.** Zuerst lief die Schrift
+in einem Balken unter dem Bild — das sieht aus wie eine Bedienungsanleitung.
+Dann lag sie auf dem Spielfeld — und deckte sekundenlang genau das zu, was sie
+erklaerte. Jetzt bekommt sie ihren eigenen Augenblick: **Zwischentitel**, wie im
+Stummfilm. Eine Karte sagt, was gleich passiert, dann zeigt es das Spiel — ohne
+ein Wort im Bild.
 
-Der Ton kommt aus dem Spiel selbst: die Waldmusik als Bett, das Kichern beim
-Setzen, der Jubel beim geloesten Level. Damit bleibt die Rechtefrage
-geschlossen — es ist dieselbe ElevenLabs-Lizenz wie in der App.
+Das loest drei Dinge auf einmal: Das Brett ist nie verdeckt, die Schrift steht
+nur so lange, wie man zum Lesen braucht, und der Film bekommt einen Takt statt
+eines Dauerlaufs.
+
+**Gesprochen wird nichts.** Der Ton kommt aus dem Spiel selbst: Waldmusik als
+Bett, das Kichern beim Setzen, der Jubel beim geloesten Level. Damit bleibt die
+Rechtefrage geschlossen — dieselbe ElevenLabs-Lizenz wie in der App.
 """
 
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -28,71 +32,113 @@ BILDER = WURZEL / "app" / "build" / "werbefilm" / "bilder"
 MARKEN = WURZEL / "app" / "build" / "werbefilm" / "marken.txt"
 KLANG = WURZEL / "app" / "src" / "main" / "res" / "raw"
 SCHRIFT_TITEL = WURZEL / "app" / "src" / "main" / "res" / "font" / "cinzel_decorative_black.ttf"
-SCHRIFT_TEXT = WURZEL / "app" / "src" / "main" / "res" / "font" / "quicksand_variable.ttf"
 SCHRIFT_ZEILE = WURZEL / "app" / "src" / "main" / "res" / "font" / "cinzel_decorative_bold.ttf"
+ARBEIT = WURZEL / "app" / "build" / "werbefilm" / "teile"
 ZIEL = WURZEL / "app" / "build" / "werbefilm" / "Fairydoku-Werbefilm.mp4"
 
 FPS = 30
 BREITE, HOEHE = 1080, 1920
-GOLD, HELL = "0xFFD76B", "0xF2EFFA"
+GOLD, CREME = "0xFFD76B", "0xFFE9A8"
+BLENDE = 0.45
 
-# Was in welcher Szene unten steht. Der Schluessel ist die Marke aus dem Test —
-# so wandert die Schrift mit, wenn sich der Ablauf aendert.
-# Nicht jede Szene braucht eine Zeile. Das Brett am Anfang und das Lösen am
-# Ende zeigen sich selbst; wo staendig Schrift steht, liest man keine mehr.
-TEXTE = {
-    "kreuze": "Kurz tippen: keine Fee",
-    "fee": "Halten: hier wohnt eine",
-    "kreis-wirkt": "Der Feenkreis\nkreuzt selbst an",
-    "geschafft": "Gelöst — ohne Uhr",
-    "grosses-gitter": "Alle zwei Level\nwächst der Wald",
-}
+# Der Ablauf: Karten und Szenen im Wechsel. Eine Szene nennt ihre Marken aus
+# dem Test — von der ersten bis vor die naechste.
+ABLAUF = [
+    ("karte", "Ein Feenwald\nvoller Logik", 2.0),
+    ("szene", "brett", "kreuze"),
+    ("karte", "Kurz tippen:\nhier wohnt keine", 1.8),
+    ("szene", "kreuze", "fee"),
+    ("karte", "Halten:\nhier wohnt eine", 1.8),
+    ("szene", "fee", "kreis-an"),
+    ("karte", "Der Feenkreis\nkreuzt selbst an", 2.0),
+    ("szene", "kreis-an", "loesen"),
+    ("szene", "loesen", "grosses-gitter", 5.0),
+    ("karte", "Keine Uhr.\nKeine Käufe.", 1.8),
+    ("szene", "grosses-gitter", "ende"),
+]
 
-# Der Aufpopper: erst zu gross, dann eine Spur zu klein, dann sitzt es. Drei
-# Bilder je Stufe, zusammen ein Zehntel Sekunde. ffmpeg kann die Schriftgroesse
-# nicht ueber die Zeit rechnen (drawtext kennt hier kein `eval`), deshalb liegt
-# jede Stufe als eigenes Bild vor und wird nacheinander eingeblendet.
-STUFEN = (1.10, 0.97, 1.0)
-STUFEN_BILDER = 3
-GROESSE = 68
-
-# Sechs Kichern liegen im Spiel, und im Spiel wuerfelt es sie. Im Film gehen
-# sie der Reihe nach durch — immer dasselbe klingt nach Schleife, und genau das
-# ist beim ersten Ansehen aufgefallen.
 KICHERN = [f"fairy_giggle_{i}.mp3" for i in range(1, 7)]
 
 
 def lauf(befehl):
     ergebnis = subprocess.run(befehl, shell=True, capture_output=True, text=True)
     if ergebnis.returncode:
-        print(ergebnis.stderr[-1500:], file=sys.stderr)
-        raise SystemExit(f"Abgebrochen: {befehl[:90]}")
+        print(ergebnis.stderr[-1200:], file=sys.stderr)
+        raise SystemExit(f"Abgebrochen: {befehl[:100]}")
 
 
 def marken():
     if not MARKEN.exists():
         raise SystemExit("Keine Marken — erst den Test mit -Dwerbefilm=ja laufen lassen.")
-    paare = []
+    liste = []
     for zeile in MARKEN.read_text(encoding="utf-8").splitlines():
-        if not zeile.strip():
-            continue
-        bild, name = zeile.split("\t")
-        paare.append((name, int(bild)))
-    return paare
+        if zeile.strip():
+            bild, name = zeile.split("\t")
+            liste.append((name, int(bild)))
+    return liste
 
 
-def zeilenbild(text, groesse, ziel):
-    """Malt eine Zeile auf durchsichtigen Grund und legt sie als PNG ab."""
+def erste(liste, name, anzahl):
+    """Das Bild, bei dem eine Marke zuerst steht. `ende` ist der Schluss."""
+    if name == "ende":
+        return anzahl
+    for marke, bild in liste:
+        if marke == name:
+            return bild
+    raise SystemExit(f"Marke {name} fehlt — Ablauf und Test passen nicht zusammen.")
+
+
+def karte(text, dauer, ziel, gross=False):
+    """Ein Zwischentitel: dunkler Grund, geschwungene Schrift, ruhig."""
     t = text.replace("'", "’").replace(":", r"\:").replace("%", r"\%")
-    hoehe = int(groesse * 3.4)
+    schrift = SCHRIFT_TITEL if gross else SCHRIFT_ZEILE
+    groesse = 96 if gross else 78
+    # Sanft auf und wieder ab, damit die Karte nicht schlaegt.
+    alpha = f"if(lt(t,0.45),t/0.45,if(lt(t,{dauer - 0.45:.2f}),1,({dauer}-t)/0.45))"
     lauf(
-        f"ffmpeg -v error -y -f lavfi -i \"color=c=black@0:s={BREITE}x{hoehe}:d=1,format=rgba\" "
-        f"-vf \"drawtext=fontfile='{SCHRIFT_ZEILE}':text='{t}':fontcolor=0xFFE9A8"
-        f":fontsize={groesse}:x=(w-text_w)/2:y=(h-text_h)/2:line_spacing={int(groesse * 0.45)}"
-        f":shadowcolor=0x05060F@0.9:shadowx=0:shadowy=6:borderw=5:bordercolor=0x05060F@0.6\" "
-        f"-frames:v 1 {ziel}"
+        f"ffmpeg -v error -y -f lavfi -t {dauer} -i \"gradients=s={BREITE}x{HOEHE}"
+        f":c0=0x090C1C:c1=0x1E1745:x0=0:y0=0:x1={BREITE}:y1={HOEHE}:n=2:speed=0.003:r={FPS}\" "
+        f"-f lavfi -t {dauer} -i anullsrc=r=48000:cl=stereo "
+        f"-vf \"drawtext=fontfile='{schrift}':text='{t}':fontcolor={CREME}:fontsize={groesse}"
+        f":x=(w-text_w)/2:y=(h-text_h)/2:line_spacing=30:alpha='{alpha}',format=yuv420p\" "
+        f"-c:v libx264 -crf 20 -pix_fmt yuv420p -r {FPS} -c:a aac -b:a 160k -shortest {ziel}"
     )
-    return hoehe
+
+
+def schlusskarte(ziel, dauer):
+    """Der Abspann: Name, Untertitel, und der Satz, der bleiben soll."""
+    zeilen = [
+        (SCHRIFT_TITEL, "FAIRYDOKU", 104, GOLD, 700, 0.2),
+        (SCHRIFT_ZEILE, "Ein Feenwald voller Logik", 52, CREME, 880, 0.7),
+        (SCHRIFT_ZEILE, "Bald im Google Play Store", 46, CREME, 1120, 1.3),
+    ]
+    male = []
+    for schrift, text, groesse, farbe, y, ab in zeilen:
+        t = text.replace("'", "’")
+        alpha = (f"if(lt(t,{ab}),0,if(lt(t,{ab + 0.6}),(t-{ab})/0.6,"
+                 f"if(lt(t,{dauer - 0.5:.2f}),1,({dauer}-t)/0.5)))")
+        male.append(f"drawtext=fontfile='{schrift}':text='{t}':fontcolor={farbe}"
+                    f":fontsize={groesse}:x=(w-text_w)/2:y={y}:alpha='{alpha}'")
+    lauf(
+        f"ffmpeg -v error -y -f lavfi -t {dauer} -i \"gradients=s={BREITE}x{HOEHE}"
+        f":c0=0x090C1C:c1=0x1E1745:x0=0:y0=0:x1={BREITE}:y1={HOEHE}:n=2:speed=0.003:r={FPS}\" "
+        f"-f lavfi -t {dauer} -i anullsrc=r=48000:cl=stereo "
+        f"-vf \"{','.join(male)},format=yuv420p\" "
+        f"-c:v libx264 -crf 20 -pix_fmt yuv420p -r {FPS} -c:a aac -b:a 160k -shortest {ziel}"
+    )
+
+
+def szene(von, bis, ziel):
+    """Ein Stueck der Aufnahme — ohne ein Wort darauf."""
+    anzahl = bis - von
+    lauf(
+        f"ffmpeg -v error -y -framerate {FPS} -start_number {von} -i {BILDER}/%05d.png "
+        f"-f lavfi -t {anzahl / FPS:.2f} -i anullsrc=r=48000:cl=stereo "
+        f"-frames:v {anzahl} -vf format=yuv420p "
+        f"-c:v libx264 -crf 20 -preset medium -pix_fmt yuv420p -r {FPS} "
+        f"-c:a aac -b:a 160k -shortest {ziel}"
+    )
+    return anzahl / FPS
 
 
 def main():
@@ -100,134 +146,93 @@ def main():
     if not bilder:
         raise SystemExit("Keine Bilder — erst den Test mit -Dwerbefilm=ja laufen lassen.")
     anzahl = len(bilder)
-    spielzeit = anzahl / FPS
-    liste = marken() + [("ende", anzahl)]
+    liste = marken()
+    ARBEIT.mkdir(parents=True, exist_ok=True)
 
-    # Das Spielbild fuellt das ganze Bild — die Schrift liegt darauf.
-    aufbau = f"[1:v]scale={BREITE}:{HOEHE}[gelegt]"
+    # Teile bauen und dabei mitschreiben, wann im fertigen Film welches
+    # Aufnahme-Bild liegt — daran haengt spaeter der Ton.
+    teile, dauern, versatz = [], [], []
+    uhr = 0.0
+    for nummer, eintrag in enumerate(ABLAUF):
+        datei = ARBEIT / f"{nummer:02d}.mp4"
+        if eintrag[0] == "karte":
+            _, text, dauer = eintrag
+            karte(text, dauer, datei)
+            dauern.append(dauer)
+        else:
+            von_name, bis_name = eintrag[1], eintrag[2]
+            grenze = eintrag[3] if len(eintrag) > 3 else None
+            von = erste(liste, von_name, anzahl)
+            bis = erste(liste, bis_name, anzahl)
+            if grenze:
+                bis = min(bis, von + int(grenze * FPS))
+            dauer = szene(von, bis, datei)
+            dauern.append(dauer)
+            versatz.append((von, bis, uhr))
+        teile.append(datei)
+        uhr += dauer - (BLENDE if nummer else 0)
 
-    # Fuer die Schrift zaehlen nur die Szenen. Die Marken der einzelnen Feen
-    # sind Tonspuren-Marken; stuenden sie hier mit drin, endete eine Zeile in
-    # dem Augenblick, in dem sie beginnt — und waere nie zu sehen.
-    szenen = [(name, bild) for name, bild in liste if name in TEXTE or name == "ende"]
+    schluss = ARBEIT / "99-schluss.mp4"
+    schlusskarte(schluss, 4.6)
+    teile.append(schluss)
+    dauern.append(4.6)
 
-    # Jede Zeile kommt als eigenes Bild ins Spiel — einmal je Stufe des
-    # Aufpoppers. Ueberlagert wird mittig, ueber allem, was das Spiel zeigt.
-    bilderordner = ZIEL.parent / "zeilen"
-    bilderordner.mkdir(exist_ok=True)
-    eingaben, ueberlagerungen = [], []
-    strom = 2  # 0 = Hintergrund, 1 = Bildfolge
-    ketten = ""
-    for (name, von), (_, bis) in zip(szenen, szenen[1:]):
-        if name not in TEXTE:
-            continue
-        beginn = von / FPS + 0.12
-        ende = bis / FPS - 0.15
-        stufen_dauer = STUFEN_BILDER / FPS
-        for i, faktor in enumerate(STUFEN):
-            datei = bilderordner / f"{name}-{i}.png"
-            zeilenbild(TEXTE[name], int(GROESSE * faktor), datei)
-            # Das Standbild muss den ganzen Film ueber bereitstehen: Der
-            # Ueberlagerer nimmt sein Bild zur Zeit des Hauptstroms, und ein
-            # Standbild, das vorher endet, ist im Fenster einfach nicht da.
-            # Sichtbar wird es erst durch `enable`.
-            eingaben.append(f"-loop 1 -t {spielzeit:.2f} -i {datei}")
-            ab = beginn + i * stufen_dauer
-            bis_hier = (beginn + (i + 1) * stufen_dauer) if i < len(STUFEN) - 1 else ende
-            # Die letzte Stufe bleibt stehen und geht weich wieder weg.
-            if i == len(STUFEN) - 1:
-                ketten += (f"[{strom}:v]format=rgba,fade=t=in:st={ab:.2f}:d=0.12:alpha=1,"
-                           f"fade=t=out:st={max(0.2, ende - 0.35):.2f}:d=0.35:alpha=1[z{strom}];")
-                ueberlagerungen.append((strom, ab, bis_hier))
-            else:
-                ketten += f"[{strom}:v]format=rgba[z{strom}];"
-                ueberlagerungen.append((strom, ab, bis_hier))
-            strom += 1
-
-    # Die Kette der Ueberlagerungen: mittig, jede nur in ihrem Zeitfenster.
-    vorher = "[gelegt]"
-    schritte = []
-    for nummer, (idx, ab, bis_hier) in enumerate(ueberlagerungen):
-        marke_aus = f"[u{nummer}]" if nummer < len(ueberlagerungen) - 1 else "[v]"
-        schritte.append(
-            f"{vorher}[z{idx}]overlay=(W-w)/2:(H-h)/2-60"
-            f":enable='between(t,{ab:.2f},{bis_hier:.2f})'"
-            + marke_aus
+    # Alles mit weichen Blenden aneinander.
+    eingaben = " ".join(f"-i {t}" for t in teile)
+    ketten, vorher, laufzeit = [], "[0:v]", 0.0
+    for i in range(1, len(teile)):
+        laufzeit += dauern[i - 1] - (BLENDE if i > 1 else 0)
+        ziel_marke = f"[b{i}]" if i < len(teile) - 1 else "[v]"
+        ketten.append(
+            f"{vorher}[{i}:v]xfade=transition=fade:duration={BLENDE}"
+            f":offset={laufzeit - BLENDE:.2f}{ziel_marke}"
         )
-        vorher = marke_aus
-    if not schritte:
-        schritte = ["[gelegt]format=yuv420p[v]"]
-        filter_video = aufbau + ";" + ";".join(schritte)
-    else:
-        filter_video = aufbau + ";" + ketten + ";".join(schritte)
-        # Am Ende noch das Format fuer den Kodierer.
-        filter_video = filter_video.replace(marke_aus, "[vmix]") + ";[vmix]format=yuv420p[v]"
+        vorher = ziel_marke
+    gesamt = laufzeit - BLENDE + dauern[-1]
 
-    # Ton: Musik unter allem, Kichern bei den Feen, Jubel beim Gewinn.
+    stumm = ARBEIT / "stumm.mp4"
+    lauf(f"ffmpeg -v error -y {eingaben} -filter_complex \"{';'.join(ketten)}\" -map \"[v]\" "
+         f"-c:v libx264 -crf 20 -preset medium -pix_fmt yuv420p -r {FPS} {stumm}")
+
+    # Der Ton, auf der neuen Zeitrechnung: Kichern dort, wo im fertigen Film
+    # eine Fee gesetzt wird, Jubel beim geloesten Level.
+    def zeitpunkt(bild):
+        for von, bis, beginn in versatz:
+            if von <= bild < bis:
+                return beginn + (bild - von) / FPS
+        return None
+
     quellen = [f"-i {KLANG / 'ambient_forest.mp3'}"]
-    ton0 = strom  # die Tonspuren kommen hinter den Zeilenbildern
-    mische = [f"[{ton0}:a]atrim=0:{spielzeit + 4:.2f},volume=0.62,"
-              f"afade=t=in:st=0:d=2,afade=t=out:st={spielzeit + 1.5:.2f}:d=2.5[m]"]
-    namen = ["[m]"]
-    n = ton0 + 1
-    kicher = 0
+    mische = [f"[1:a]atrim=0:{gesamt + 2:.2f},volume=0.62,afade=t=in:st=0:d=2.5,"
+              f"afade=t=out:st={gesamt - 3:.2f}:d=3[m]"]
+    namen, n, kicher = ["[m]"], 2, 0
     for name, bild in liste:
+        wann = zeitpunkt(bild)
+        if wann is None:
+            continue
         if name == "fee-gesetzt":
             quellen.append(f"-i {KLANG / KICHERN[kicher % len(KICHERN)]}")
-            ms = int(bild / FPS * 1000) + 120
-            # Jedes Kichern eine Spur anders laut — sechs gleich laute
-            # hintereinander klingen wieder nach Wiederholung.
-            laut = 0.42 + 0.05 * (kicher % 3)
+            ms = int(wann * 1000) + 150
+            laut = 0.40 + 0.05 * (kicher % 3)
             mische.append(f"[{n}:a]adelay={ms}|{ms},volume={laut:.2f}[k{n}]")
             namen.append(f"[k{n}]")
             n += 1
             kicher += 1
-        if name == "geschafft":
+        elif name == "geschafft":
             quellen.append(f"-i {KLANG / 'level_complete.mp3'}")
-            ms = int(bild / FPS * 1000)
-            mische.append(f"[{n}:a]adelay={ms}|{ms},volume=0.8[j{n}]")
+            ms = int(wann * 1000)
+            mische.append(f"[{n}:a]adelay={ms}|{ms},volume=0.75[j{n}]")
             namen.append(f"[j{n}]")
             n += 1
-    filter_ton = ";".join(mische) + ";" + "".join(namen) + \
+    ton = ";".join(mische) + ";" + "".join(namen) + \
         f"amix=inputs={len(namen)}:duration=first:dropout_transition=0:normalize=0[a]"
 
-    hintergrund = (f"-f lavfi -t {spielzeit:.2f} -i \"gradients=s={BREITE}x{HOEHE}"
-                   f":c0=0x0A0E21:c1=0x241A52:x0=0:y0=0:x1={BREITE}:y1={HOEHE}"
-                   f":n=2:speed=0.004:r={FPS}\"")
+    lauf(f"ffmpeg -v error -y -i {stumm} " + " ".join(quellen) +
+         f" -filter_complex \"{ton}\" -map 0:v -map \"[a]\" -c:v copy "
+         f"-c:a aac -b:a 160k -movflags +faststart -t {gesamt:.2f} {ZIEL}")
 
-    teil = ZIEL.parent / "teil-spiel.mp4"
-    lauf(f"ffmpeg -v error -y {hintergrund} -framerate {FPS} -i {BILDER}/%05d.png "
-         + " ".join(eingaben) + " "
-         + " ".join(quellen)
-         + f" -filter_complex \"{filter_video};{filter_ton}\" -map \"[v]\" -map \"[a]\" "
-         f"-c:v libx264 -crf 20 -preset medium -pix_fmt yuv420p -r {FPS} "
-         f"-c:a aac -b:a 160k -t {spielzeit:.2f} {teil}")
-
-    # Das Schlussbild — dieselbe Schrift wie im Spiel.
-    schluss = ZIEL.parent / "teil-schluss.mp4"
-    dauer = 4.0
-    karte = ",".join([
-        (f"drawtext=fontfile='{SCHRIFT_TITEL}':text='FAIRYDOKU':fontcolor={GOLD}"
-         f":fontsize=112:x=(w-text_w)/2:y=760:alpha='if(lt(t,0.6),t/0.6,1)'"),
-        (f"drawtext=fontfile='{SCHRIFT_TEXT}':text='Ein Feenwald voller Logik'"
-         f":fontcolor={HELL}:fontsize=52:x=(w-text_w)/2:y=930:alpha='if(lt(t,0.9),max(0,(t-0.3)/0.6),1)'"),
-        (f"drawtext=fontfile='{SCHRIFT_TEXT}':text='Keine Uhr. Keine Käufe.'"
-         f":fontcolor={GOLD}:fontsize=46:x=(w-text_w)/2:y=1090:alpha='if(lt(t,1.4),max(0,(t-0.8)/0.6),1)'"),
-        "format=yuv420p",
-    ])
-    lauf(f"ffmpeg -v error -y -f lavfi -t {dauer} -i \"gradients=s={BREITE}x{HOEHE}"
-         f":c0=0x0A0E21:c1=0x241A52:x0=0:y0=0:x1={BREITE}:y1={HOEHE}:n=2:speed=0.004:r={FPS}\" "
-         f"-f lavfi -t {dauer} -i anullsrc=r=48000:cl=stereo "
-         f"-vf \"{karte}\" -c:v libx264 -crf 20 -pix_fmt yuv420p -r {FPS} -c:a aac -b:a 160k {schluss}")
-
-    lauf(f"ffmpeg -v error -y -i {teil} -i {schluss} -filter_complex "
-         f"\"[0:v][1:v]xfade=transition=fade:duration=0.7:offset={spielzeit - 0.7:.2f}[v];"
-         f"[0:a][1:a]acrossfade=d=0.7[a]\" -map \"[v]\" -map \"[a]\" "
-         f"-c:v libx264 -crf 20 -preset medium -pix_fmt yuv420p -r {FPS} -c:a aac -b:a 160k "
-         f"-movflags +faststart {ZIEL}")
-
-    groesse = ZIEL.stat().st_size / 1_000_000
-    print(f"Fertig: {ZIEL} — {anzahl} Bilder, {spielzeit + dauer - 0.7:.1f} s, {groesse:.1f} MB")
+    print(f"Fertig: {ZIEL} — {anzahl} Bilder Spiel, {gesamt:.1f} s, "
+          f"{ZIEL.stat().st_size / 1_000_000:.1f} MB")
 
 
 if __name__ == "__main__":
