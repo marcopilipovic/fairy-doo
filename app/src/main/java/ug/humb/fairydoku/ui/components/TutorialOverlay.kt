@@ -31,6 +31,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ug.humb.fairydoku.game.FairyDustSupply
+import ug.humb.fairydoku.game.FeenkreisSupply
 import ug.humb.fairydoku.game.FairySpecies
 import ug.humb.fairydoku.game.GameState
 import ug.humb.fairydoku.game.GlobalLives
@@ -296,7 +297,18 @@ private fun GestureArrow(label: String) {
     )
 }
 
-/** Schritt 4: die zwei Zauberhilfen. */
+/**
+ * Schritt 4: die drei Zauberhilfen.
+ *
+ * Der Feenkreis stand hier bis zum 9. September 2026 nicht drin. Er kam am
+ * 2. September ins Spiel, ein paar Stunden nachdem diese Anleitung auf zwei
+ * Bildschirme gekürzt worden war — in der Leiste standen seither drei Knöpfe
+ * und hier zwei. Wer neu anfängt, merkt genau das.
+ *
+ * Die beiden ersten nehmen Nachdenken ab, der dritte nur Tipparbeit. Deshalb
+ * steht er hinten und bekommt einen eigenen Satz statt einer dritten Zeile im
+ * selben Muster.
+ */
 @Composable
 private fun TutorialPowerUpsStep() {
     TutorialHeadline("Deine Zauberhilfen")
@@ -304,6 +316,7 @@ private fun TutorialPowerUpsStep() {
     Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         MiniPowerTile("✨", "Feenstaub")
         MiniPowerTile("🔮", "Irrlicht")
+        MiniPowerTile("💫", "Feenkreis")
     }
 
     Spacer(Modifier.height(12.dp))
@@ -316,8 +329,11 @@ private fun TutorialPowerUpsStep() {
             append("🔮 ")
             withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Irrlicht") }
             append(": deckt ein sicheres Feld ohne Fee auf.\n")
-            append("Du hast ${FairyDustSupply.max} Feenstaub und ${IrrlichtSupply.max} Irrlicht — ")
-            append("verbrauchte wachsen in zwei Stunden nach.")
+            append("💫 ")
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Feenkreis") }
+            append(": eine halbe Minute lang kreuzt jede Fee, die du setzt, selbst an.\n")
+            append("Du hast ${FairyDustSupply.max} Feenstaub, ${IrrlichtSupply.max} Irrlicht ")
+            append("und ${FeenkreisSupply.max} Feenkreise — verbrauchte wachsen von selbst nach.")
         },
         style = MaterialTheme.typography.bodyMedium,
         fontSize = 12.5.sp,

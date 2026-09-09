@@ -4,10 +4,10 @@ Gebaut am 8. September 2026 aus `main`, Stand `203699d`.
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-1.5.7-61-TEST.aab` | **das hier in die Testspur hochladen** |
-| `Fairydoku-1.5.7-61-TEST.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
+| `Fairydoku-1.5.8-62-TEST.aab` | **das hier in die Testspur hochladen** |
+| `Fairydoku-1.5.8-62-TEST.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
 
-Paket `ug.humb.fairydoku`, versionCode **61**, versionName **1.5.7-test**,
+Paket `ug.humb.fairydoku`, versionCode **62**, versionName **1.5.8-test**,
 Ziel-API 36, mindestens Android 8. Signiert mit dem Upload-Schlüssel,
 SHA-256 `75:F9:9F:44:00:85:1D:42:96:C2:3D:90:AD:1D:E9:B8:4B:1D:5C:8D:1B:29:3B:B9:A2:0F:7B:1D:D8:7D:3E:F4`.
 
