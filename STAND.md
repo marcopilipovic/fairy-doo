@@ -138,13 +138,18 @@ in `versionshinweise.md` unter 2e und 2f.
    trägt die echten, die Debug-Fassung behält Googles Testkennungen. Wer auf
    eigene echte Anzeigen tippt, erzeugt „ungültigen Traffic" — der häufigste
    Weg, ein AdMob-Konto zu verlieren.
-2. **Einwilligungsnachricht im AdMob-Konto** anlegen und veröffentlichen
-   (EU-Einstellungen). Sonst zeigt die App den Dialog, bekommt aber keinen
-   Inhalt. **Offen ist womöglich nur noch die Frage:** Am 8. September stand
-   dieser Punkt seit dem 31. August unangetastet da, ohne dass jemand sagen
-   konnte, ob er erledigt ist. **Mirco fragen** — er verwaltet das Konto. Nicht
-   zu verwechseln mit den Kennungen aus Punkt 1; die sind seit dem 31. August
-   drin.
+2. ~~**Einwilligungsnachricht im AdMob-Konto.**~~ **Erledigt, nachgewiesen am
+   10. September 2026.** Unter *Datenschutz und Mitteilungen → Europäische
+   Verordnungen* steht genau eine Nachricht: App `fairydoku`, Sprache
+   „Deutsch (de) + 1 weitere", letzte Änderung **08.09.2026**, Status
+   **Veröffentlicht**. Damit ist der Punkt geschlossen, der seit dem 31. August
+   unbeantwortet dastand — die Frage lautete „Mirco fragen", und die Antwort
+   war ein Blick ins Konto.
+
+   **Für die anderen beiden Apps gibt es sie nicht.** Die Liste enthält nur
+   diese eine Zeile. Lotte & Balu hat seit dem 10.9. eine echte
+   Anzeigenkennung, aber keine Einwilligungsnachricht; Schein oder Nichtschein
+   hat noch gar keine AdMob-App.
 3. ~~**Datenschutz-Seite ins Netz.**~~ **Erledigt am 31. August.** Sie steht
    unter `fairydoku.sites.humb.ug` mit vier getrennten Adressen; für den Store
    zählt `/de/datenschutz`. Alle vier geprüft und wortgleich mit der Quelle.
