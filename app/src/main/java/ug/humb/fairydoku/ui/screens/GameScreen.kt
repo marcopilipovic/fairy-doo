@@ -668,17 +668,44 @@ internal fun GameContent(
     onClearBoard: () -> Unit,
 ) {
     NightBackdrop {
+      BoxWithConstraints(Modifier.fillMaxSize()) {
+        // **Flach heisst: das Brett zuerst.**
+        //
+        // Im Querformat eines Telefons bleiben rund 360 dp Hoehe. Titel,
+        // Punktzeile, Fortschritt, Leben, Hinweiszeile und Helferleiste
+        // brauchen zusammen schon mehr — und weil das Brett sich als einziges
+        // beugt (`weight(1f, fill = false)`), blieb fuer es null uebrig: Am
+        // 11. September 2026 zeigte die Geraeteprobe einen Bildschirm ganz
+        // ohne Spielfeld.
+        //
+        // Das ist kein Randfall mehr. Ab Ziel-API 36 achtet Android auf
+        // grossen Bildschirmen nicht auf `screenOrientation="portrait"`; auf
+        // einem Tablet steht das Spiel quer, ob es will oder nicht.
+        //
+        // Unter 560 dp Hoehe fallen deshalb die beiden Zeilen weg, die nichts
+        // entscheiden: der Titel und die Hinweiszeile. Was bleibt, ist alles,
+        // was man zum Spielen braucht.
+        val flach = maxHeight < 560.dp
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
-                .padding(start = 18.dp, end = 18.dp, top = 20.dp, bottom = 30.dp),
+                .padding(
+                    start = 18.dp,
+                    end = 18.dp,
+                    top = if (flach) 8.dp else 20.dp,
+                    bottom = if (flach) 10.dp else 30.dp,
+                ),
             horizontalAlignment = Alignment.CenterHorizontally,
             // Wie in der Vorlage ein kompakter Stapel mit 12 dp Abstand — auf
             // hohen Displays mittig statt am oberen Rand klebend.
-            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+            verticalArrangement = Arrangement.spacedBy(
+                if (flach) 6.dp else 12.dp,
+                Alignment.CenterVertically,
+            ),
         ) {
-            TitleRow()
+            if (!flach) TitleRow()
 
             // Die Punkte kommen erst an, wenn der Gewinn-Dialog zu ist.
             //
@@ -779,7 +806,7 @@ internal fun GameContent(
                 }
             }
 
-            StatusMessageLine(text = GameCopy.statusText(state.statusMessage))
+            if (!flach) StatusMessageLine(text = GameCopy.statusText(state.statusMessage))
 
             PowerUpBar(
             state = state,
@@ -798,6 +825,7 @@ internal fun GameContent(
             onWatchAdForFeenkreis = onWatchAdForFeenkreis,
         )
         }
+      }
 
         // ❔ bleibt auf beiden Bildschirmen links — auf der Levelkarte steht
         // es dort schon. 🗺️ übernimmt rechts die Rolle, die dort 📜 auf der

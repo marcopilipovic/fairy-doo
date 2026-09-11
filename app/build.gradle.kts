@@ -36,8 +36,8 @@ android {
         // Seither zählt sie über beiden bisherigen Ständen weiter und wird bei
         // jeder Fassung erhöht, die auf ein Telefon geht. Für den Store ist die
         // Zahl der ersten Einreichung beliebig; nur steigen muss sie danach.
-        versionCode = 62
-        versionName = "1.5.8"
+        versionCode = 63
+        versionName = "1.5.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -194,6 +194,12 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.play.services.ads)
     implementation(libs.user.messaging.platform)
+
+    // Googles Werbe-SDK zieht ueber play-services-basement ein fragment 1.1.0
+    // von 2019 herein. Die Play Console meldet es als veraltet, und sie hat
+    // recht: Die App selbst benutzt kein einziges Fragment, aber was im Paket
+    // landet, steht im Paket. Diese Zeile hebt es auf die aktuelle Fassung.
+    implementation(libs.androidx.fragment)
 
     testImplementation(libs.junit)
 
