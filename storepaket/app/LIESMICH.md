@@ -70,8 +70,11 @@ Die 1.5.6 als Nummer 60 liegt in der Testspur. Seither:
 - **Die Händlererklärung** in der Play Console (DSA). Als App HUMB UG seid ihr
   Händler; Name, Anschrift und E-Mail erscheinen dann öffentlich im Eintrag und
   müssen mit dem Impressum übereinstimmen.
-- **Die Bildschirmfotos.** Die im Store-Paket sind vom 29. August und zeigen das
-  kleinere Brett und zwei Helfer statt drei. Im offenen Test sehen die alle.
+- ~~Die Bildschirmfotos.~~ **Erledigt am 11. September.** Die fünf sind neu und
+  zeigen den heutigen Stand: das mitgewachsene Brett, alle drei Helfer, den
+  brennenden Feenkreis, ein 8×8-Gitter und den Gewinn-Dialog. Sie werden
+  gerechnet statt aufgenommen — ändert sich ein Bildschirm, laufen sie neu
+  durch.
 
 ## 4. Was in diesem Paket sonst liegt
 

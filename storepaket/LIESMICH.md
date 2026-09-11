@@ -22,22 +22,26 @@ Alles liegt auf `main`.
 | `datensicherheit-und-einstufung.md` | Vorschläge für die beiden Fragebögen | — |
 | `versionshinweise.md` | Was ist neu, Testerhinweise, Rezensenten | max. 500 Zeichen |
 
-Die Bildschirmfotos sind 1080 × 2090, aus der Release-APK auf einem Pixel-5-
-Emulator aufgenommen, ohne Statusleiste und Navigationsleiste. Die ersten
-beiden erscheinen in der Suchliste, oft ohne dass jemand den Eintrag öffnet —
-deshalb stehen Spielbrett und Feenpfad vorn.
+Die Bildschirmfotos sind **1080 × 1920** und entstehen nicht mehr an einem
+Gerät, sondern werden gerechnet:
 
-> **Anmerkung zu den Bildern.** Zwei Stellen sind nachträglich bearbeitet, beide
-> aus demselben Grund: Die Aufnahmen zeigten etwas, das die App nicht mehr
-> zeigt.
->
-> 1. Auf Bild 1 stand unten der alte Name der Waldfee. Ersetzt wurde nur diese
->    eine Zeile, in derselben Schrift, Größe und Farbe.
-> 2. Auf den Bildern 1, 3 und 4 lief noch die Spieluhr. Sie ist herausgenommen
->    und die Blätterzeile wieder mittig gesetzt — genau so, wie die App sie seit
->    dem 28. August zeichnet.
->
-> Beim nächsten Emulator-Durchgang gehören die drei trotzdem frisch aufgenommen.
+```
+./gradlew testDebugUnitTest --tests '*BildschirmfotosTest*' -Dwerbefilm=ja
+```
+
+Der Test sagt, **welcher Spielstand** zu sehen sein soll — zwei Feen auf einem
+6×6-Brett, der brennende Feenkreis, ein 8×8-Gitter, der Gewinn-Dialog —, und
+zeichnet die Oberfläche dazu. Die Bilder landen in `app/build/bildschirmfotos/`
+und gehören von dort hierher.
+
+Das ersetzt den alten Weg, und mit ihm seine Fehlerquelle: Bis zum
+11. September 2026 kamen sie von einem Emulator, wurden zugeschnitten und von
+Hand nachbearbeitet — drei von fünf zeigten dadurch noch die Spieluhr, die es
+seit dem 28. August nicht mehr gibt, und keines den dritten Helfer. Wer jetzt
+eine Zeile in der App ändert, lässt die fünf neu durchlaufen.
+
+Die ersten beiden erscheinen in der Suchliste, oft ohne dass jemand den Eintrag
+öffnet — deshalb stehen Spielbrett und Feenpfad vorn.
 
 ## Für die Webseite
 
