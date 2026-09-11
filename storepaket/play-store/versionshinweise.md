@@ -174,7 +174,8 @@ Brett mit, bis der Platz aufgebraucht ist.
 Auf großen Gittern sollte sich das deutlich anfühlen. Auf Tablets besonders.
 
 Was weiter offen ist
-• Tablets sind benutzbar, aber nicht angepasst.
+• Tablets sind benutzbar, aber nicht eigens gestaltet — das Brett steht in der
+  Mitte, der Platz daneben bleibt leer.
 • Level 5 ist schwerer als die Level danach. Bekannt.
 
 Worauf ihr besonders achten könnt
@@ -270,7 +271,8 @@ Alles Übrige ist wie in 1.5.6 — Feenkreis, Brett leeren, größeres Brett,
 Haptik beim Tippen, drei Minuten Bildschirmzeit, eine Punktezahl.
 
 Was weiter offen ist
-• Tablets sind benutzbar, aber nicht angepasst.
+• Tablets sind benutzbar, aber nicht eigens gestaltet — das Brett steht in der
+  Mitte, der Platz daneben bleibt leer.
 • Level 5 ist schwerer als die Level danach. Bekannt.
 • Wird das Gerät noch warm? Die Dauerschleife ist raus; wenn es trotzdem
   heiß wird, steckt mehr dahinter.
@@ -312,6 +314,91 @@ Known and still open
 
 What to report
 What happened, what you expected, and on which device.
+```
+
+---
+
+## 2g. Hinweise für den offenen Test (Fassung 1.5.9, Nummer 63)
+
+**Hier gilt etwas anderes als in den Runden davor: echte Werbung.** In den
+geschlossenen Runden lief die Testfassung mit Googles Beispielanzeigen, auf die
+man beliebig tippen durfte. Im offenen Test ist die App öffentlich — und
+Testanzeigen in einer ausgelieferten App sind genau das, was Googles Regeln
+untersagen. Hochgeladen wird deshalb die Veröffentlichungsfassung.
+
+**Wer zum Team gehört, muss vorher im AdMob-Konto als Testgerät eingetragen
+sein** (Einstellungen → Testgeräte). Dann sieht dieses Gerät weiterhin
+Beispielanzeigen und darf tippen. Ohne den Eintrag erzeugt jeder eigene Tipp
+„ungültigen Traffic" — der häufigste Weg, ein AdMob-Konto zu verlieren.
+
+```
+Was diese Fassung ist
+Die erste öffentliche. Sie ist dieselbe App, die später im Store steht.
+
+Zur Werbung
+Sie erscheint nie von selbst: Es gibt weder Banner noch Unterbrechungen. Ein
+Video läuft nur, wenn du selbst darauf tippst, um Feenstaub, ein Irrlicht oder
+ein Leben zu bekommen. Vor der ersten Anzeige fragt Google nach deiner
+Einwilligung; lehnst du ab, bleibt das Spiel vollständig spielbar — nur die
+Videos für Nachschub entfallen.
+
+Was seit der letzten Runde neu ist
+• Der Profilname lässt sich wieder eintippen. Er sprang vorher bei jedem
+  Buchstaben zurück.
+• Die Anleitung erklärt jetzt alle drei Helfer. Der Feenkreis fehlte dort,
+  obwohl er im Spiel längst da war.
+• In flachen Fenstern — geteilter Bildschirm, Faltgerät, Tablet im Querformat —
+  bleibt das Spielbrett stehen. Vorher wurde es dort zusammengedrückt, bis
+  nichts mehr davon übrig war.
+
+Worauf du besonders achten könntest
+• Die ersten drei Level. Sie sollen ohne Erklärung zu schaffen sein.
+• Level 5. Ein Tester fand es schwerer als alles bis Level 20 — stimmt das?
+• Der Feenkreis: anzünden, dann eine Fee setzen. Ist klar, was da passiert?
+• Wärme und Akku. Wird das Gerät nach zwanzig Minuten heiß?
+
+Was du melden kannst
+Was passiert ist, was du erwartet hast, und auf welchem Gerät. Ein
+Bildschirmfoto sagt mehr als eine Beschreibung.
+
+Kein Konto, keine Anmeldung, keine Käufe. Offline spielbar; nur die Werbung
+braucht Netz.
+```
+
+---
+
+## 2h. Open testing notes, English (version 1.5.9, build 63)
+
+```
+What this build is
+The first public one. It is the same app that will later be in the store.
+
+About the ads
+They never appear on their own: no banners, no interruptions. A video runs only
+when you tap for it yourself, to get fairy dust, a will-o'-the-wisp or a life.
+Before the first ad, Google asks for your consent; if you decline, the game
+stays fully playable — you just don't get the videos for supplies.
+
+What is new since the last round
+• The profile name can be typed again. It used to jump back with every letter.
+• The tutorial now explains all three helpers. The fairy ring was missing there
+  although it had long been in the game.
+• In flat windows — split screen, foldable, tablet in landscape — the board
+  stays. It used to be squeezed until nothing was left of it.
+
+Worth looking at
+• The first three levels. They should work without any explanation.
+• Level 5. One tester found it harder than everything up to level 20 — does
+  that match your experience?
+• The fairy ring: light it, then place a fairy. Is it clear what happens?
+• Heat and battery. Does the device get warm after twenty minutes?
+
+What to report
+What happened, what you expected, and on which device. A screenshot says more
+than a description.
+
+No account, no sign-up, no purchases. Playable offline; only the ads need a
+connection.
 ```
 
 ---
