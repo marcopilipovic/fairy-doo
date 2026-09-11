@@ -1,49 +1,84 @@
-# Fairydoku 1.5.7 (Nummer 61) — zum Hochladen
+# Fairydoku 1.5.9 (Nummer 63) — für den offenen Test
 
-Gebaut am 8. September 2026 aus `main`, Stand `203699d`.
+Gebaut am 11. September 2026 aus `main`.
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-1.5.8-62-TEST.aab` | **das hier in die Testspur hochladen** |
-| `Fairydoku-1.5.8-62-TEST.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
+| `Fairydoku-1.5.9-63.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
+| `Fairydoku-1.5.9-63.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
+| `Fairydoku-1.5.9-63-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
+| `Fairydoku-1.5.9-63-TEST.apk` | dazu die APK |
 
-Paket `ug.humb.fairydoku`, versionCode **62**, versionName **1.5.8-test**,
+Paket `ug.humb.fairydoku`, versionCode **63**, versionName **1.5.9**,
 Ziel-API 36, mindestens Android 8. Signiert mit dem Upload-Schlüssel,
 SHA-256 `75:F9:9F:44:00:85:1D:42:96:C2:3D:90:AD:1D:E9:B8:4B:1D:5C:8D:1B:29:3B:B9:A2:0F:7B:1D:D8:7D:3E:F4`.
 
-**Es ist die Testfassung.** Sie ist in allem gleich wie die spätere
-Veröffentlichung — derselbe Paketname, verkleinert, verschleiert, mit
-demselben Schlüssel signiert — bis auf die Werbung: Sie zeigt Googles
-Testanzeigen. Darauf darf die Testrunde tippen, ohne dass es dem AdMob-Konto
-als „ungültiger Traffic" angerechnet wird.
+Beide tragen dieselbe Nummer 63 — hochladen lässt sich nur eine davon.
+
+---
+
+## 1. Warum diesmal die Fassung mit der echten Werbung
+
+In den geschlossenen Runden war die Testfassung richtig: Googles
+Beispielanzeigen, auf die das Team beliebig tippen durfte. **Im offenen Test ist
+die App öffentlich**, und Testanzeigen in einer ausgelieferten App sind genau
+das, was Googles Regeln untersagen. Davon abgesehen prüft niemand die Werbung,
+wenn keine echte läuft.
+
+**Dafür gehören eure Geräte ins AdMob-Konto**, unter *Einstellungen →
+Testgeräte*. Dann sehen sie weiterhin Beispielanzeigen und dürfen tippen; alle
+anderen sehen echte. Ohne diesen Eintrag erzeugt jeder eigene Tipp „ungültigen
+Traffic" — der häufigste Weg, ein AdMob-Konto zu verlieren.
+
+**Und die Einwilligungsnachricht muss stehen.** Im AdMob-Konto unter
+*Datenschutz und Meldungen → DSGVO* eine Nachricht anlegen **und
+veröffentlichen**. Fehlt sie, liefert Google im EWR kein Formular aus, die App
+bekommt keine Einwilligung — und damit kommt gar keine Anzeige. Der Knopf
+verspricht dann ein Belohnungsvideo, das nie erscheint.
+
+Die APKs sind zum Ausprobieren am Telefon; hochgeladen wird immer die `.aab`.
 
 **Die Zuordnungsdatei musst du nicht getrennt hochladen.** Sie liegt im Bundle
-selbst unter `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`
-(46 MB); die Play Console nimmt sie von dort. Abstürze sind damit lesbar.
+unter `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`; die
+Play Console nimmt sie von dort.
 
-## Was neu ist
+---
 
-Der eine Fehler, den diese Fassung behebt, kam am 8. September aus der Runde:
-Das Feld für den Profilnamen sprang bei jedem Buchstaben zurück, eine Eingabe
-war nicht möglich. Ursache und Behebung stehen im Verlauf unter „Das
-Namensfeld sprang bei jedem Buchstaben zurück".
+## 2. Was seit der 1.5.6 dazugekommen ist
 
-Alles Übrige ist der Stand von 1.5.6: der Feenkreis als dritter Helfer, der
-Knopf zum Leeren des Bretts, das mitwachsende Brett, Haptik auch beim kurzen
-Tippen, drei Minuten Bildschirmzeit statt dauerhaft an, und die Punktezahl im
-Rätsel.
+Die 1.5.6 als Nummer 60 liegt in der Testspur. Seither:
 
-Die Texte für die Testspur — deutsch und englisch — stehen fertig zum Kopieren
-in `../play-store/versionshinweise.md`, Abschnitte 2e und 2f.
+- **Das Namensfeld ließ sich nicht bedienen** (1.5.7). Es sprang bei jedem
+  Buchstaben zurück; gemeldet aus der Runde, am selben Tag behoben.
+- **Die Anleitung kennt den Feenkreis** (1.5.8). Sie zeigte zwei Helfer, die
+  Leiste im Spiel drei.
+- **Drei Meldungen der Play Console behoben** (1.5.9): veraltetes
+  `androidx.fragment` aus Googles Werbe-SDK, veraltete Fenster-Schnittstellen
+  für die randlose Anzeige — und der eigentliche Fund: **In flachen Fenstern
+  verschwand das Spielbrett.** Auf einem Tablet im Querformat war es nicht mehr
+  da. Seit Ziel-API 36 achtet Android auf großen Bildschirmen nicht mehr auf
+  die Festlegung aufs Hochformat.
 
-## Was dabei nicht mitkommt
+**Die Texte für die Spur** stehen in `texte/versionshinweise.md`, Abschnitt
+**2g** auf deutsch und **2h** auf englisch.
 
-**Die fünf Bildschirmfotos in `../play-store/bildschirmfotos/` sind vom
-29. August** und zeigen die App vor dem größeren Brett und vor dem dritten
-Helfer. Für eine Testspur ist das gleichgültig — sie werden dort nicht
-gezeigt. Vor der Veröffentlichung gehören sie neu aufgenommen.
+---
 
-**Die Einwilligungsnachricht im AdMob-Konto** ist weiterhin offen (EU-
-Einstellungen, anlegen *und* veröffentlichen). Ohne sie erscheint der Dialog
-leer. Für die Testfassung mit Googles Testanzeigen ist das nicht kritisch,
-für die Veröffentlichung schon.
+## 3. Was vorher noch zu tun ist
+
+- **Die Einwilligungsnachricht** (siehe oben) — ohne sie keine Werbung im EWR.
+- **Die Händlererklärung** in der Play Console (DSA). Als App HUMB UG seid ihr
+  Händler; Name, Anschrift und E-Mail erscheinen dann öffentlich im Eintrag und
+  müssen mit dem Impressum übereinstimmen.
+- **Die Bildschirmfotos.** Die im Store-Paket sind vom 29. August und zeigen das
+  kleinere Brett und zwei Helfer statt drei. Im offenen Test sehen die alle.
+
+## 4. Was in diesem Paket sonst liegt
+
+`texte/` — der Store-Eintrag deutsch und englisch, Versions- und
+Testerhinweise, die Antworten für Datensicherheit und Alterseinstufung, dazu
+`PLAY-GAMES-START.md` als Vorrat (nicht eintragen, siehe Datei).
+
+`webseite/` — die vier Rechtstext-Seiten deutsch, dieselben englisch.
+
+`store-grafik/` — Symbol, Feature-Grafik, die alten Bildschirmfotos.
