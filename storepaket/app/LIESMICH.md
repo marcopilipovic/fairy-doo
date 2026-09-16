@@ -1,19 +1,19 @@
-# Fairydoku 1.5.9 (Nummer 63) — für den offenen Test
+# Fairydoku 1.5.10 (Nummer 64) — für den offenen Test
 
-Gebaut am 11. September 2026 aus `main`.
+Gebaut am 16. September 2026 aus `main`.
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-1.5.9-63.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
-| `Fairydoku-1.5.9-63.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
-| `Fairydoku-1.5.9-63-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
-| `Fairydoku-1.5.9-63-TEST.apk` | dazu die APK |
+| `Fairydoku-1.5.10-64.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
+| `Fairydoku-1.5.10-64.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
+| `Fairydoku-1.5.10-64-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
+| `Fairydoku-1.5.10-64-TEST.apk` | dazu die APK |
 
-Paket `ug.humb.fairydoku`, versionCode **63**, versionName **1.5.9**,
+Paket `ug.humb.fairydoku`, versionCode **64**, versionName **1.5.10**,
 Ziel-API 36, mindestens Android 8. Signiert mit dem Upload-Schlüssel,
 SHA-256 `75:F9:9F:44:00:85:1D:42:96:C2:3D:90:AD:1D:E9:B8:4B:1D:5C:8D:1B:29:3B:B9:A2:0F:7B:1D:D8:7D:3E:F4`.
 
-Beide tragen dieselbe Nummer 63 — hochladen lässt sich nur eine davon.
+Beide tragen dieselbe Nummer 64 — hochladen lässt sich nur eine davon.
 
 ---
 
@@ -52,6 +52,12 @@ Die 1.5.6 als Nummer 60 liegt in der Testspur. Seither:
   Buchstaben zurück; gemeldet aus der Runde, am selben Tag behoben.
 - **Die Anleitung kennt den Feenkreis** (1.5.8). Sie zeigte zwei Helfer, die
   Leiste im Spiel drei.
+- **Die Levelkarte wuchs nicht mit** (1.5.10). Gemeldet von einem Samsung S21:
+  „Da ist die Karte klein." Es lag nicht am Gerät, sondern an seiner
+  Einstellung — Samsungs Bildschirmzoom ändert die Dichte, und derselbe
+  Bildschirm ist dann 411 dp breit statt 360. Die Levelkreise standen mit
+  54 dp fest und wirkten darin verloren. Jetzt wächst die Karte mit dem Platz,
+  wie das Spielbrett es seit dem 30. August tut.
 - **Drei Meldungen der Play Console behoben** (1.5.9): veraltetes
   `androidx.fragment` aus Googles Werbe-SDK, veraltete Fenster-Schnittstellen
   für die randlose Anzeige — und der eigentliche Fund: **In flachen Fenstern

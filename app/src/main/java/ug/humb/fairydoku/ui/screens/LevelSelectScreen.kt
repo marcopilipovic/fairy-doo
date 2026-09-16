@@ -95,11 +95,34 @@ import ug.humb.fairydoku.ui.theme.TextPrimary
 import ug.humb.fairydoku.ui.theme.TitleBottom
 import ug.humb.fairydoku.ui.theme.TitleMiddle
 import ug.humb.fairydoku.ui.theme.TitleTop
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /** Wie viele gesperrte Level als Vorschau hinter dem höchsten freigeschalteten stehen. */
 private const val LOCKED_PREVIEW_COUNT = 6
+
+/**
+ * Wie stark die Karte mit dem Platz waechst.
+ *
+ * Die drei Masse darunter — Auslenkung, Schrittweite, Knotengroesse — stammen
+ * aus der Vorlage und galten fuer einen Bildschirm von 360 dp Breite. Das ist
+ * aber keine feste Groesse: Samsungs Bildschirmzoom aendert nicht die
+ * Aufloesung, sondern die Dichte, und derselbe 1080 Bildpunkte breite
+ * Bildschirm ist dann 411 dp breit statt 360. Die Knoten blieben 54 dp und
+ * wirkten darin verloren — aus der Testrunde am 16. September 2026, auf einem
+ * Samsung S21: "Da ist die Karte klein."
+ *
+ * Deshalb waechst die Karte jetzt mit, wie das Spielbrett es seit dem
+ * 30. August tut. Nach oben gedeckelt, sonst platzen die Knoten auf einem
+ * Tablet aus dem Bild.
+ */
+private val KARTEN_GRUNDBREITE = 360.dp
+private const val KARTEN_SKALA_MAX = 1.45f
+
+/** Die Skala fuer die aktuelle Breite — eins auf einem Bildschirm der Vorlage. */
+internal val LocalKartenSkala = staticCompositionLocalOf { 1f }
 
 /** Waagerechte Auslenkung des Pfads aus der Mitte. */
 private val PATH_AMPLITUDE = 118.dp
@@ -393,20 +416,27 @@ private fun ForestPath(
             //
             // Beim Schließen verlässt der Bildschirm die Komposition — das
             // nächste Öffnen fängt also wieder beim aktuellen Level an.
-            val scrollState = remember(currentLevel) {
+            // Wie viel groesser als die Vorlage ist dieser Bildschirm? Genau
+            // um diesen Faktor wachsen Knoten, Schrittweite und Auslenkung mit.
+            val kartenSkala = (maxWidth / KARTEN_GRUNDBREITE).coerceIn(1f, KARTEN_SKALA_MAX)
+            val knotenGroesse = NODE_SIZE * kartenSkala
+            val schrittweite = PATH_STEP * kartenSkala
+            val auslenkung = PATH_AMPLITUDE * kartenSkala
+
+            val scrollState = remember(currentLevel, kartenSkala) {
                 ScrollState(
                     with(density) {
                         LevelPathLayout.scrollToCenter(
                             level = currentLevel,
                             viewportHeight = maxHeight.toPx(),
-                            stepHeight = PATH_STEP.toPx(),
-                            nodeSize = NODE_SIZE.toPx(),
+                            stepHeight = schrittweite.toPx(),
+                            nodeSize = knotenGroesse.toPx(),
                         )
                     }.roundToInt(),
                 )
             }
 
-            val pathHeight = PATH_STEP * (levelCount - 1) + NODE_SIZE * 2
+            val pathHeight = schrittweite * (levelCount - 1) + knotenGroesse * 2
             val maxScrollPx = with(density) {
                 (pathHeight.toPx() - maxHeight.toPx()).coerceAtLeast(0f)
             }
@@ -415,15 +445,16 @@ private fun ForestPath(
             // in [TwilightScenery]/[TwilightGlowLayer] — die zeichnen ihre
             // Design-Werte in derselben Einheit und skalieren erst beim
             // Zeichnen auf echte Bildschirm-Pixel hoch.
-            val nodeCenters = remember(levelCount, laneWidth) {
+            val nodeCenters = remember(levelCount, laneWidth, kartenSkala) {
                 (1..levelCount).map { level ->
                     val cx = laneWidth.value / 2f +
-                        PATH_AMPLITUDE.value * sin(level * PATH_FREQUENCY).toFloat()
-                    val cy = PATH_STEP.value * (level - 1) + NODE_SIZE.value
+                        auslenkung.value * sin(level * PATH_FREQUENCY).toFloat()
+                    val cy = schrittweite.value * (level - 1) + knotenGroesse.value
                     Offset(cx, cy)
                 }
             }
 
+            CompositionLocalProvider(LocalKartenSkala provides kartenSkala) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -469,12 +500,12 @@ private fun ForestPath(
                         .fillMaxWidth()
                         .height(pathHeight)
                         .drawBehind {
-                            drawGoldenTrail(levelCount, density)
+                            drawGoldenTrail(levelCount, density, kartenSkala)
                         },
                 ) {
                     for (level in 1..levelCount) {
-                        val offsetX = PATH_AMPLITUDE * sin(level * PATH_FREQUENCY).toFloat()
-                        val offsetY = PATH_STEP * (level - 1) + NODE_SIZE * 0.5f
+                        val offsetX = auslenkung * sin(level * PATH_FREQUENCY).toFloat()
+                        val offsetY = schrittweite * (level - 1) + knotenGroesse * 0.5f
 
                         LevelNode(
                             level = level,
@@ -505,6 +536,7 @@ private fun ForestPath(
 
             }
         }
+            }
 
         // Dieselben Waldmotive wie im Hintergrund außen — Pilze, eine Fee,
         // Glitzer —, hier aber auf dem Moosgrund selbst statt nur drumherum.
@@ -606,12 +638,16 @@ private fun BoxScope.PathDecorations() {
  * Punktreihe. Ohne den Schein wäre die Spur auf dem dunklen Waldgrund kaum zu
  * sehen; ohne die Punkte wäre sie ein gezogener Strich und kein Weg.
  */
-private fun DrawScope.drawGoldenTrail(levelCount: Int, density: androidx.compose.ui.unit.Density) {
+private fun DrawScope.drawGoldenTrail(
+    levelCount: Int,
+    density: androidx.compose.ui.unit.Density,
+    skala: Float,
+) {
     if (levelCount < 2) return
 
-    val amplitude = with(density) { PATH_AMPLITUDE.toPx() }
-    val step = with(density) { PATH_STEP.toPx() }
-    val startY = with(density) { NODE_SIZE.toPx() } * 0.5f
+    val amplitude = with(density) { (PATH_AMPLITUDE * skala).toPx() }
+    val step = with(density) { (PATH_STEP * skala).toPx() }
+    val startY = with(density) { (NODE_SIZE * skala).toPx() } * 0.5f
     val centerX = size.width / 2f
 
     val points = (1..levelCount).map { level ->
@@ -678,7 +714,7 @@ private fun LevelNode(
 
     Box(
         modifier = modifier
-            .size(NODE_SIZE)
+            .size(NODE_SIZE * LocalKartenSkala.current)
             .clip(CircleShape)
             .drawBehind {
                 if (locked) {
