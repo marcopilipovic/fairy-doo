@@ -46,6 +46,7 @@ import ug.humb.fairydoku.ui.theme.CardBottom
 import ug.humb.fairydoku.ui.theme.CardTop
 import ug.humb.fairydoku.game.FairySpecies
 import ug.humb.fairydoku.game.GlobalLives
+import ug.humb.fairydoku.ui.GameCopy
 import ug.humb.fairydoku.game.GlobalLivesState
 import ug.humb.fairydoku.ui.sprites.FAIRY_TOKEN
 import ug.humb.fairydoku.ui.sprites.FairyImage
@@ -385,6 +386,8 @@ fun GameOverOverlay(
     adOffer: AdOffer,
     onWatchAd: () -> Unit,
     onOpenGift: () -> Unit,
+    /** Steht da, wenn ein Werbe-Versuch ohne Anzeige geendet hat. */
+    werbeHinweis: String? = null,
 ) {
     OverlayScaffold(
         borderColor = Color(0xFFFF788C).copy(alpha = 0.55f),
@@ -448,6 +451,25 @@ fun GameOverOverlay(
 
         Spacer(Modifier.height(16.dp))
 
+        // Wie lange es dauert, bis von selbst wieder eines da ist.
+        //
+        // Bis zum 20. September 2026 stand das nur auf der Levelkarte. Hier —
+        // im Augenblick, in dem die Leben alle sind — stand allein der
+        // Werbe-Knopf, und wenn der nichts lieferte, sah es aus, als kaeme nie
+        // wieder eines. Genau so wurde es aus der Testrunde gemeldet.
+        if (globalLives.lives < GlobalLives.MAX && globalLives.nextLifeAtMillis > 0L) {
+            val sekunden = ((globalLives.nextLifeAtMillis - System.currentTimeMillis())
+                .coerceAtLeast(0L) / 1000L).toInt()
+            Text(
+                text = "+💚 wächst nach in ${GameCopy.formatWaitTime(sekunden)}",
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 12.sp,
+                color = LeafGreen.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(12.dp))
+        }
+
         if (globalLives.lives > 0) {
             GoldButton(label = "Level neu starten", onClick = onRetry)
         } else if (adsUnlocked) {
@@ -464,6 +486,17 @@ fun GameOverOverlay(
             // wartet nicht auf den Countdown, sondern lässt sich sofort per
             // Geschenk auffüllen.
             GoldButton(label = "🎁 Geschenk annehmen", onClick = onOpenGift)
+        }
+
+        if (werbeHinweis != null) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = werbeHinweis,
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 12.sp,
+                color = TextPrimary.copy(alpha = 0.75f),
+                textAlign = TextAlign.Center,
+            )
         }
 
         Spacer(Modifier.height(10.dp))

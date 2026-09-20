@@ -373,12 +373,27 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
     // Bildschirm überhaupt in ON_STOP schickt, hängt davon ab, wie das
     // Werbe-SDK sie zeigt. Deshalb wird hier ausdrücklich angehalten, statt
     // sich darauf zu verlassen.
+    // Blieb ein Werbe-Versuch ohne Anzeige, sagt das Spiel es jetzt.
+    //
+    // Vorher lief er stumm aus: Der Knopf sagte "Werbung lädt…", danach war
+    // nichts passiert und kein Leben da. Aus der Testrunde am 20. September
+    // 2026: "Es läuft keine Werbung, da steht nur Werbung läuft, und es wird
+    // kein Leben aufgefüllt." Dass keine Anzeige kam, ist kein Fehler — dass
+    // niemand es erfährt, schon.
+    var werbeHinweis by remember { mutableStateOf<String?>(null) }
     val werbung = { onReward: () -> Unit ->
         viewModel.pause()
+        werbeHinweis = null
+        var belohnt = false
         ads.onAdRequested(
             activity = activity,
-            onReward = onReward,
-            onFinished = { if (!showLevelSelect && !tutorialOpen) viewModel.resume() },
+            onReward = { belohnt = true; onReward() },
+            onFinished = {
+                if (!belohnt) {
+                    werbeHinweis = "Gerade kommt keine Anzeige — versuch es später noch einmal."
+                }
+                if (!showLevelSelect && !tutorialOpen) viewModel.resume()
+            },
         )
     }
     val onWatchAdForFairyDust = { werbung { viewModel.grantFairyDust() } }
@@ -572,6 +587,7 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
                 onOpenTutorial = viewModel::openTutorial,
                 onClearBoard = { viewModel.onInput(GameInput.ClearBoard) },
                 onWatchAdForFeenkreis = onWatchAdForFeenkreis,
+                werbeHinweis = werbeHinweis,
             )
         }
 
@@ -666,6 +682,8 @@ internal fun GameContent(
     onVoiceChange: (Float) -> Unit,
     onOpenTutorial: () -> Unit,
     onClearBoard: () -> Unit,
+    /** Hinweis, wenn ein Werbe-Versuch ohne Anzeige geendet hat. */
+    werbeHinweis: String? = null,
 ) {
     NightBackdrop {
       BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -892,6 +910,7 @@ internal fun GameContent(
                 adOffer = adOffer,
                 onWatchAd = onWatchAdForLife,
                 onOpenGift = onOpenGiftForLife,
+                werbeHinweis = werbeHinweis,
             )
 
             else -> Unit

@@ -1,19 +1,19 @@
-# Fairydoku 1.5.10 (Nummer 64) — für den offenen Test
+# Fairydoku 1.5.10 (Nummer 65) — für den offenen Test
 
 Gebaut am 16. September 2026 aus `main`.
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-1.5.10-64.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
-| `Fairydoku-1.5.10-64.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
-| `Fairydoku-1.5.10-64-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
-| `Fairydoku-1.5.10-64-TEST.apk` | dazu die APK |
+| `Fairydoku-1.5.11-65.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
+| `Fairydoku-1.5.11-65.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
+| `Fairydoku-1.5.11-65-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
+| `Fairydoku-1.5.11-65-TEST.apk` | dazu die APK |
 
-Paket `ug.humb.fairydoku`, versionCode **64**, versionName **1.5.10**,
+Paket `ug.humb.fairydoku`, versionCode **65**, versionName **1.5.11**,
 Ziel-API 36, mindestens Android 8. Signiert mit dem Upload-Schlüssel,
 SHA-256 `75:F9:9F:44:00:85:1D:42:96:C2:3D:90:AD:1D:E9:B8:4B:1D:5C:8D:1B:29:3B:B9:A2:0F:7B:1D:D8:7D:3E:F4`.
 
-Beide tragen dieselbe Nummer 64 — hochladen lässt sich nur eine davon.
+Beide tragen dieselbe Nummer 65 — hochladen lässt sich nur eine davon.
 
 ---
 

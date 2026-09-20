@@ -216,7 +216,12 @@ fun LevelSelectScreen(
             // Dieselbe Sprache wie "+💚 in 1:34" bei den Wald-Leben — der
             // Tageswechsel soll sich nicht wie ein neues System anfühlen.
             Text(
-                text = "Neuer Tag in ${GameCopy.formatWaitTime(daily.remainingSeconds)}",
+                // "Neuer Tag in 8 Std." stand direkt unter der Herzreihe, in
+                // derselben kleinen goldenen Schrift wie "+💚 in 1:34" — und
+                // wurde prompt als Wartezeit auf ein Leben gelesen. Ein Leben
+                // braucht hoechstens zwei Stunden; acht kann nur der Tag sein.
+                // Jetzt sagt die Zeile, worum es geht.
+                text = "Tageswertung endet in ${GameCopy.formatWaitTime(daily.remainingSeconds)}",
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 11.sp,
                 color = GoldLight.copy(alpha = 0.85f),
