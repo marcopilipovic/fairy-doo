@@ -1,6 +1,6 @@
-# Fairydoku 1.5.10 (Nummer 65) — für den offenen Test
+# Fairydoku 1.5.11 (Nummer 65) — für den offenen Test
 
-Gebaut am 16. September 2026 aus `main`.
+Gebaut am 20. September 2026 aus `main`.
 
 | Datei | Wofür |
 | --- | --- |
@@ -64,6 +64,13 @@ Die 1.5.6 als Nummer 60 liegt in der Testspur. Seither:
   verschwand das Spielbrett.** Auf einem Tablet im Querformat war es nicht mehr
   da. Seit Ziel-API 36 achtet Android auf großen Bildschirmen nicht mehr auf
   die Festlegung aufs Hochformat.
+- **Das Spiel schwieg, wenn keine Anzeige kam** (1.5.11). Aus der Runde
+  gemeldet: „Es läuft keine Werbung, da steht dann halt nur geschrieben,
+  Werbung läuft und es wird kein Leben aufgefüllt." Am Spiel lag es nicht —
+  es fragt korrekt an und bekommt nichts zurück (siehe Einwilligungsnachricht,
+  Abschnitt 1). Aber es sagte davon nichts. Jetzt steht im Verloren-Dialog,
+  wann von selbst ein Leben nachwächst, und wenn die Anfrage ins Leere läuft:
+  „Gerade kommt keine Anzeige — versuch es später noch einmal."
 
 **Die Texte für die Spur** stehen in `texte/versionshinweise.md`, Abschnitt
 **2g** auf deutsch und **2h** auf englisch.
