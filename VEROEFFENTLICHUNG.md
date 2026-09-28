@@ -183,3 +183,51 @@ gilt sie nicht.
 - **Ligen.** Brauchen 25–30 Aktive je Gruppe, sonst wirken sie leer.
 - **iOS.** Die Spiellogik ließe sich übernehmen, die Oberfläche wäre neu —
   Kotlin mit Compose läuft nicht auf dem iPhone.
+
+---
+
+## Die Angaben in der Play Console — nachgesehen am 28.9.2026
+
+Beim Schritt vom Offenen Test in die Produktion ist das Wichtigste, **dass
+nichts neu entschieden werden muss**: Datensicherheit, Altersfreigabe und
+Zielgruppe gelten je APP, nicht je Spur. Sie sind mit der Freigabe des Offenen
+Tests bereits abgegeben und von Google angenommen worden.
+
+| Angabe | Stand | woher belegt |
+|---|---|---|
+| Zielgruppe | **ab 13 Jahren** — nicht „auch für Kinder unter 13" | von Nataly angegeben |
+| Inhalte | keine Gewalt, kein Gluecksspiel | von Nataly angegeben |
+| Rechte der App | nur `INTERNET`, `ACCESS_NETWORK_STATE` | am Manifest nachgezaehlt |
+| Datenempfaenger | keine neuen seit 1.5.0 | `storepaket/pruefbericht.md` |
+| Datenschutz-Adresse | eingetragen, Seite liegt oben (pflegt Mirco) | sonst waere der Test nicht live |
+| Werbe-Einwilligung | unveraendert seit dem Test | — |
+
+**Die Zielgruppe ist die Angabe, an der am meisten haengt.** „Auch fuer Kinder
+unter 13" loest andere Werberegeln aus (Familienrichtlinie, eingeschraenkte
+Anzeigenformen, kein personalisiertes Werben). Steht dort 13+, gilt das nicht.
+Wer sie spaeter aendert, aendert damit auch die Regeln fuer die Werbung —
+nicht nur einen Eintrag.
+
+**Was beim Wechsel in die Produktion trotzdem angesehen wird:** der
+Store-Eintrag der Produktionsspur (falls er vom Test abweicht) und die Laender.
+Ansehen, nicht neu entscheiden.
+
+### Welche Fassung wohin ging
+
+| Fassung | Nummer | gebaut | wohin |
+|---|---|---|---|
+| 1.5.11 | 65 | 20.9.2026 | Offener Test, von Google freigegeben; **diese geht in die Produktion** |
+| 1.5.12 | 66 | noch nicht gebaut | zwei freiwillige Ergaenzungen der Rechtstexte, siehe unten |
+
+**Die 1.5.12 ist bewusst NICHT gebaut worden.** Sie enthaelt zwei
+Praezisierungen, die keine Pflichtangabe sind: „Feenkreis" in der
+Beispielliste von § 5 der Nutzungsbedingungen, und ein Absatz auf der
+Lizenzseite, dass Waldmusik, Schreckenslaut und die sechs Kicherlaute mit
+ElevenLabs erzeugt sind (bezahlter Tarif, gewerbliche Nutzung eingeschlossen,
+kein Lizenztext mitzuliefern).
+
+Fuer zwei freiwillige Saetze eine UNGETESTETE Fassung in die Produktion zu
+schicken, waere der schlechtere Tausch — besonders beim ersten Upload. Die
+zwei Saetze gehen mit dem naechsten Update mit. **Wer die 1.5.12 baut, muss
+daran denken, dass Mirco dann auch die Webseite erneuern muss**, sonst sagen
+App und verlinkte Seite Verschiedenes.

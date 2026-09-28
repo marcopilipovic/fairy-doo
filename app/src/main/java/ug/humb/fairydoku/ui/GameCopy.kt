@@ -238,7 +238,7 @@ object GameCopy {
             Die Nutzung der App ist kostenlos. Die App finanziert sich über Werbung. Werbung erscheint nicht von selbst: Du kannst freiwillig ein kurzes Werbevideo ansehen, um dafür eine Spielhilfe oder ein Leben zu erhalten. Eine Verpflichtung, Werbung anzusehen, besteht nicht, und ohne Werbung ist die App vollständig spielbar.
 
             § 5 Virtuelle Gegenstände (Spielhilfen und Leben)
-            Innerhalb der App gibt es virtuelle Elemente wie Spielhilfen („Feenstaub", „Irrlicht") und Leben. Diese haben keinen Geldwert, sind nicht in echtes Geld umwandelbar, nicht übertragbar und können nicht ausgezahlt werden. Ein Anspruch auf eine bestimmte Menge oder eine dauerhafte Verfügbarkeit besteht nicht; der Anbieter kann die Regeln zu Erhalt und Nachwachsen dieser Elemente anpassen.
+            Innerhalb der App gibt es virtuelle Elemente wie Spielhilfen („Feenstaub", „Irrlicht", „Feenkreis") und Leben. Diese haben keinen Geldwert, sind nicht in echtes Geld umwandelbar, nicht übertragbar und können nicht ausgezahlt werden. Ein Anspruch auf eine bestimmte Menge oder eine dauerhafte Verfügbarkeit besteht nicht; der Anbieter kann die Regeln zu Erhalt und Nachwachsen dieser Elemente anpassen.
 
             § 6 Spielstand und Tageswertung
             Dein Punktestand, deine Tageswertung und deine bisherigen Bestleistungen werden lokal auf deinem Gerät gespeichert. Es gibt aktuell keine geräteübergreifende oder mit anderen Spieler:innen geteilte Rangliste.
@@ -362,7 +362,9 @@ object GameCopy {
         //
         // Kommt später ein fremder Bestandteil dazu, gehört er hierher.
         LegalPage.Lizenzen -> """
-            Fairydoku benutzt fremde Bestandteile: zwei Schriften und mehrere Programmbibliotheken. Deren Urheber erlauben das ausdrücklich — sie verlangen aber, dass ihr Lizenztext mitgeliefert wird. Genau dafür ist diese Seite da.
+            Fairydoku benutzt fremde Bestandteile: zwei Schriften, mehrere Programmbibliotheken und einige Tonaufnahmen. Deren Urheber erlauben das ausdrücklich — die Schriften und die Bibliotheken verlangen aber, dass ihr Lizenztext mitgeliefert wird. Genau dafür ist diese Seite da.
+
+Die Waldmusik, der Schreckenslaut und die sechs Kicherlaute der Feen sind mit ElevenLabs erzeugt, unter einem bezahlten Tarif, dessen Bedingungen die gewerbliche Nutzung ausdrücklich einschließen. Ein Lizenztext ist dafür nicht mitzuliefern; wir nennen die Herkunft trotzdem. Alle übrigen Klänge rechnet die App selbst aus — dahinter steht keine Aufnahme.
 
             Die Lizenzen stehen im englischen Original. Eine Übersetzung wäre nicht die Lizenz, sondern eine Nacherzählung davon.
 

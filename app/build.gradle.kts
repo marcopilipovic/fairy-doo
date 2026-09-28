@@ -36,8 +36,8 @@ android {
         // Seither zählt sie über beiden bisherigen Ständen weiter und wird bei
         // jeder Fassung erhöht, die auf ein Telefon geht. Für den Store ist die
         // Zahl der ersten Einreichung beliebig; nur steigen muss sie danach.
-        versionCode = 65
-        versionName = "1.5.11"
+        versionCode = 66
+        versionName = "1.5.12"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -150,6 +150,19 @@ android {
                 // Ohne das Weiterreichen bliebe die Eigenschaft beim
                 // Gradle-Prozess haengen und der Test uebersprungen.
                 it.systemProperty("werbefilm", System.getProperty("werbefilm") ?: "")
+
+                // Die Werkzeuge unter `film/` zeichnen die Oberflaeche fuer den
+                // Werbefilm und die Ladenbilder. Sie brauchen eine aufloesbare
+                // Activity und laufen deshalb nur gegen die Debug-Fassung.
+                //
+                // In den verkleinerten Release-Fassungen scheitert schon die
+                // Compose-Testregel ("Unable to resolve activity for Intent"),
+                // und zwar *bevor* die Abfrage auf -Dwerbefilm=ja im Rumpf
+                // ueberhaupt erreicht wird: Eine @Rule laeuft vor dem Test.
+                // Die Sperre im Rumpf allein genuegt hier also nicht.
+                if (it.name != "testDebugUnitTest") {
+                    it.exclude("ug/humb/fairydoku/film/**")
+                }
             }
         }
     }
