@@ -403,6 +403,47 @@ connection.
 
 ---
 
+## 2i. Versionshinweise für die Veröffentlichung (Fassung 1.5.12, Nummer 66)
+
+**Der Schritt aus dem offenen Test in die Produktion.** Inhaltlich ist es
+dieselbe App, die den Test durchlaufen hat; geändert haben sich nur zwei
+Rechtstexte im Inneren (§ 5 der Nutzungsbedingungen nennt jetzt auch den
+Feenkreis, die Lizenzseite nennt die Herkunft der Tonaufnahmen).
+
+Die Hinweise unten fassen zusammen, was seit der letzten Runde dazugekommen
+ist — für Leute, die im offenen Test dabei waren, und für alle, die jetzt neu
+dazukommen.
+
+```
+Fairydoku verlässt den Test und steht ab jetzt für alle bereit.
+
+Neu seit der Testfassung:
+Die Levelkarte wächst mit dem Bildschirm — auch bei großer Anzeige.
+Im Verloren-Dialog steht, wann das nächste Leben von selbst nachwächst.
+Kommt gerade keine Anzeige, sagt das Spiel es, statt zu schweigen.
+
+Die Anleitung kennt jetzt alle drei Helfer: Feenstaub, Irrlicht und den
+Feenkreis, der eine halbe Minute lang selbst ankreuzt.
+```
+
+---
+
+## 2j. Release notes, English (version 1.5.12, build 66)
+
+```
+Fairydoku leaves testing and is now open to everyone.
+
+New since the test version:
+The level map grows with the screen — including at large display sizes.
+The game-over dialog now shows when your next life grows back.
+If no ad is available, the game says so instead of staying silent.
+
+The tutorial now covers all three helpers: Fairy Dust, Will-o'-the-Wisp,
+and the Fairy Ring, which marks tiles for you for half a minute.
+```
+
+---
+
 ## 3. Anweisungen für Rezensenten
 
 **Wo:** App-Inhalte → „Zugriff auf App".

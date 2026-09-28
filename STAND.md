@@ -1,4 +1,4 @@
-# Stand: 8. September 2026
+# Stand: 28. September 2026
 
 Diese Datei ist der Einstieg für jede neue Sitzung in diesem Ordner. Sie sagt,
 wo das Projekt steht und was noch fehlt — damit niemand aus Gesprächsresten
@@ -168,9 +168,26 @@ in `versionshinweise.md` unter 2e und 2f.
 6. ~~**Signierschlüssel sichern.**~~ **Erledigt am 30. August.** Drei Orte:
    diese Maschine, ein USB-Stick, ein Ausdruck.
 
-**Es bleiben also drei Dinge, und zwei davon gehören demselben Konto:** die
-echten AdMob-Kennungen samt Einwilligungsnachricht, und die Datenschutz-Seite
-unter ihrer Adresse. Der Rest ist Spielen.
+**Die drei Konto-Punkte sind seit dem 10. September geschlossen.** Echte
+Kennungen, veröffentlichte Einwilligungsnachricht, Datenschutz-Seite im Netz.
+
+**Für den Schritt in die Produktion (28. September) bleibt dies:**
+
+7. **Händlererklärung nach dem DSA** in der Play Console. Als App HUMB UG seid
+   ihr Händler; Name, Anschrift und E-Mail erscheinen danach öffentlich im
+   Eintrag und müssen mit dem Impressum übereinstimmen. Ob sie abgegeben ist,
+   steht hier nicht — das sieht nur jemand mit Zugang zur Konsole.
+8. **Die eigenen Geräte als Testgeräte im AdMob-Konto** (Einstellungen →
+   Testgeräte). Ab der Produktion laufen echte Anzeigen; wer ohne diesen
+   Eintrag auf die eigene Werbung tippt, erzeugt „ungültigen Traffic". Das ist
+   der häufigste Weg, ein AdMob-Konto zu verlieren.
+9. **Die Länderauswahl für die Produktionsspur.** Im offenen Test war sie
+   eingeschränkt. Solange die App nur auf deutsch existiert, ist eine enge
+   Auswahl kein Verlust.
+10. **Auf der Landingpage muss „Coming soon to Google Play" weg**, sobald der
+    Eintrag öffentlich ist — samt der deutschen Entsprechung. Der Text liegt
+    in Mircos CMS, nicht in diesem Projekt; hier steht er als Vorlage in
+    `storepaket/webseite/landingpage/`.
 
 ---
 

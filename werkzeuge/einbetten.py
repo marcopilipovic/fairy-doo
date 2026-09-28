@@ -14,8 +14,15 @@ HIER = pathlib.Path(__file__).parent
 REPO = HIER.parent
 
 
+# Die Bilder liegen dort, wo sie auch für den Store liegen — nicht daneben.
+# Bis zum 28. September zeigte dieses Werkzeug auf JPG-Dateien im eigenen
+# Ordner, die es seit der Umstellung auf gerechnete Bildschirmfotos nicht mehr
+# gibt; es wäre beim ersten Aufruf gescheitert.
+LADEN = REPO / "storepaket" / "play-store"
+
+
 def uri(name, typ):
-    roh = (HIER / name).read_bytes()
+    roh = (LADEN / name).read_bytes()
     return f"data:{typ};base64," + base64.b64encode(roh).decode("ascii")
 
 
@@ -27,13 +34,13 @@ bloecke = re.findall(
 name, kurz, kurz_alt, lang = bloecke[:4]
 
 ersatz = {
-    "{{SYMBOL}}": uri("symbol.png", "image/png"),
-    "{{FEATURE}}": uri("feature.jpg", "image/jpeg"),
-    "{{FOTO1}}": uri("1-Spielbrett.jpg", "image/jpeg"),
-    "{{FOTO2}}": uri("2-Feenpfad.jpg", "image/jpeg"),
-    "{{FOTO3}}": uri("3-Level-geschafft.jpg", "image/jpeg"),
-    "{{FOTO4}}": uri("4-Grosses-Gitter.jpg", "image/jpeg"),
-    "{{FOTO5}}": uri("5-Anleitung.jpg", "image/jpeg"),
+    "{{SYMBOL}}": uri("symbol-512x512.png", "image/png"),
+    "{{FEATURE}}": uri("feature-grafik-1024x500.png", "image/png"),
+    "{{FOTO1}}": uri("bildschirmfotos/1-Spielbrett.png", "image/png"),
+    "{{FOTO2}}": uri("bildschirmfotos/2-Feenpfad.png", "image/png"),
+    "{{FOTO3}}": uri("bildschirmfotos/3-Feenkreis.png", "image/png"),
+    "{{FOTO4}}": uri("bildschirmfotos/4-Grosses-Gitter.png", "image/png"),
+    "{{FOTO5}}": uri("bildschirmfotos/5-Level-geschafft.png", "image/png"),
     "{{KURZ}}": html.escape(kurz),
     "{{KURZ_ALT}}": html.escape(kurz_alt),
     "{{LANG}}": html.escape(lang),

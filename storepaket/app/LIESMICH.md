@@ -1,100 +1,83 @@
-# Fairydoku 1.5.11 (Nummer 65) — für den offenen Test
+# Fairydoku 1.5.12 (Nummer 66) — für die Veröffentlichung
 
-Gebaut am 20. September 2026 aus `main`.
+Gebaut am 28. September 2026 aus `main`.
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-1.5.11-65.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
-| `Fairydoku-1.5.11-65.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
-| `Fairydoku-1.5.11-65-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
-| `Fairydoku-1.5.11-65-TEST.apk` | dazu die APK |
+| `Fairydoku-1.5.12-66.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
+| `Fairydoku-1.5.12-66.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
+| `Fairydoku-1.5.12-66-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
+| `Fairydoku-1.5.12-66-TEST.apk` | dazu die APK |
 
-Paket `ug.humb.fairydoku`, versionCode **65**, versionName **1.5.11**,
+Paket `ug.humb.fairydoku`, versionCode **66**, versionName **1.5.12**,
 Ziel-API 36, mindestens Android 8. Signiert mit dem Upload-Schlüssel,
 SHA-256 `75:F9:9F:44:00:85:1D:42:96:C2:3D:90:AD:1D:E9:B8:4B:1D:5C:8D:1B:29:3B:B9:A2:0F:7B:1D:D8:7D:3E:F4`.
 
-Beide tragen dieselbe Nummer 65 — hochladen lässt sich nur eine davon.
-
----
-
-## 1. Warum diesmal die Fassung mit der echten Werbung
-
-In den geschlossenen Runden war die Testfassung richtig: Googles
-Beispielanzeigen, auf die das Team beliebig tippen durfte. **Im offenen Test ist
-die App öffentlich**, und Testanzeigen in einer ausgelieferten App sind genau
-das, was Googles Regeln untersagen. Davon abgesehen prüft niemand die Werbung,
-wenn keine echte läuft.
-
-**Dafür gehören eure Geräte ins AdMob-Konto**, unter *Einstellungen →
-Testgeräte*. Dann sehen sie weiterhin Beispielanzeigen und dürfen tippen; alle
-anderen sehen echte. Ohne diesen Eintrag erzeugt jeder eigene Tipp „ungültigen
-Traffic" — der häufigste Weg, ein AdMob-Konto zu verlieren.
-
-**Und die Einwilligungsnachricht muss stehen.** Im AdMob-Konto unter
-*Datenschutz und Meldungen → DSGVO* eine Nachricht anlegen **und
-veröffentlichen**. Fehlt sie, liefert Google im EWR kein Formular aus, die App
-bekommt keine Einwilligung — und damit kommt gar keine Anzeige. Der Knopf
-verspricht dann ein Belohnungsvideo, das nie erscheint.
-
-Die APKs sind zum Ausprobieren am Telefon; hochgeladen wird immer die `.aab`.
+Nachgesehen im fertigen Bundle: die echten Kennungen
+`ca-app-pub-5051364478140655~5511669323` und `.../4643626005` stehen drin,
+Googles Testkennungen nicht.
 
 **Die Zuordnungsdatei musst du nicht getrennt hochladen.** Sie liegt im Bundle
-unter `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`; die
-Play Console nimmt sie von dort.
+unter `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`.
 
 ---
 
-## 2. Was seit der 1.5.6 dazugekommen ist
+## 1. Warum 66 und nicht die 65 aus dem offenen Test
 
-Die 1.5.6 als Nummer 60 liegt in der Testspur. Seither:
+**Am Spiel hat sich nichts geändert.** Zwischen der Fassung, die den offenen
+Test durchlaufen hat (1.5.11, Nummer 65, 20. September), und heute liegt keine
+einzige Änderung am Programm.
 
-- **Das Namensfeld ließ sich nicht bedienen** (1.5.7). Es sprang bei jedem
-  Buchstaben zurück; gemeldet aus der Runde, am selben Tag behoben.
-- **Die Anleitung kennt den Feenkreis** (1.5.8). Sie zeigte zwei Helfer, die
-  Leiste im Spiel drei.
-- **Die Levelkarte wuchs nicht mit** (1.5.10). Gemeldet von einem Samsung S21:
-  „Da ist die Karte klein." Es lag nicht am Gerät, sondern an seiner
-  Einstellung — Samsungs Bildschirmzoom ändert die Dichte, und derselbe
-  Bildschirm ist dann 411 dp breit statt 360. Die Levelkreise standen mit
-  54 dp fest und wirkten darin verloren. Jetzt wächst die Karte mit dem Platz,
-  wie das Spielbrett es seit dem 30. August tut.
-- **Drei Meldungen der Play Console behoben** (1.5.9): veraltetes
-  `androidx.fragment` aus Googles Werbe-SDK, veraltete Fenster-Schnittstellen
-  für die randlose Anzeige — und der eigentliche Fund: **In flachen Fenstern
-  verschwand das Spielbrett.** Auf einem Tablet im Querformat war es nicht mehr
-  da. Seit Ziel-API 36 achtet Android auf großen Bildschirmen nicht mehr auf
-  die Festlegung aufs Hochformat.
-- **Das Spiel schwieg, wenn keine Anzeige kam** (1.5.11). Aus der Runde
-  gemeldet: „Es läuft keine Werbung, da steht dann halt nur geschrieben,
-  Werbung läuft und es wird kein Leben aufgefüllt." Am Spiel lag es nicht —
-  es fragt korrekt an und bekommt nichts zurück (siehe Einwilligungsnachricht,
-  Abschnitt 1). Aber es sagte davon nichts. Jetzt steht im Verloren-Dialog,
-  wann von selbst ein Leben nachwächst, und wenn die Anfrage ins Leere läuft:
-  „Gerade kommt keine Anzeige — versuch es später noch einmal."
+Geändert haben sich **zwei Rechtstexte, die in der App stecken** — und weil sie
+darin stecken, braucht es einen neuen Bau:
+
+- **§ 5 der Nutzungsbedingungen** nannte als Spielhilfen nur „Feenstaub" und
+  „Irrlicht". Der Feenkreis kam Anfang September dazu und fehlte. Durch das
+  „wie" davor war der Satz nie falsch, nur unvollständig.
+- **Die Lizenzseite** sagte, Fairydoku benutze „zwei Schriften und mehrere
+  Programmbibliotheken". Seit Ende August stecken acht Tonaufnahmen darin — die
+  Waldmusik, der Schreckenslaut, die sechs Kicherlaute. Sie sind mit ElevenLabs
+  unter einem bezahlten Tarif erzeugt, der die gewerbliche Nutzung ausdrücklich
+  einschließt (belegt in `pruefbericht.md`), und **nicht** nennungspflichtig.
+  Die Aufzählung stimmte trotzdem nicht mehr.
+
+Nummer 65 ließe sich ohnehin nicht erneut hochladen — Google nimmt je Paket nur
+steigende Nummern, spurübergreifend.
 
 **Die Texte für die Spur** stehen in `texte/versionshinweise.md`, Abschnitt
-**2g** auf deutsch und **2h** auf englisch.
+**2i** auf deutsch und **2j** auf englisch.
 
 ---
 
-## 3. Was vorher noch zu tun ist
+## 2. Was in der Play Console noch zu setzen ist
 
-- **Die Einwilligungsnachricht** (siehe oben) — ohne sie keine Werbung im EWR.
-- **Die Händlererklärung** in der Play Console (DSA). Als App HUMB UG seid ihr
-  Händler; Name, Anschrift und E-Mail erscheinen dann öffentlich im Eintrag und
-  müssen mit dem Impressum übereinstimmen.
-- ~~Die Bildschirmfotos.~~ **Erledigt am 11. September.** Die fünf sind neu und
-  zeigen den heutigen Stand: das mitgewachsene Brett, alle drei Helfer, den
-  brennenden Feenkreis, ein 8×8-Gitter und den Gewinn-Dialog. Sie werden
-  gerechnet statt aufgenommen — ändert sich ein Bildschirm, laufen sie neu
-  durch.
+Das kann niemand aus dem Projekt heraus erledigen:
 
-## 4. Was in diesem Paket sonst liegt
+- **Die Händlererklärung nach dem DSA.** Als App HUMB UG seid ihr Händler; Name,
+  Anschrift und E-Mail erscheinen danach öffentlich im Eintrag und müssen mit
+  dem Impressum übereinstimmen.
+- **Künstlich erzeugtes Material angeben.** Die acht Tonaufnahmen stammen aus
+  ElevenLabs. Die Console fragt danach; es ist ein Haken, keine Datei.
+- **Die Länderauswahl.** Die App spricht deutsch, der Store-Eintrag zusätzlich
+  englisch. Weiter zu öffnen, als die App spricht, bringt Einträge, die niemand
+  versteht.
+- **Die eigenen Geräte als Testgeräte im AdMob-Konto** (Einstellungen →
+  Testgeräte). Ab der Produktion laufen echte Anzeigen; wer ohne diesen Eintrag
+  auf die eigene Werbung tippt, erzeugt „ungültigen Traffic" — der häufigste
+  Weg, ein AdMob-Konto zu verlieren.
+
+**Erledigt und nachgewiesen:** Die Einwilligungsnachricht im AdMob-Konto ist
+seit dem 8. September veröffentlicht (*Datenschutz und Mitteilungen →
+Europäische Verordnungen*, App `fairydoku`, Status **Veröffentlicht**).
+
+## 3. Was in diesem Paket sonst liegt
 
 `texte/` — der Store-Eintrag deutsch und englisch, Versions- und
 Testerhinweise, die Antworten für Datensicherheit und Alterseinstufung, dazu
 `PLAY-GAMES-START.md` als Vorrat (nicht eintragen, siehe Datei).
 
 `webseite/` — die vier Rechtstext-Seiten deutsch, dieselben englisch.
+**Die veröffentlichte Webseite trägt die beiden Korrekturen aus Abschnitt 1
+noch nicht** — sie liegt in Mircos CMS und muss dort nachgezogen werden.
 
-`store-grafik/` — Symbol, Feature-Grafik, die alten Bildschirmfotos.
+`store-grafik/` — Symbol, Feature-Grafik, die fünf Bildschirmfotos.
