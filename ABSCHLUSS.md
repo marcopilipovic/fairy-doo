@@ -1,6 +1,15 @@
 # Fairydoku — Abschluss
 
-**Stand: 29. September 2026. Das Spiel ist im Play Store und gilt als fertig.**
+**Stand: 29. September 2026. Das Spiel ist im Play Store.**
+
+**Nachtrag vom selben Tag:** Einen Tag nach der Freigabe kam aus der Runde „der
+Feenkreis macht irgendwie nichts". Der Knopf war bei leerem Vorrat bedienbar und
+tat nichts — seit der 1.5.8, in jeder Fassung. Es waren **zwei** Stellen, nicht eine — der
+Feenkreis und der Werbe-Knopf im Verloren-Dialog, der eine leere Handlung
+mitbekam. Behoben in der **1.5.13 als Nummer 67**; die Regel steht jetzt einmal
+als `knopfBedienbar` statt dreimal von Hand, und der geteilte goldene Knopf
+kennt endlich einen gesperrten Zustand. Alle 75 Bedienelemente sind daraufhin
+durchgesehen, die Befunde stehen als Regeln 205 bis 207 in `~/kisten`.
 
 Diese Datei ist der Schlussstein. Sie sagt, was gebaut wurde, wo es liegt, was
 bewusst offen geblieben ist und woran man merkt, dass doch noch etwas zu tun
@@ -31,11 +40,11 @@ jemand selbst ein Video startet, um einen Helfer oder ein Leben zu bekommen.
 | --- | --- |
 | Paket | `ug.humb.fairydoku` |
 | Veröffentlicht | **29. September 2026** |
-| Fassung im Store | 1.5.12, Nummer 66 |
+| Fassung im Store | 1.5.13, Nummer 67 |
 | Ziel-API | 36 (Android 16), mindestens Android 8 |
 | Anbieter | App HUMB UG (haftungsbeschränkt), Parkstraße 9, 31188 Holle |
 | Umfang | 63 Kotlin-Dateien, rund 16.200 Zeilen |
-| Prüfungen | 147 in der Debug-Fassung, 142 in beiden Release-Fassungen, alle grün |
+| Prüfungen | 156 in der Debug-Fassung, 149 in beiden Release-Fassungen, alle grün |
 | Einbuchungen | 246, vom 31. Juli bis zum 29. September 2026 |
 
 ---
@@ -151,10 +160,16 @@ ist.
 
 ## Woran man merkt, dass doch etwas zu tun ist
 
-Drei Dinge, und nur diese drei, rechtfertigen ein neues Projekt:
+Vier Dinge, und nur diese vier, rechtfertigen ein neues Projekt:
 
 **Google lehnt etwas ab oder mahnt.** Dann zählt der Wortlaut — ohne ihn ist
 jede Antwort geraten.
+
+**Ein Knopf tut nichts, ein Ablauf klemmt.** So kam der Feenkreis-Fehler herein,
+und er zeigt die Lücke: `GameViewModel` hat **keine einzige Prüfung**. Der
+Spielkern ist dicht geprüft — der Feenkreis allein mit neun Prüfungen —, aber
+alle sprechen mit der Maschine statt mit dem Knopf. Wer hier etwas sucht, sucht
+zuerst in der Schicht zwischen Bedienung und Kern.
 
 **Die App stürzt bei jemandem ab.** Der Absturzbericht steht in der Play
 Console und ist lesbar, weil die Zuordnungsdatei im Bundle liegt

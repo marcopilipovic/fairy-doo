@@ -63,6 +63,37 @@ import ug.humb.fairydoku.ui.theme.PowerTileTop
  * Ist ein Vorrat leer, steht statt der Wirkung die Zeit bis zum nächsten Stück.
  * Ohne diese Angabe wäre der blasse Knopf eine Sackgasse ohne Erklärung.
  */
+/**
+ * Ob ein Helfer-Knopf bedienbar sein darf.
+ *
+ * Die Regel lautet: **Ein Knopf, der nichts tun kann, darf nicht bedienbar
+ * aussehen.** Sie stand bis zum 29. September 2026 nirgends, sondern war
+ * dreimal von Hand hingeschrieben — und beim dritten Mal falsch.
+ *
+ * Feenstaub und Irrlicht kommen bei leerem Vorrat immer irgendwo hin: in den
+ * ersten Leveln zum Geschenk, danach zum Video. Ihr `else -> true` war deshalb
+ * nie erreichbar. Der Feenkreis hat bewusst keinen Geschenk-Weg, trug aber
+ * dasselbe `else -> true` — und war bis Level 4 bei leerem Vorrat bedienbar,
+ * ohne etwas zu tun. Die Sperre liegt im ViewModel (`before.feenkreis > 0`),
+ * und die schweigt.
+ *
+ * Gemeldet aus der Runde als „der Feenkreis macht irgendwie nichts".
+ */
+internal fun knopfBedienbar(
+    vorrat: Int,
+    brennt: Boolean = false,
+    geschenkMoeglich: Boolean = false,
+    werbungMoeglich: Boolean = false,
+    anzeigeBereit: Boolean = false,
+): Boolean = when {
+    // Solange einer brennt, gibt es nichts nachzulegen.
+    brennt -> false
+    vorrat > 0 -> true
+    geschenkMoeglich -> true
+    werbungMoeglich -> anzeigeBereit
+    else -> false
+}
+
 @Composable
 fun PowerUpBar(
     state: GameState,
@@ -116,7 +147,12 @@ fun PowerUpBar(
             accent = Gold,
             badgeTextColor = Color(0xFF2A1C05),
             active = false,
-            enabled = if (offerAdForFairyDust) adOffer == AdOffer.Available else true,
+            enabled = knopfBedienbar(
+                vorrat = state.fairyDust,
+                geschenkMoeglich = offerGiftForFairyDust,
+                werbungMoeglich = offerAdForFairyDust,
+                anzeigeBereit = adOffer == AdOffer.Available,
+            ),
             onClick = when {
                 offerAdForFairyDust -> onWatchAdForFairyDust
                 offerGiftForFairyDust -> onOpenGiftForFairyDust
@@ -139,7 +175,12 @@ fun PowerUpBar(
             accent = StatusPurple,
             badgeTextColor = Color(0xFF241C42),
             active = false,
-            enabled = if (offerAdForIrrlicht) adOffer == AdOffer.Available else true,
+            enabled = knopfBedienbar(
+                vorrat = state.irrlicht,
+                geschenkMoeglich = offerGiftForIrrlicht,
+                werbungMoeglich = offerAdForIrrlicht,
+                anzeigeBereit = adOffer == AdOffer.Available,
+            ),
             onClick = when {
                 offerAdForIrrlicht -> onWatchAdForIrrlicht
                 offerGiftForIrrlicht -> onOpenGiftForIrrlicht
@@ -168,11 +209,25 @@ fun PowerUpBar(
             accent = LeafGreen,
             badgeTextColor = Color(0xFF0F2A16),
             active = kreisBrennt,
-            enabled = when {
-                kreisBrennt -> false
-                offerAdForFeenkreis -> adOffer == AdOffer.Available
-                else -> true
-            },
+            // `state.feenkreis > 0` statt `true` — und das ist der Fehler, den
+            // die Runde am 29. September gemeldet hat: „Der Feenkreis macht
+            // irgendwie nichts."
+            //
+            // Feenstaub und Irrlicht haben bei leerem Vorrat immer einen Weg:
+            // ein Geschenk in den ersten Leveln, danach ein Video. Der
+            // Feenkreis hat bewusst keinen Geschenk-Weg — nur fehlte dem Knopf
+            // die Folge daraus. Bis Level 4 war er bei leerem Vorrat
+            // *bedienbar* und tat trotzdem nichts: Die Sperre liegt im
+            // ViewModel (`before.feenkreis > 0`), und die schweigt.
+            //
+            // Ein Knopf, der nichts tun kann, darf nicht bedienbar aussehen.
+            // Die Beschriftung sagt ohnehin schon, wann der nächste nachwächst.
+            enabled = knopfBedienbar(
+                vorrat = state.feenkreis,
+                brennt = kreisBrennt,
+                werbungMoeglich = offerAdForFeenkreis,
+                anzeigeBereit = adOffer == AdOffer.Available,
+            ),
             onClick = when {
                 offerAdForFeenkreis -> onWatchAdForFeenkreis
                 else -> onUseFeenkreis

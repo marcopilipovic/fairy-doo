@@ -444,6 +444,35 @@ and the Fairy Ring, which marks tiles for you for half a minute.
 
 ---
 
+## 2k. Versionshinweise zur 1.5.13 (Nummer 67) — der tote Feenkreis-Knopf
+
+**Ein Fehler aus der Runde, einen Tag nach der Veröffentlichung gemeldet:** „Der
+Feenkreis macht irgendwie nichts."
+
+Er steckte seit der 1.5.8 in jeder Fassung, auch in allen Testfassungen, und
+zeigte sich erst bei leerem Vorrat. Feenstaub und Irrlicht haben dann immer
+einen Ausweg — in den ersten Leveln ein Geschenk, danach ein Video. Der
+Feenkreis hat bewusst keinen Geschenk-Weg; nur trug sein Knopf dieselbe Zeile
+`enabled = true` wie die beiden anderen. Vor Level 4 sah er damit bedienbar aus
+und tat nichts, weil die Sperre im ViewModel sitzt und schweigt.
+
+Zwei Stück Vorrat, drei Stunden je Nachwuchs: Wer ihn zweimal ausgab, hatte
+danach stundenlang einen toten Knopf.
+
+```
+Der Feenkreis-Knopf ließ sich drücken, auch wenn keiner mehr da war — und
+dann passierte nichts. Jetzt bleibt er blass, solange keiner nachgewachsen
+ist, und sagt wie die anderen Helfer, wann es so weit ist.
+```
+
+```
+The Fairy Ring button could be pressed even when none were left — and then
+nothing happened. It now stays dimmed until one has grown back, and tells
+you when that will be, like the other helpers.
+```
+
+---
+
 ## 3. Anweisungen für Rezensenten
 
 **Wo:** App-Inhalte → „Zugriff auf App".

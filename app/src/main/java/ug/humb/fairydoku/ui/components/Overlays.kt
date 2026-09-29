@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -127,17 +128,30 @@ internal fun OverlayScaffold(
     }
 }
 
-/** Der goldene Handlungsknopf, der in allen Overlays gleich aussieht. */
+/**
+ * Der goldene Handlungsknopf, der in allen Overlays gleich aussieht.
+ *
+ * [enabled] gibt es seit dem 29. September 2026. Vorher konnte er nur eines:
+ * golden leuchten. Wer ihn nicht drückbar brauchte, gab ihm eine leere
+ * Handlung mit — und bekam einen Knopf, der voll aussah und nichts tat. Genau
+ * das stand im Verloren-Dialog, wenn keine Anzeige da war: „Werbung lädt…" auf
+ * einem Knopf, der nie etwas laden würde.
+ *
+ * Dieselbe Sache wie beim Feenkreis, an einer zweiten Stelle. Ein Knopf, der
+ * nichts tun kann, darf nicht bedienbar aussehen.
+ */
 @Composable
-internal fun GoldButton(label: String, onClick: () -> Unit) {
+internal fun GoldButton(label: String, onClick: () -> Unit, enabled: Boolean = true) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.45f)
             .background(
                 brush = Brush.verticalGradient(listOf(GoldLight, Gold)),
                 shape = CircleShape,
             )
             .clickable(
+                enabled = enabled,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,
@@ -479,7 +493,8 @@ fun GameOverOverlay(
                     AdOffer.Preparing -> "Werbung lädt…"
                     AdOffer.Unavailable -> "Werbung nicht verfügbar"
                 },
-                onClick = if (adOffer == AdOffer.Available) onWatchAd else ({}),
+                enabled = adOffer == AdOffer.Available,
+                onClick = onWatchAd,
             )
         } else {
             // Vor der Werbe-Schwelle gibt es keine Werbung — ein leerer Vorrat

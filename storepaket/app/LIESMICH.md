@@ -1,15 +1,15 @@
-# Fairydoku 1.5.12 (Nummer 66) — für die Veröffentlichung
+# Fairydoku 1.5.13 (Nummer 67) — der tote Feenkreis-Knopf
 
-Gebaut am 28. September 2026 aus `main`.
+Gebaut am 29. September 2026 aus `main`.
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-1.5.12-66.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
-| `Fairydoku-1.5.12-66.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
-| `Fairydoku-1.5.12-66-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
-| `Fairydoku-1.5.12-66-TEST.apk` | dazu die APK |
+| `Fairydoku-1.5.13-67.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
+| `Fairydoku-1.5.13-67.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
+| `Fairydoku-1.5.13-67-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
+| `Fairydoku-1.5.13-67-TEST.apk` | dazu die APK |
 
-Paket `ug.humb.fairydoku`, versionCode **66**, versionName **1.5.12**,
+Paket `ug.humb.fairydoku`, versionCode **67**, versionName **1.5.13**,
 Ziel-API 36, mindestens Android 8. Signiert mit dem Upload-Schlüssel,
 SHA-256 `75:F9:9F:44:00:85:1D:42:96:C2:3D:90:AD:1D:E9:B8:4B:1D:5C:8D:1B:29:3B:B9:A2:0F:7B:1D:D8:7D:3E:F4`.
 
@@ -22,7 +22,47 @@ unter `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`.
 
 ---
 
-## 1. Warum 66 und nicht die 65 aus dem offenen Test
+## 1. Warum 67 — zwei tote Knöpfe
+
+**Am 29. September, einen Tag nach der Freigabe, kam aus der Runde: „Der
+Feenkreis macht irgendwie nichts."** Er machte wirklich nichts. Und es waren
+zwei Stellen, nicht eine.
+
+**Der Feenkreis-Knopf.** Feenstaub und Irrlicht führen bei leerem Vorrat immer
+irgendwohin — in den ersten Leveln zu einem Geschenk, danach zu einem Video.
+Der Feenkreis hat absichtlich keinen Geschenk-Weg; nur trug sein Knopf
+dieselbe Zeile wie die beiden anderen. Damit sah er bei leerem Vorrat
+bedienbar aus, und die Sperre dahinter wies den Druck ohne ein Wort ab. Der
+Vorrat ist zwei Stück bei drei Stunden Nachwuchs — wer ihn zweimal ausgab,
+hatte danach stundenlang einen toten Knopf.
+
+**Der Werbe-Knopf im Verloren-Dialog.** Dort stand `onClick = if (verfügbar)
+onWatchAd else ({})` — ein voll leuchtender Knopf mit einer **leeren
+Handlung**. Darauf stand „Werbung lädt…", und es lud nie etwas. Das ist
+vermutlich, was im Test schon einmal als „Werbung läuft, es passiert nichts"
+ankam; wir hatten damals nur einen Hinweistext nachgerüstet.
+
+**Die Ursache war dieselbe:** Der geteilte goldene Knopf konnte gar nicht
+blass — er hatte keinen gesperrten Zustand. Wer ihn nicht drückbar brauchte,
+musste ihm eine leere Handlung geben.
+
+Beides behoben. Die Regel steht jetzt einmal statt dreimal von Hand, heißt
+`knopfBedienbar` und hat sieben eigene Prüfungen; der goldene Knopf kennt
+`enabled` und wird blass. Die gesperrten Zustände sind gezeichnet und
+angesehen worden — die Bilder liegen in `app/build/knopfproben/`.
+
+**Nachgeprüft wurden alle 75 Bedienelemente in zehn Dateien.** Sonst nichts
+gefunden: Die Levelknoten sperren bei null Leben, der Werbe-Knopf auf der
+Levelkarte konnte es von Anfang an richtig, der Geschenk-Weg führt immer zu
+einer Wirkung, und der Punkt „Datenschutz-Einstellungen" erscheint nur, wenn
+das Formular auch da ist. Leere Handlungen gibt es im ganzen Quelltext keine
+mehr.
+
+---
+
+## 1b. Was davor in der 66 steckte
+
+### Warum 66 und nicht die 65 aus dem offenen Test
 
 **Am Spiel hat sich nichts geändert.** Zwischen der Fassung, die den offenen
 Test durchlaufen hat (1.5.11, Nummer 65, 20. September), und heute liegt keine
