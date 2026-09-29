@@ -473,6 +473,37 @@ you when that will be, like the other helpers.
 
 ---
 
+## 2l. Versionshinweise zur 1.5.14 (Nummer 68)
+
+Der tote Feenkreis-Knopf war nicht der einzige. Vor dem Weiterleiten haben zwei
+Nachbarsitzungen gegengelesen und fünf Befunde gefunden — zwei davon sieht ein
+Spieler, drei nicht.
+
+Was ein Spieler merkt, steht unten. Was er nicht merkt: doppelte
+Anzeigen-Anfragen (kosten Impressionen und gefährden das AdMob-Konto), ein
+Wachhund, der bei einem künftigen fünften Werbe-Knopf in ein laufendes Video
+gebellt hätte, und dass beide Bundles dieselbe Nummer trugen.
+
+```
+Zwei Knöpfe ließen sich drücken, ohne dass etwas passierte: der Feenkreis,
+wenn keiner mehr da war, und der Werbe-Knopf, wenn gerade keine Anzeige kam.
+Beide bleiben jetzt blass und sagen, woran es liegt.
+
+Und wer ein Video zu Ende gesehen hat, bekommt seine Belohnung — auch
+dann, wenn das Video sich vorher schließt.
+```
+
+```
+Two buttons could be pressed without anything happening: the Fairy Ring when
+none were left, and the ad button when no ad was available. Both now stay
+dimmed and tell you why.
+
+And if you finish watching a video, you get your reward — even when the
+video closes first.
+```
+
+---
+
 ## 3. Anweisungen für Rezensenten
 
 **Wo:** App-Inhalte → „Zugriff auf App".
