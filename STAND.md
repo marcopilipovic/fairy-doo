@@ -4,6 +4,10 @@ Diese Datei ist der Einstieg für jede neue Sitzung in diesem Ordner. Sie sagt,
 wo das Projekt steht und was noch fehlt — damit niemand aus Gesprächsresten
 rekonstruieren muss, was längst getan ist.
 
+**Zum Abschluss vom 29. September siehe `ABSCHLUSS.md`** — der Schlussstein:
+was gebaut wurde, wo es liegt, was offen blieb und woran man merkt, dass doch
+etwas zu tun ist.
+
 **Fairydoku ist seit dem 29. September 2026 im Play Store.** Google hat die
 Produktionsfassung freigegeben; das Spiel ist oeffentlich. Es ist das erste der
 Spiele des Hauses, das draussen ist.
