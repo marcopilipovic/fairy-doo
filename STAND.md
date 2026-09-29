@@ -1,4 +1,4 @@
-# Stand: 29. September 2026
+# Stand: 29. September 2026, abends
 
 Diese Datei ist der Einstieg für jede neue Sitzung in diesem Ordner. Sie sagt,
 wo das Projekt steht und was noch fehlt — damit niemand aus Gesprächsresten
@@ -8,7 +8,18 @@ rekonstruieren muss, was längst getan ist.
 was gebaut wurde, wo es liegt, was offen blieb und woran man merkt, dass doch
 etwas zu tun ist.
 
-**Fairydoku ist seit dem 29. September 2026 im Play Store.** Google hat die
+**Fairydoku ist seit dem 29. September 2026 im Play Store.** Am selben Abend
+ging die **1.5.14 als Nummer 68** als Update an Mirco — sie behebt zwei Knöpfe,
+die sich drücken ließen, ohne etwas zu tun, und drei Befunde aus einer
+Gegenlesung durch zwei Nachbarsitzungen. Einzelheiten in `ABSCHLUSS.md` und
+`storepaket/app/LIESMICH.md`.
+
+**Der Emulator geht — mit einer Einschränkung.** Die `kvm`-Gruppe war
+eingetragen, aber nie wirksam; Gruppenrechte greifen erst beim Anmelden. Bis
+sich jemand neu anmeldet, hilft `sg kvm -c "…"`. Kopflos stürzt der Emulator
+allerdings ab, sobald Fairydoku zeichnet — dreimal versucht, drei Grafikmodi,
+jedes Mal ein Segmentierungsfehler im Emulator, nicht in der App. Mit Fenster
+und echter Grafikbeschleunigung läuft er. Google hat die
 Produktionsfassung freigegeben; das Spiel ist oeffentlich. Es ist das erste der
 Spiele des Hauses, das draussen ist.
 
