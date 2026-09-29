@@ -46,6 +46,15 @@ SDK erhebt, gilt als eure Erhebung.
 „Optional" ist hier wichtig und stimmt auch: Es gibt eine Einwilligungsabfrage,
 und ohne Werbung ist die App vollständig spielbar.
 
+**„Geräte- oder andere IDs" ist die Zeile, unter die die Werbekennung
+(Advertising ID) fällt** — sie darf also nicht abgewählt werden. Das Bundle
+trägt `com.google.android.gms.permission.AD_ID`, mitgebracht vom Werbe-SDK;
+eine Erklärung ohne diese Zeile widerspräche dem, was Google in der Datei
+selbst findet. Gegengelesen am 29. September 2026 aus dem gebauten Bundle.
+
+Dieselbe Frage stellt die Console noch einmal getrennt („Verwendet eure App
+die Werbe-ID?"). Auch dort: **ja**.
+
 **Nicht** anzukreuzen: Name, E-Mail, Anschrift, Telefonnummer, Standort,
 Kontakte, Fotos, Dateien, Kalender, Gesundheitsdaten, Zahlungsdaten,
 Sprachaufnahmen, Nachrichten. Nichts davon wird angefasst.

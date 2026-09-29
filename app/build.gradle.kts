@@ -18,6 +18,27 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+/**
+ * Die Nummer der Veroeffentlichung. Steht hier oben, weil sie an zwei Stellen
+ * gebraucht wird: in `defaultConfig` und weiter unten fuer die Testfassung.
+ */
+val VERSIONSNUMMER = 68
+
+/**
+ * Der Abstand der Testfassung zur Veroeffentlichung.
+ *
+ * Beide Bauarten tragen denselben Paketnamen, und Google nimmt je Paket nur
+ * steigende versionCodes an — spuruebergreifend. Bis zum 29.9.2026 trugen
+ * beide dieselbe Nummer: Waere die Testfassung als 67 auf eine Testspur
+ * gegangen, haette Google die Veroeffentlichung mit 67 nicht mehr angenommen,
+ * und das faellt erst beim Hochladen auf.
+ *
+ * Die Testfassung liegt deshalb sichtbar darueber. Wer sie versehentlich
+ * hochlaedt, sieht in der Console eine dreistellig danebenliegende Zahl und
+ * merkt es sofort — statt erst dann, wenn die Veroeffentlichung abgelehnt wird.
+ */
+val TESTABSTAND = 500
+
 android {
     namespace = "ug.humb.fairydoku"
     compileSdk = 36
@@ -36,8 +57,8 @@ android {
         // Seither zählt sie über beiden bisherigen Ständen weiter und wird bei
         // jeder Fassung erhöht, die auf ein Telefon geht. Für den Store ist die
         // Zahl der ersten Einreichung beliebig; nur steigen muss sie danach.
-        versionCode = 67
-        versionName = "1.5.13"
+        versionCode = VERSIONSNUMMER
+        versionName = "1.5.14"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -125,9 +146,23 @@ android {
         // Testfassung die Signierung nicht mitbekommen und wäre unsigniert
         // herausgekommen — was erst beim Hochladen aufgefallen wäre.
         //
-        // Achtung bei der Nummer: Google nimmt je Paket nur steigende
-        // versionCodes an, spurübergreifend. Wird diese Fassung als 54
-        // hochgeladen, muss die Veröffentlichung mindestens 55 tragen.
+        // ACHTUNG BEI DER NUMMER. Google nimmt je Paket nur steigende
+        // versionCodes an, und zwar spurübergreifend. Beide Bauarten tragen
+        // denselben Paketnamen und bis zum 29.9.2026 auch dieselbe Nummer —
+        // geht die Testfassung als 67 auf eine Testspur, nimmt Google die
+        // Veröffentlichung mit 67 nicht mehr an.
+        //
+        // Deshalb trägt die Testfassung jetzt eine sichtbar andere Nummer:
+        // dieselbe plus 500. Sie ist damit höher, blockiert also die
+        // Veröffentlichung nicht — aber wer sie hochlädt, sieht in der Console
+        // sofort eine dreistellig danebenliegende Zahl und merkt es.
+        //
+        // Zum Preis: Ist einmal eine Testfassung oben, muss die nächste
+        // Veröffentlichung über deren Nummer hinaus. Das ist gewollt: lieber
+        // eine auffällige Lücke als eine stille Blockade.
+        //
+        // Gefunden beim Gegenlesen vor der Veröffentlichung. Der Kommentar
+        // stand hier vorher schon — nur setzte die Bauart ihn nicht um.
         create("releaseTest") {
             initWith(getByName("release"))
             matchingFallbacks += "release"
@@ -184,6 +219,14 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("releaseTest")) { variante ->
+        variante.outputs.forEach { ausgabe ->
+            ausgabe.versionCode.set(VERSIONSNUMMER + TESTABSTAND)
         }
     }
 }

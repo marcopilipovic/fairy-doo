@@ -1,15 +1,15 @@
-# Fairydoku 1.5.13 (Nummer 67) — der tote Feenkreis-Knopf
+# Fairydoku 1.5.14 (Nummer 68) — tote Knöpfe und fünf Befunde aus der Gegenlesung
 
 Gebaut am 29. September 2026 aus `main`.
 
 | Datei | Wofür |
 | --- | --- |
-| `Fairydoku-1.5.13-67.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
-| `Fairydoku-1.5.13-67.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
-| `Fairydoku-1.5.13-67-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
-| `Fairydoku-1.5.13-67-TEST.apk` | dazu die APK |
+| `Fairydoku-1.5.14-68.aab` | **das hier hochladen** — Veröffentlichungsfassung, echte Werbung |
+| `Fairydoku-1.5.14-68.apk` | dieselbe Fassung zum Ausprobieren am Telefon |
+| `Fairydoku-1.5.14-568-TEST.aab` | dasselbe mit Googles Testanzeigen, falls doch noch eine geschlossene Runde dazwischenkommt |
+| `Fairydoku-1.5.14-568-TEST.apk` | dazu die APK |
 
-Paket `ug.humb.fairydoku`, versionCode **67**, versionName **1.5.13**,
+Paket `ug.humb.fairydoku`, versionCode **68**, versionName **1.5.14**,
 Ziel-API 36, mindestens Android 8. Signiert mit dem Upload-Schlüssel,
 SHA-256 `75:F9:9F:44:00:85:1D:42:96:C2:3D:90:AD:1D:E9:B8:4B:1D:5C:8D:1B:29:3B:B9:A2:0F:7B:1D:D8:7D:3E:F4`.
 
@@ -22,7 +22,47 @@ unter `BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map`.
 
 ---
 
-## 1. Warum 67 — zwei tote Knöpfe
+## 1. Warum 68 — fünf Befunde aus der Gegenlesung
+
+Nataly wollte vor dem Weiterleiten Gewissheit: „Ich möchte jetzt ein Spiel
+haben, was funktioniert, was ich nicht fünfmal noch anpassen muss." Zwei
+Nachbarsitzungen haben deshalb gegengelesen. Ergebnis: **fünf Befunde, alle
+behoben.**
+
+**Die wichtigste Antwort zuerst:** Auf die Frage, ob jemand ein Video zu Ende
+sehen und nichts bekommen kann, wurde **kein Weg gefunden**. Die Belohnung geht
+zuerst in den Speicher, bevor an der Oberfläche etwas passiert; die kann
+darunter wegfallen, das Leben bleibt.
+
+1. **Zwei Ladevorgänge gleichzeitig.** Wurde eine Anzeige weggetippt und sofort
+   wieder getippt, ging eine zweite Anfrage hinaus, und die erste geladene
+   Anzeige wurde nie gezeigt. Für den Spieler unsichtbar — fürs AdMob-Konto
+   nicht: Anfragen ohne Impression sind die Kennzahl, die Konten in
+   Schwierigkeiten bringt.
+2. **Falsche Meldung nach erfolgreichem Video.** Meldete Google das Schließen
+   vor der Belohnung, stand „Gerade kommt keine Anzeige" da — und gleich darauf
+   kam das Leben doch.
+3. **Der Wachhund war ein gemeinsames Feld.** Nicht erreichbar, aber scharf
+   geladen für den Tag, an dem jemand einen fünften Werbe-Knopf baut.
+4. **Beide Bundles trugen Nummer 67.** Wäre die Testfassung auf eine Testspur
+   gegangen, hätte Google die Veröffentlichung mit 67 nicht mehr angenommen.
+   **Die Testfassung trägt jetzt 568** — sichtbar daneben, damit ein
+   Versehen sofort auffällt.
+5. **Die Datensicherheits-Erklärung** nennt die Werbekennung jetzt ausdrücklich.
+   Sie war richtig, sagte es aber nicht — und das Bundle trägt neun Rechte, von
+   denen sieben die SDKs mitbringen.
+
+**Nicht behoben, weil nicht nötig:** Eine vermutete Wettlaufstelle in der
+Taktschleife ist beim Gegenlesen als *nicht erreichbar* nachgewiesen worden —
+der Hauptfaden ist einfädig.
+
+**Der Emulator:** dreimal versucht, dreimal ein Segmentierungsfehler, sobald
+Fairydoku zeichnet. Die App startet sauber; es fällt der Emulator, nicht sie.
+Auf einem Rechner mit echter Grafikbeschleunigung geht es.
+
+---
+
+### Was davor in der 67 stand: zwei tote Knöpfe
 
 **Am 29. September, einen Tag nach der Freigabe, kam aus der Runde: „Der
 Feenkreis macht irgendwie nichts."** Er machte wirklich nichts. Und es waren

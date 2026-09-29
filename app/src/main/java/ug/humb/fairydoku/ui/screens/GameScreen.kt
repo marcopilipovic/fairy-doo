@@ -387,7 +387,14 @@ fun GameScreen(preferences: GamePreferencesRepository, ads: RewardedAdManager) {
         var belohnt = false
         ads.onAdRequested(
             activity = activity,
-            onReward = { belohnt = true; onReward() },
+            // `werbeHinweis = null` auch hier, nicht nur oben.
+            //
+            // Gefunden beim Gegenlesen am 29.9.2026: Meldet das SDK das
+            // Verwerfen VOR der Belohnung, laeuft `onFinished` mit
+            // `belohnt == false` und schreibt „Gerade kommt keine Anzeige" —
+            // und gleich danach trifft die Belohnung doch ein. Der Spieler
+            // bekaeme sein Leben und die Meldung, es sei keines gekommen.
+            onReward = { belohnt = true; werbeHinweis = null; onReward() },
             onFinished = {
                 if (!belohnt) {
                     werbeHinweis = "Gerade kommt keine Anzeige — versuch es später noch einmal."

@@ -80,7 +80,8 @@ class RewardedAdManager(private val appContext: Context) {
 
     /** Für den Wachhund in [onAdRequested]; alle Rückrufe kommen ohnehin hier an. */
     private val hauptSchleife = Handler(Looper.getMainLooper())
-    private var wachhund: Runnable? = null
+    /** Ob gerade eine Anzeige angefragt ist — siehe die Begruendung in [load]. */
+    private var ladeLaeuft = false
 
     private val consent: ConsentInformation =
         UserMessagingPlatform.getConsentInformation(appContext)
@@ -123,11 +124,15 @@ class RewardedAdManager(private val appContext: Context) {
         // erste durch und schluckt alle weiteren — doppelte Meldungen sind
         // ebenso möglich wie gar keine.
         var gemeldet = false
+        var meinWachhund: Runnable? = null
+        val abbestellen = {
+            meinWachhund?.let(hauptSchleife::removeCallbacks)
+            meinWachhund = null
+        }
         val fertig = {
             if (!gemeldet) {
                 gemeldet = true
-                wachhund?.let(hauptSchleife::removeCallbacks)
-                wachhund = null
+                abbestellen()
                 onFinished()
             }
         }
@@ -141,13 +146,25 @@ class RewardedAdManager(private val appContext: Context) {
         // Er wird abbestellt, sobald eine Anzeige tatsächlich auf dem Schirm
         // ist: Ab da ist Warten richtig, die Anzeige darf ruhig eine Minute
         // dauern.
-        wachhund = Runnable {
+        // Der Wachhund gehoert diesem Aufruf, nicht dem Verwalter.
+        //
+        // Er lag bis zum 29.9.2026 in einem Objektfeld. Bei zwei ueberlappenden
+        // Aufrufen haette der zweite das Feld ueberschrieben, der erste beim
+        // Aufraeumen den fremden Wachhund abbestellt und den eigenen scharf
+        // gelassen — der dann mitten in die laufende Anzeige gebellt haette.
+        //
+        // Erreichbar war das nicht, weil alle vier Knoepfe gesperrt sind,
+        // solange keine Anzeige bereit ist. Aber die Sperre liegt in der
+        // Oberflaeche, nicht hier: Wer einen fuenften Aufrufer baut und sie
+        // vergisst, haette es scharf. Eine oertliche Variable kostet nichts und
+        // nimmt die Moeglichkeit weg.
+        meinWachhund = Runnable {
             Log.w(TAG, "Keine Rückmeldung nach ${WATCHDOG_MILLIS / 1000} s — Spiel läuft weiter")
             _offer.value = AdOffer.Available
             fertig()
         }.also { hauptSchleife.postDelayed(it, WATCHDOG_MILLIS) }
 
-        rewardedAd?.let { show(activity, it, onReward, fertig) ; return }
+        rewardedAd?.let { show(activity, it, onReward, fertig, abbestellen) ; return }
         if (_offer.value == AdOffer.Preparing) {
             // Es lädt bereits eine Anzeige aus einem früheren Tippen. Hier fehlte
             // die Rückmeldung — der Grund für die Hängepartie.
@@ -171,7 +188,7 @@ class RewardedAdManager(private val appContext: Context) {
                     // Der Spieler wartet seit seinem Tippen — die Anzeige
                     // kommt jetzt von selbst, ohne dass er erneut drücken muss.
                     val ad = rewardedAd
-                    if (ad != null) show(activity, ad, onReward, fertig) else fertig()
+                    if (ad != null) show(activity, ad, onReward, fertig, abbestellen) else fertig()
                 } else {
                     // Kein Netz, kein Inventar: beim nächsten Tippen neu
                     // versuchen, statt den Knopf dauerhaft auszuschalten.
@@ -280,6 +297,24 @@ class RewardedAdManager(private val appContext: Context) {
             return
         }
 
+        // Laeuft schon eine Anfrage, wird keine zweite geschickt.
+        //
+        // Gefunden beim Gegenlesen am 29.9.2026: Wird eine Anzeige weggetippt,
+        // setzt `onAdDismissedFullScreenContent` sie auf null und laedt nach —
+        // aber `_offer` steht in diesem Augenblick noch auf `Available`, der
+        // Knopf ist also bedienbar. Wer sofort wieder tippt, schickt eine
+        // zweite Anfrage; die erste geladene Anzeige wird ueberschrieben und
+        // nie gezeigt.
+        //
+        // Fuer den Spieler ist das unsichtbar. Fuer das AdMob-Konto nicht:
+        // Anfragen ohne Impression sind genau die Kennzahl, die Konten in
+        // Schwierigkeiten bringt.
+        if (ladeLaeuft) {
+            onDone(false)
+            return
+        }
+        ladeLaeuft = true
+
         // Ausdrücklich unpersonalisierte Anfrage: Die App zeigt keine
         // personalisierte Werbung. Das "npa"-Flag ist die von Google
         // dokumentierte Art, das je Anfrage zu erzwingen — die Einstellung im
@@ -296,12 +331,14 @@ class RewardedAdManager(private val appContext: Context) {
             request,
             object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(ad: RewardedAd) {
+                    ladeLaeuft = false
                     rewardedAd = ad
                     _offer.value = AdOffer.Available
                     onDone(true)
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
+                    ladeLaeuft = false
                     rewardedAd = null
                     Log.w(TAG, "Anzeige nicht ladbar: ${error.message}")
                     onDone(false)
@@ -324,14 +361,14 @@ class RewardedAdManager(private val appContext: Context) {
         ad: RewardedAd,
         onReward: () -> Unit,
         onFinished: () -> Unit,
+        abbestellen: () -> Unit,
     ) {
         _offer.value = AdOffer.Available
 
         // Ab hier zählt nur noch, was das SDK meldet: Die Anzeige läuft, und
         // sie darf so lange dauern, wie sie will. Der Wachhund aus
         // [onAdRequested] hätte sonst mitten hineingebellt.
-        wachhund?.let(hauptSchleife::removeCallbacks)
-        wachhund = null
+        abbestellen()
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
