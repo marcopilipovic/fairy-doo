@@ -42,6 +42,13 @@ import java.io.File
  * geht es um das, was eine Prüfung nicht sieht: **ob man es dem Knopf ansieht.**
  * Ein `enabled = false`, das man nicht erkennt, ist derselbe Fehler noch einmal.
  *
+ * **Was diese Probe NICHT sieht:** ob der Unterschied auffällt. Sie zeichnet
+ * den gesperrten Zustand und stellt sicher, dass ein Bild entsteht — ob die
+ * halbe Deckkraft für ein müdes Auge, bei Sonnenlicht oder für jemanden mit
+ * schwachem Kontrastsehen erkennbar ist, kann sie nicht beantworten. Das Bild
+ * ist zum Ansehen da, nicht zum Bestehen. Eine blind bestandene Probe hier
+ * wäre derselbe Fehler, den sie sucht.
+ *
  * Läuft nur auf Anforderung:
  *
  *     ./gradlew testDebugUnitTest --tests '*ToterKnopfTest*' -Dwerbefilm=ja

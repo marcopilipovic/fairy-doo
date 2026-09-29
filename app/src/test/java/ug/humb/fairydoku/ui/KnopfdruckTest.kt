@@ -33,6 +33,16 @@ import ug.humb.fairydoku.ui.theme.FairyDooTheme
  * wirklich aufhält, ist das andere. Nataly hat kein Testgerät — diese
  * Prüfungen sind das Nächste, was an einen Fingerdruck herankommt.
  *
+ * **Was diese Probe NICHT sieht:** den Finger. Sie schickt den Druck an den
+ * Knoten, den sie über seine Beschriftung gefunden hat — sie prüft nicht, ob
+ * dieser Knoten auf einem echten Bildschirm groß genug ist, ob ihn etwas
+ * überdeckt oder ob er beim Scrollen wegrutscht. Ein Knopf, der richtig
+ * reagiert und trotzdem nicht zu treffen ist, besteht hier.
+ *
+ * Ebenso wenig sieht sie das, was hinter dem Rückruf liegt: Gezählt wird der
+ * Aufruf, nicht seine Wirkung. Ob danach wirklich ein Leben gutgeschrieben
+ * wird, steht in `BelohnungTest`.
+ *
  * Geprüft wird beides, und das zweite ist das wichtigere:
  *  - ein Knopf, der etwas kann, **löst aus**
  *  - ein Knopf, der nichts kann, **löst nicht aus** — auch wenn man ihn trifft

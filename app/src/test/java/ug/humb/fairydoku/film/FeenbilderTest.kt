@@ -32,6 +32,12 @@ import java.io.File
  * gezeichnet wird nur die Figur selbst — kein Thema, keine Fläche darunter.
  * Wer sie in einen Film legt, bekommt die Fee und nicht ihren Kasten.
  *
+ * **Was diese Probe NICHT sieht:** ob die Feen *gut aussehen*. Sie prüft, dass
+ * eine Datei entsteht, dass sie nicht leer ist und dass ihre Ecke durchsichtig
+ * bleibt — mehr nicht. Eine Fee, die falsch gezeichnet, verzerrt oder in der
+ * falschen Farbe herauskommt, besteht diese Probe anstandslos. Dafür muss
+ * jemand hinsehen.
+ *
  * Läuft nur auf Anforderung, wie die übrigen Werkzeuge in diesem Ordner:
  *
  *     ./gradlew testDebugUnitTest --tests '*FeenbilderTest*' -Dwerbefilm=ja
