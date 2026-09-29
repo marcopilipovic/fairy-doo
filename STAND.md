@@ -1,10 +1,18 @@
-# Stand: 28. September 2026
+# Stand: 29. September 2026
 
 Diese Datei ist der Einstieg für jede neue Sitzung in diesem Ordner. Sie sagt,
 wo das Projekt steht und was noch fehlt — damit niemand aus Gesprächsresten
 rekonstruieren muss, was längst getan ist.
 
-**Fairydoku geht als erstes der Spiele in den Play Store.**
+**Fairydoku ist seit dem 29. September 2026 im Play Store.** Google hat die
+Produktionsfassung freigegeben; das Spiel ist oeffentlich. Es ist das erste der
+Spiele des Hauses, das draussen ist.
+
+**Was ab jetzt anders ist als in jeder Testrunde davor:** Die Werbung ist echt
+und laeuft gegen fremde Leute. Jeder eigene Tipp auf eine eigene Anzeige zaehlt
+als „ungueltiger Traffic", solange das Geraet nicht im AdMob-Konto unter
+*Einstellungen -> Testgeraete* steht. Und jede Aenderung am Programm geht
+kuenftig an Leute, die spielen - nicht mehr an eine Runde, die Bescheid weiss.
 
 **Der Paketname ist `ug.humb.fairydoku`** — Umkehr der Firmendomain, wie bei
 den übrigen Apps des Hauses. Er ist am 31. August von `com.fairydoo.game`
