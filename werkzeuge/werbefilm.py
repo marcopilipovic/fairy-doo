@@ -110,7 +110,7 @@ def schlusskarte(ziel, dauer):
     zeilen = [
         (SCHRIFT_TITEL, "FAIRYDOKU", 104, GOLD, 700, 0.2),
         (SCHRIFT_ZEILE, "Ein Feenwald voller Logik", 52, CREME, 880, 0.7),
-        (SCHRIFT_ZEILE, "Bald im Google Play Store", 46, CREME, 1120, 1.3),
+        (SCHRIFT_ZEILE, "Jetzt im Google Play Store", 46, CREME, 1120, 1.3),
     ]
     male = []
     for schrift, text, groesse, farbe, y, ab in zeilen:
@@ -173,9 +173,12 @@ def main():
         uhr += dauer - (BLENDE if nummer else 0)
 
     schluss = ARBEIT / "99-schluss.mp4"
-    schlusskarte(schluss, 4.6)
+    # 4.4 statt 4.6: Der Film kam auf 30,07 Sekunden, und WhatsApps Status
+    # nimmt 30. Um sieben Hundertstel wurde er geteilt. Die Schlusskarte ist
+    # die Stelle, an der man das Zehntel am wenigsten merkt.
+    schlusskarte(schluss, 4.4)
     teile.append(schluss)
-    dauern.append(4.6)
+    dauern.append(4.4)
 
     # Alles mit weichen Blenden aneinander.
     eingaben = " ".join(f"-i {t}" for t in teile)
